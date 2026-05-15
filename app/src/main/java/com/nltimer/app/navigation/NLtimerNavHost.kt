@@ -16,6 +16,12 @@ import com.nltimer.feature.settings.ui.DialogConfigRoute
 import com.nltimer.feature.settings.ui.HomeLayoutConfigRoute
 import com.nltimer.feature.settings.ui.SettingsRoute
 import com.nltimer.feature.settings.ui.ThemeSettingsRoute
+import com.nltimer.app.experimental.ai_inter.AiInterRoute
+import com.nltimer.app.experimental.ai_inter.AiProviderConfigRoute
+import com.nltimer.app.experimental.ai_inter.AiToolsListRoute
+import com.nltimer.app.experimental.ai_inter.AiCallLogsRoute
+import com.nltimer.app.experimental.ai_inter.AiPromptConfigRoute
+import com.nltimer.app.experimental.ai_inter.AiTestChatRoute
 import com.nltimer.feature.stats.ui.StatsRoute
 import com.nltimer.feature.behavior_management.ui.BehaviorManagementRoute
 import com.nltimer.feature.settings.ui.DataManagementRoute
@@ -39,6 +45,12 @@ fun NLtimerNavHost(
         modifier = modifier,
     ) {
         composable(NLtimerRoutes.HOME) { HomeRoute() }
+        composable(NLtimerRoutes.AI_INTER) { AiInterRoute(navController) }
+        composable(NLtimerRoutes.AI_PROVIDER_CONFIG) { AiProviderConfigRoute() }
+        composable(NLtimerRoutes.AI_TOOLS_LIST) { AiToolsListRoute() }
+        composable(NLtimerRoutes.AI_CALL_LOGS) { AiCallLogsRoute() }
+        composable(NLtimerRoutes.AI_PROMPT_CONFIG) { AiPromptConfigRoute() }
+        composable(NLtimerRoutes.AI_TEST_CHAT) { AiTestChatRoute() }
         composable(NLtimerRoutes.STATS) { StatsRoute() }
         composable(NLtimerRoutes.CATEGORIES) { CategoriesRoute() }
         composable(NLtimerRoutes.MANAGEMENT_ACTIVITIES) { ActivityManagementRoute() }

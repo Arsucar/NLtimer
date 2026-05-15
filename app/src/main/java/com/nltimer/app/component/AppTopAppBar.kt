@@ -49,6 +49,7 @@ data class MomentSortOption(
 fun AppTopAppBar(
     title: String,
     modifier: Modifier = Modifier,
+    navigationIcon: @Composable () -> Unit = {},
     isDateTitle: Boolean = false,
     isImmersive: Boolean = false,
     layoutLabel: String? = null,
@@ -175,6 +176,7 @@ fun AppTopAppBar(
                 }
             }
         },
+        navigationIcon = navigationIcon,
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = if (isImmersive) Color.Transparent else MaterialTheme.colorScheme.background,
             scrolledContainerColor = if (isImmersive) Color.Transparent else MaterialTheme.colorScheme.surfaceContainer,
@@ -189,6 +191,7 @@ fun AppCollapsedTopAppBar(
     title: String,
     scrollBehavior: TopAppBarScrollBehavior,
     modifier: Modifier = Modifier,
+    navigationIcon: @Composable () -> Unit = {},
     isDateTitle: Boolean = false,
     isImmersive: Boolean = false,
     layoutLabel: String? = null,
@@ -319,6 +322,7 @@ fun AppCollapsedTopAppBar(
                 }
             }
         },
+        navigationIcon = navigationIcon,
         scrollBehavior = scrollBehavior,
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = if (isImmersive) Color.Transparent else MaterialTheme.colorScheme.background,
