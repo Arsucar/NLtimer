@@ -10,6 +10,9 @@ interface AiCallLogDao {
     @Query("SELECT * FROM ai_call_logs ORDER BY timestamp DESC")
     fun getAllLogs(): Flow<List<AiCallLogEntity>>
 
+    @Query("SELECT * FROM ai_call_logs WHERE id = :id LIMIT 1")
+    fun getLogById(id: Long): Flow<AiCallLogEntity?>
+
     @Insert
     suspend fun insertLog(log: AiCallLogEntity)
 

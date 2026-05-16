@@ -63,6 +63,8 @@ class AiInterRepository @Inject constructor(
 
     val allLogs: Flow<List<AiCallLogEntity>> = aiCallLogDao.getAllLogs()
 
+    fun getLogById(id: Long): Flow<AiCallLogEntity?> = aiCallLogDao.getLogById(id)
+
     suspend fun addLog(log: AiCallLogEntity) {
         aiCallLogDao.insertLog(log)
     }
