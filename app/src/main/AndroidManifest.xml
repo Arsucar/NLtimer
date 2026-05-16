@@ -15,7 +15,7 @@
         android:theme="@style/Theme.NLtimer"
         tools:ignore="AllowBackup">
         <activity
-            android:name=".MainActivity"
+            android:name="com.nltimer.app.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
