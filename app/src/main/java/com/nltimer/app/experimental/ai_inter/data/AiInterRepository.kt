@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -15,20 +16,26 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
 
 @Singleton
 class AiInterRepository @Inject constructor(
-    private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val aiCallLogDao: AiCallLogDao
 ) {
     private val API_ADDRESS = stringPreferencesKey("api_address")
     private val API_PATH = stringPreferencesKey("api_path")
     private val API_KEY = stringPreferencesKey("api_key")
     private val MODEL_NAME = stringPreferencesKey("model_name")
+    private val PROMPT_NOTES = stringPreferencesKey("prompt_notes")
+    private val PROMPT_TASK_GEN = stringPreferencesKey("prompt_task_gen")
+    private val PROMPT_CHAT = stringPreferencesKey("prompt_chat")
 
     val config: Flow<AiInterConfig> = context.dataStore.data.map { preferences ->
         AiInterConfig(
             apiAddress = preferences[API_ADDRESS] ?: "https://integrate.api.nvidia.com/v1",
             apiPath = preferences[API_PATH] ?: "/chat/completions",
             apiKey = preferences[API_KEY] ?: "",
-            modelName = preferences[MODEL_NAME] ?: "openai/gpt-oss-120b"
+            modelName = preferences[MODEL_NAME] ?: "openai/gpt-oss-120b",
+            promptNotes = preferences[PROMPT_NOTES] ?: "",
+            promptTaskGen = preferences[PROMPT_TASK_GEN] ?: "",
+            promptChat = preferences[PROMPT_CHAT] ?: ""
         )
     }
 
@@ -38,13 +45,19 @@ class AiInterRepository @Inject constructor(
                 apiAddress = preferences[API_ADDRESS] ?: "https://integrate.api.nvidia.com/v1",
                 apiPath = preferences[API_PATH] ?: "/chat/completions",
                 apiKey = preferences[API_KEY] ?: "",
-                modelName = preferences[MODEL_NAME] ?: "openai/gpt-oss-120b"
+                modelName = preferences[MODEL_NAME] ?: "openai/gpt-oss-120b",
+                promptNotes = preferences[PROMPT_NOTES] ?: "",
+                promptTaskGen = preferences[PROMPT_TASK_GEN] ?: "",
+                promptChat = preferences[PROMPT_CHAT] ?: ""
             )
             val updated = update(current)
             preferences[API_ADDRESS] = updated.apiAddress
             preferences[API_PATH] = updated.apiPath
             preferences[API_KEY] = updated.apiKey
             preferences[MODEL_NAME] = updated.modelName
+            preferences[PROMPT_NOTES] = updated.promptNotes
+            preferences[PROMPT_TASK_GEN] = updated.promptTaskGen
+            preferences[PROMPT_CHAT] = updated.promptChat
         }
     }
 

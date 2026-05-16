@@ -23,7 +23,7 @@ object AiInterModule {
             AiInterDatabase::class.java,
             "ai_inter_database"
         )
-            .fallbackToDestructiveMigration()
+            .fallbackToDestructiveMigration(true)
             .build()
     }
 
