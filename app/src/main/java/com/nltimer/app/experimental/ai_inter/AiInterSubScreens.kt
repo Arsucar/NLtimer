@@ -245,6 +245,7 @@ fun AiProviderConfigRoute(
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun AiCallLogsRoute(
+    onNavigateToLogDetail: () -> Unit = {},
     viewModel: AiInterViewModel = hiltViewModel()
 ) {
     val logs by viewModel.logs.collectAsState()
@@ -270,7 +271,12 @@ fun AiCallLogsRoute(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             items(logs) { log ->
-                GroupCard {
+                GroupCard(
+                    modifier = Modifier.clickable {
+                        viewModel.selectLog(log)
+                        onNavigateToLogDetail()
+                    }
+                ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),

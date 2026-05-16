@@ -22,6 +22,7 @@ import com.nltimer.app.experimental.ai_inter.AiToolsListRoute
 import com.nltimer.app.experimental.ai_inter.AiCallLogsRoute
 import com.nltimer.app.experimental.ai_inter.AiPromptConfigRoute
 import com.nltimer.app.experimental.ai_inter.AiTestChatRoute
+import com.nltimer.app.experimental.ai_inter.AiLogDetailRoute
 import com.nltimer.feature.stats.ui.StatsRoute
 import com.nltimer.feature.behavior_management.ui.BehaviorManagementRoute
 import com.nltimer.feature.settings.ui.DataManagementRoute
@@ -48,9 +49,18 @@ fun NLtimerNavHost(
         composable(NLtimerRoutes.AI_INTER) { AiInterRoute(navController) }
         composable(NLtimerRoutes.AI_PROVIDER_CONFIG) { AiProviderConfigRoute() }
         composable(NLtimerRoutes.AI_TOOLS_LIST) { AiToolsListRoute() }
-        composable(NLtimerRoutes.AI_CALL_LOGS) { AiCallLogsRoute() }
+        composable(NLtimerRoutes.AI_CALL_LOGS) {
+            AiCallLogsRoute(
+                onNavigateToLogDetail = { navController.navigate(NLtimerRoutes.AI_CALL_LOG_DETAIL) }
+            )
+        }
         composable(NLtimerRoutes.AI_PROMPT_CONFIG) { AiPromptConfigRoute() }
         composable(NLtimerRoutes.AI_TEST_CHAT) { AiTestChatRoute() }
+        composable(NLtimerRoutes.AI_CALL_LOG_DETAIL) {
+            AiLogDetailRoute(
+                onBackClick = { navController.popBackStack() }
+            )
+        }
         composable(NLtimerRoutes.STATS) { StatsRoute() }
         composable(NLtimerRoutes.CATEGORIES) { CategoriesRoute() }
         composable(NLtimerRoutes.MANAGEMENT_ACTIVITIES) { ActivityManagementRoute() }

@@ -21,13 +21,14 @@ object NLtimerRoutes {
     const val AI_CALL_LOGS = "ai_call_logs"
     const val AI_PROMPT_CONFIG = "ai_prompt_config"
     const val AI_TEST_CHAT = "ai_test_chat"
+    const val AI_CALL_LOG_DETAIL = "ai_call_log_detail"
 
     val PRIMARY_ROUTES = setOf(HOME, STATS, CATEGORIES, MANAGEMENT_ACTIVITIES, SETTINGS)
     val SETTINGS_FULLSCREEN_ROUTES = setOf(
         THEME_SETTINGS, DIALOG_CONFIG, BEHAVIOR_MANAGEMENT, DATA_MANAGEMENT, 
         HOME_LAYOUT_CONFIG, COLOR_PALETTE, CATEGORIES, AI_INTER,
         AI_PROVIDER_CONFIG, AI_TOOLS_LIST, AI_CALL_LOGS, AI_PROMPT_CONFIG,
-        AI_TEST_CHAT
+        AI_TEST_CHAT, AI_CALL_LOG_DETAIL
     )
 }
 
