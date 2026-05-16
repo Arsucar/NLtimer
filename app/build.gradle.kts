@@ -56,6 +56,7 @@ android {
 dependencies {
     implementation(projects.core.designsystem)
     implementation(projects.core.data)
+    implementation(projects.core.tools)
     implementation(projects.feature.home)
     implementation(projects.feature.stats)
     implementation(projects.feature.settings)

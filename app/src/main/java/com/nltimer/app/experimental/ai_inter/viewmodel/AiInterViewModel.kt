@@ -6,8 +6,12 @@ import com.nltimer.app.experimental.ai_inter.data.AiCallLogEntity
 import com.nltimer.app.experimental.ai_inter.data.AiInterConfig
 import com.nltimer.app.experimental.ai_inter.data.AiInterRepository
 import com.nltimer.app.experimental.ai_inter.network.AiInterApiClient
+import com.nltimer.core.tools.ToolDefinition
+import com.nltimer.core.tools.ToolRegistry
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -25,7 +29,8 @@ data class ChatMessage(
 @HiltViewModel
 class AiInterViewModel @Inject constructor(
     private val repository: AiInterRepository,
-    private val apiClient: AiInterApiClient
+    private val apiClient: AiInterApiClient,
+    private val toolRegistry: ToolRegistry
 ) : ViewModel() {
 
     val config: StateFlow<AiInterConfig> = repository.config.stateIn(
@@ -46,6 +51,9 @@ class AiInterViewModel @Inject constructor(
     private val _isSending = MutableStateFlow(false)
     val isSending: StateFlow<Boolean> = _isSending.asStateFlow()
 
+    private val _streamingContent = MutableStateFlow("")
+    val streamingContent: StateFlow<String> = _streamingContent.asStateFlow()
+
     private val _availableModels = MutableStateFlow<List<String>>(emptyList())
     val availableModels: StateFlow<List<String>> = _availableModels.asStateFlow()
 
@@ -55,10 +63,14 @@ class AiInterViewModel @Inject constructor(
     private val _modelsError = MutableStateFlow<String?>(null)
     val modelsError: StateFlow<String?> = _modelsError.asStateFlow()
 
-    private val _selectedLog = MutableStateFlow<AiCallLogEntity?>(null)
-    val selectedLog: StateFlow<AiCallLogEntity?> = _selectedLog.asStateFlow()
+    private val _chatError = MutableStateFlow<String?>(null)
+    val chatError: StateFlow<String?> = _chatError.asStateFlow()
 
     private var currentStreamJob: Job? = null
+
+    fun getLogById(id: Long): Flow<AiCallLogEntity?> = repository.getLogById(id)
+
+    fun getAllTools(): List<ToolDefinition> = toolRegistry.getAllTools()
 
     fun updateConfig(apiAddress: String, apiPath: String, apiKey: String, modelName: String) {
         viewModelScope.launch {
@@ -92,15 +104,13 @@ class AiInterViewModel @Inject constructor(
     fun clearChat() {
         currentStreamJob?.cancel()
         _chatMessages.value = emptyList()
+        _streamingContent.value = ""
         _isSending.value = false
+        _chatError.value = null
     }
 
-    fun selectLog(log: AiCallLogEntity) {
-        _selectedLog.value = log
-    }
-
-    fun clearSelectedLog() {
-        _selectedLog.value = null
+    fun clearChatError() {
+        _chatError.value = null
     }
 
     fun fetchModels() {
@@ -111,10 +121,12 @@ class AiInterViewModel @Inject constructor(
             apiClient.fetchModels(cfg.apiAddress, cfg.apiKey).fold(
                 onSuccess = { models ->
                     _availableModels.value = models
-                    _modelsError.value = null
+                    if (models.isEmpty()) {
+                        _modelsError.value = "服务端返回的模型列表为空（响应已成功，但 data 数组为空）"
+                    }
                 },
                 onFailure = { e ->
-                    _modelsError.value = e.message
+                    _modelsError.value = e.message ?: (e::class.simpleName ?: "未知错误") + "（无错误描述）"
                     _availableModels.value = emptyList()
                 }
             )
@@ -129,23 +141,30 @@ class AiInterViewModel @Inject constructor(
     fun sendMessage(text: String) {
         if (text.isBlank() || _isSending.value) return
         _isSending.value = true
+        _streamingContent.value = ""
+        _chatError.value = null
 
         val userMessage = ChatMessage(role = "user", content = text)
         _chatMessages.value = _chatMessages.value + userMessage
 
         val cfg = config.value
-        val allMessages = _chatMessages.value.map {
+        val systemPrompt = cfg.promptChat.takeIf { it.isNotBlank() }
+        val historyMessages = _chatMessages.value.map {
             AiInterApiClient.ChatMessage(role = it.role, content = it.content)
         }
+        val payload = if (systemPrompt != null) {
+            listOf(AiInterApiClient.ChatMessage(role = "system", content = systemPrompt)) + historyMessages
+        } else {
+            historyMessages
+        }
+
         val startTime = System.currentTimeMillis()
         val fullUrl = cfg.apiAddress.trimEnd('/') + cfg.apiPath
 
         currentStreamJob = viewModelScope.launch {
-            val assistantMessage = ChatMessage(role = "assistant", content = "", timestamp = startTime)
-            _chatMessages.value = _chatMessages.value + assistantMessage
-
             val contentBuilder = StringBuilder()
             var errorMsg: String? = null
+            var wasCancelled = false
 
             try {
                 apiClient.streamChat(
@@ -153,42 +172,79 @@ class AiInterViewModel @Inject constructor(
                     path = cfg.apiPath,
                     apiKey = cfg.apiKey,
                     model = cfg.modelName,
-                    messages = allMessages
+                    messages = payload
                 ).collect { token ->
                     contentBuilder.append(token)
-                    val msgs = _chatMessages.value.toMutableList()
-                    if (msgs.isNotEmpty()) {
-                        msgs[msgs.lastIndex] = msgs.last().copy(content = contentBuilder.toString())
-                        _chatMessages.value = msgs
-                    }
+                    _streamingContent.value = contentBuilder.toString()
                 }
+            } catch (e: CancellationException) {
+                wasCancelled = true
+                throw e
             } catch (e: Exception) {
-                if (contentBuilder.isEmpty()) {
-                    errorMsg = e.message ?: "Unknown error"
-                }
+                errorMsg = e.message ?: (e::class.simpleName ?: "Unknown error")
             } finally {
+                val finalContent = contentBuilder.toString()
                 val duration = System.currentTimeMillis() - startTime
-                repository.addLog(
-                    AiCallLogEntity(
-                        timestamp = System.currentTimeMillis(),
-                        type = "Test Chat",
-                        status = if (errorMsg == null && contentBuilder.isNotEmpty()) "Success" else "Failed",
-                        durationMs = duration,
-                        model = cfg.modelName,
-                        tools = "",
-                        prompt = text,
-                        response = contentBuilder.toString(),
-                        errorMessage = errorMsg,
-                        requestUrl = fullUrl
+
+                if (wasCancelled) {
+                    if (finalContent.isNotEmpty()) {
+                        _chatMessages.value = _chatMessages.value + ChatMessage(
+                            role = "assistant",
+                            content = "$finalContent\n\n(已中断)",
+                            timestamp = System.currentTimeMillis()
+                        )
+                    }
+                    _streamingContent.value = ""
+                    _isSending.value = false
+                } else {
+                    val assistantContent = when {
+                        finalContent.isNotEmpty() && errorMsg == null -> finalContent
+                        finalContent.isNotEmpty() && errorMsg != null -> "$finalContent\n\n(中途出错：$errorMsg)"
+                        errorMsg != null -> "(请求失败：$errorMsg)"
+                        else -> "(空响应 — 服务端正常关闭流但未发送任何 token。请确认：模型名「${cfg.modelName}」是否存在、API 路径「${cfg.apiPath}」是否正确、API Key 是否有效)"
+                    }
+                    _chatMessages.value = _chatMessages.value + ChatMessage(
+                        role = "assistant",
+                        content = assistantContent,
+                        timestamp = System.currentTimeMillis()
                     )
-                )
-                _isSending.value = false
+                    _streamingContent.value = ""
+
+                    if (errorMsg != null) {
+                        _chatError.value = errorMsg
+                    }
+
+                    repository.addLog(
+                        AiCallLogEntity(
+                            timestamp = System.currentTimeMillis(),
+                            type = "Test Chat",
+                            status = if (errorMsg == null && finalContent.isNotEmpty()) "Success" else "Failed",
+                            durationMs = duration,
+                            model = cfg.modelName,
+                            tools = "",
+                            prompt = text,
+                            response = finalContent,
+                            errorMessage = errorMsg,
+                            requestUrl = fullUrl
+                        )
+                    )
+
+                    _isSending.value = false
+                }
             }
         }
     }
 
     fun stopStreaming() {
         currentStreamJob?.cancel()
+        val partial = _streamingContent.value
+        if (partial.isNotEmpty()) {
+            _chatMessages.value = _chatMessages.value + ChatMessage(
+                role = "assistant",
+                content = "$partial\n\n(已中断)"
+            )
+        }
+        _streamingContent.value = ""
         _isSending.value = false
     }
 

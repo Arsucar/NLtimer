@@ -6,8 +6,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.nltimer.feature.categories.ui.CategoriesRoute
 import com.nltimer.feature.home.ui.HomeRoute
 import com.nltimer.feature.management_activities.ui.ActivityManagementRoute
@@ -51,13 +53,20 @@ fun NLtimerNavHost(
         composable(NLtimerRoutes.AI_TOOLS_LIST) { AiToolsListRoute() }
         composable(NLtimerRoutes.AI_CALL_LOGS) {
             AiCallLogsRoute(
-                onNavigateToLogDetail = { navController.navigate(NLtimerRoutes.AI_CALL_LOG_DETAIL) }
+                onNavigateToLogDetail = { logId ->
+                    navController.navigate(NLtimerRoutes.aiCallLogDetail(logId))
+                }
             )
         }
         composable(NLtimerRoutes.AI_PROMPT_CONFIG) { AiPromptConfigRoute() }
         composable(NLtimerRoutes.AI_TEST_CHAT) { AiTestChatRoute() }
-        composable(NLtimerRoutes.AI_CALL_LOG_DETAIL) {
+        composable(
+            route = NLtimerRoutes.AI_CALL_LOG_DETAIL_PATTERN,
+            arguments = listOf(navArgument("logId") { type = NavType.LongType })
+        ) { backStackEntry ->
+            val logId = backStackEntry.arguments?.getLong("logId") ?: 0L
             AiLogDetailRoute(
+                logId = logId,
                 onBackClick = { navController.popBackStack() }
             )
         }

@@ -2,6 +2,7 @@ package com.nltimer.app.experimental.ai_inter
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -19,6 +21,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Chat
@@ -27,6 +30,7 @@ import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
@@ -38,6 +42,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -72,132 +78,123 @@ fun AiProviderConfigRoute(
     val availableModels by viewModel.availableModels.collectAsState()
     val isLoadingModels by viewModel.isLoadingModels.collectAsState()
     val modelsError by viewModel.modelsError.collectAsState()
-    
-    var apiAddress by remember(config.apiAddress) { mutableStateOf(config.apiAddress) }
-    var apiPath by remember(config.apiPath) { mutableStateOf(config.apiPath) }
-    var apiKey by remember(config.apiKey) { mutableStateOf(config.apiKey) }
-    var modelName by remember(config.modelName) { mutableStateOf(config.modelName) }
-    var showModelSheet by remember { mutableStateOf(false) }
 
-    if (modelsError != null) {
-        LaunchedEffect(modelsError) {
-            modelsError?.let {
-                viewModel.clearModelsError()
-            }
+    var showModelSheet by remember { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(modelsError) {
+        modelsError?.let {
+            snackbarHostState.showSnackbar(it)
+            viewModel.clearModelsError()
         }
     }
 
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(
-            start = 16.dp,
-            top = 12.dp + LocalImmersiveTopPadding.current,
-            end = 16.dp,
-            bottom = 24.dp
-        ),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        item {
-            Text(
-                text = "接口设置",
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(horizontal = 4.dp)
-            )
-        }
-
-        item {
-            GroupCard {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    OutlinedTextField(
-                        value = apiAddress,
-                        onValueChange = { 
-                            apiAddress = it
-                            viewModel.updateConfig(it, apiPath, apiKey, modelName)
-                        },
-                        label = { Text("API 地址") },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-                    OutlinedTextField(
-                        value = apiPath,
-                        onValueChange = { 
-                            apiPath = it
-                            viewModel.updateConfig(apiAddress, it, apiKey, modelName)
-                        },
-                        label = { Text("API 路径") },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
+    Box(modifier = Modifier.fillMaxSize()) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(
+                start = 16.dp,
+                top = 12.dp + LocalImmersiveTopPadding.current,
+                end = 16.dp,
+                bottom = 24.dp
+            ),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            item {
+                Text(
+                    text = "接口设置",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(horizontal = 4.dp)
+                )
             }
-        }
 
-        item {
-            Text(
-                text = "鉴权与模型",
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(horizontal = 4.dp)
-            )
-        }
-
-        item {
-            GroupCard {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    OutlinedTextField(
-                        value = apiKey,
-                        onValueChange = { 
-                            apiKey = it
-                            viewModel.updateConfig(apiAddress, apiPath, it, modelName)
-                        },
-                        label = { Text("API Key") },
-                        modifier = Modifier.fillMaxWidth(),
-                        visualTransformation = PasswordVisualTransformation()
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-                    OutlinedTextField(
-                        value = modelName,
-                        onValueChange = { 
-                            modelName = it
-                            viewModel.updateConfig(apiAddress, apiPath, apiKey, it)
-                        },
-                        label = { Text("当前模型") },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    FilledTonalButton(
-                        onClick = {
-                            viewModel.fetchModels()
-                            showModelSheet = true
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        enabled = !isLoadingModels && apiAddress.isNotBlank()
-                    ) {
-                        if (isLoadingModels) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(18.dp),
-                                strokeWidth = 2.dp
-                            )
-                        } else {
-                            Icon(Icons.Default.Refresh, contentDescription = null)
-                        }
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("获取模型列表")
-                    }
-                    if (modelsError != null) {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = modelsError!!,
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodySmall
+            item {
+                GroupCard {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        OutlinedTextField(
+                            value = config.apiAddress,
+                            onValueChange = {
+                                viewModel.updateConfig(it, config.apiPath, config.apiKey, config.modelName)
+                            },
+                            label = { Text("API 地址") },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        OutlinedTextField(
+                            value = config.apiPath,
+                            onValueChange = {
+                                viewModel.updateConfig(config.apiAddress, it, config.apiKey, config.modelName)
+                            },
+                            label = { Text("API 路径") },
+                            modifier = Modifier.fillMaxWidth()
                         )
                     }
                 }
             }
+
+            item {
+                Text(
+                    text = "鉴权与模型",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(horizontal = 4.dp)
+                )
+            }
+
+            item {
+                GroupCard {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        OutlinedTextField(
+                            value = config.apiKey,
+                            onValueChange = {
+                                viewModel.updateConfig(config.apiAddress, config.apiPath, it, config.modelName)
+                            },
+                            label = { Text("API Key") },
+                            modifier = Modifier.fillMaxWidth(),
+                            visualTransformation = PasswordVisualTransformation()
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        OutlinedTextField(
+                            value = config.modelName,
+                            onValueChange = {
+                                viewModel.updateConfig(config.apiAddress, config.apiPath, config.apiKey, it)
+                            },
+                            label = { Text("当前模型") },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        FilledTonalButton(
+                            onClick = {
+                                viewModel.fetchModels()
+                                showModelSheet = true
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            enabled = !isLoadingModels && config.apiAddress.isNotBlank()
+                        ) {
+                            if (isLoadingModels) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(18.dp),
+                                    strokeWidth = 2.dp
+                                )
+                            } else {
+                                Icon(Icons.Default.Refresh, contentDescription = null)
+                            }
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("获取模型列表")
+                        }
+                    }
+                }
+            }
         }
+
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
     }
 
-    if (showModelSheet && availableModels.isNotEmpty()) {
+    if (showModelSheet) {
         ModalBottomSheet(
             onDismissRequest = { showModelSheet = false }
         ) {
@@ -207,32 +204,89 @@ fun AiProviderConfigRoute(
                     .padding(horizontal = 16.dp)
                     .padding(bottom = 32.dp)
             ) {
-                Text(
-                    "可用模型 (${availableModels.size})",
-                    style = MaterialTheme.typography.titleMedium
-                )
+                var query by remember { mutableStateOf("") }
+                val filteredModels = remember(availableModels, query) {
+                    if (query.isBlank()) availableModels
+                    else availableModels.filter { it.contains(query, ignoreCase = true) }
+                }
+                val headerText = when {
+                    isLoadingModels -> "正在获取模型列表…"
+                    availableModels.isEmpty() -> "未获取到任何模型"
+                    query.isNotBlank() -> "匹配模型 (${filteredModels.size}/${availableModels.size})"
+                    else -> "可用模型 (${availableModels.size})"
+                }
+                Text(headerText, style = MaterialTheme.typography.titleMedium)
                 Spacer(modifier = Modifier.height(8.dp))
-                LazyColumn(
-                    modifier = Modifier.height(androidx.compose.ui.platform.LocalDensity.current.run {
-                        400.dp
-                    })
-                ) {
-                    items(availableModels) { model ->
-                        Surface(
+
+                when {
+                    isLoadingModels -> {
+                        Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable {
-                                    modelName = model
-                                    viewModel.updateConfig(apiAddress, apiPath, apiKey, model)
-                                    showModelSheet = false
-                                },
-                            shape = MaterialTheme.shapes.small
+                                .padding(vertical = 24.dp),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Column(modifier = Modifier.padding(12.dp)) {
-                                Text(
-                                    text = model,
-                                    style = MaterialTheme.typography.bodyMedium
-                                )
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                strokeWidth = 2.dp
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                "请求中…",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                    }
+                    availableModels.isEmpty() -> {
+                        Text(
+                            text = modelsError ?: "服务端返回为空，请检查 API 地址是否包含 /v1 等前缀",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.padding(vertical = 16.dp)
+                        )
+                    }
+                    else -> {
+                        OutlinedTextField(
+                            value = query,
+                            onValueChange = { query = it },
+                            placeholder = { Text("搜索模型…") },
+                            singleLine = true,
+                            leadingIcon = {
+                                Icon(Icons.Default.Search, contentDescription = null)
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        if (filteredModels.isEmpty()) {
+                            Text(
+                                "无匹配的模型",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(vertical = 16.dp)
+                            )
+                        } else {
+                            LazyColumn(
+                                modifier = Modifier.heightIn(max = 400.dp)
+                            ) {
+                                items(filteredModels) { model ->
+                                    Surface(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable {
+                                                viewModel.updateConfig(config.apiAddress, config.apiPath, config.apiKey, model)
+                                                showModelSheet = false
+                                            },
+                                        shape = MaterialTheme.shapes.small
+                                    ) {
+                                        Column(modifier = Modifier.padding(12.dp)) {
+                                            Text(
+                                                text = model,
+                                                style = MaterialTheme.typography.bodyMedium
+                                            )
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -245,7 +299,7 @@ fun AiProviderConfigRoute(
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun AiCallLogsRoute(
-    onNavigateToLogDetail: () -> Unit = {},
+    onNavigateToLogDetail: (Long) -> Unit = {},
     viewModel: AiInterViewModel = hiltViewModel()
 ) {
     val logs by viewModel.logs.collectAsState()
@@ -273,8 +327,7 @@ fun AiCallLogsRoute(
             items(logs) { log ->
                 GroupCard(
                     modifier = Modifier.clickable {
-                        viewModel.selectLog(log)
-                        onNavigateToLogDetail()
+                        onNavigateToLogDetail(log.id)
                     }
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
@@ -414,16 +467,38 @@ fun AiTestChatRoute(
 ) {
     val messages by viewModel.chatMessages.collectAsState()
     val isSending by viewModel.isSending.collectAsState()
+    val streamingContent by viewModel.streamingContent.collectAsState()
+    val config by viewModel.config.collectAsState()
     var inputText by remember { mutableStateOf("") }
     val listState = rememberLazyListState()
 
-    LaunchedEffect(messages.size, messages.lastOrNull()?.content) {
-        if (messages.isNotEmpty()) {
-            listState.animateScrollToItem(messages.size - 1)
+    LaunchedEffect(messages.size, streamingContent) {
+        val targetIndex = (messages.size - 1).coerceAtLeast(0) + if (isSending) 1 else 0
+        if (targetIndex >= 0 && (messages.isNotEmpty() || isSending)) {
+            listState.animateScrollToItem(targetIndex)
         }
     }
 
     Column(modifier = Modifier.fillMaxSize().padding(top = LocalImmersiveTopPadding.current)) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = if (config.modelName.isNotBlank()) "模型：${config.modelName}" else "未选择模型",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            if (messages.isNotEmpty()) {
+                IconButton(onClick = { viewModel.clearChat() }) {
+                    Icon(Icons.Default.Delete, contentDescription = "清空对话")
+                }
+            }
+        }
+
         LazyColumn(
             state = listState,
             modifier = Modifier.weight(1f),
@@ -432,6 +507,11 @@ fun AiTestChatRoute(
         ) {
             items(messages) { msg ->
                 ChatBubble(msg)
+            }
+            if (isSending) {
+                item {
+                    StreamingBubble(streamingContent)
+                }
             }
         }
 
@@ -447,6 +527,14 @@ fun AiTestChatRoute(
                 modifier = Modifier.weight(1f),
                 placeholder = { Text("输入测试消息...") },
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
+                keyboardActions = KeyboardActions(
+                    onSend = {
+                        if (inputText.isNotBlank() && !isSending) {
+                            viewModel.sendMessage(inputText)
+                            inputText = ""
+                        }
+                    }
+                ),
                 enabled = !isSending
             )
             Spacer(modifier = Modifier.width(8.dp))
@@ -460,7 +548,7 @@ fun AiTestChatRoute(
                 }
             } else {
                 IconButton(
-                    onClick = { 
+                    onClick = {
                         viewModel.sendMessage(inputText)
                         inputText = ""
                     },
@@ -469,6 +557,26 @@ fun AiTestChatRoute(
                     Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "发送")
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun StreamingBubble(content: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Start
+    ) {
+        Surface(
+            color = MaterialTheme.colorScheme.secondaryContainer,
+            shape = RoundedCornerShape(12.dp),
+            modifier = Modifier.widthIn(max = 280.dp)
+        ) {
+            Text(
+                text = content.ifEmpty { "正在生成…" },
+                modifier = Modifier.padding(12.dp),
+                style = MaterialTheme.typography.bodyMedium
+            )
         }
     }
 }
@@ -495,13 +603,10 @@ private fun ChatBubble(msg: com.nltimer.app.experimental.ai_inter.viewmodel.Chat
 }
 
 @Composable
-fun AiToolsListRoute() {
-    val tools = listOf(
-        "behavior_start" to "开始一个新的行为记录",
-        "behavior_stop" to "停止当前正在进行的行为",
-        "note_parse" to "解析复杂备注内容",
-        "search_activities" to "根据关键词搜索现有活动"
-    )
+fun AiToolsListRoute(
+    viewModel: AiInterViewModel = hiltViewModel()
+) {
+    val tools = remember { viewModel.getAllTools() }
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -513,12 +618,64 @@ fun AiToolsListRoute() {
         ),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        items(tools) { (name, desc) ->
-            GroupCard {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(text = name, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(text = desc, style = MaterialTheme.typography.bodyMedium)
+        if (tools.isEmpty()) {
+            item {
+                GroupCard {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = "尚未注册任何工具",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+        } else {
+            items(tools) { tool ->
+                GroupCard {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = tool.name,
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            AssistChip(
+                                onClick = { },
+                                label = {
+                                    Text(
+                                        text = tool.category.name,
+                                        fontSize = 10.sp
+                                    )
+                                },
+                                modifier = Modifier.height(24.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = tool.description,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        if (tool.parameters.isNotEmpty()) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "参数：",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            tool.parameters.forEach { param ->
+                                Text(
+                                    text = "  · ${param.name}${if (param.required) "*" else ""}: ${param.description}",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }
