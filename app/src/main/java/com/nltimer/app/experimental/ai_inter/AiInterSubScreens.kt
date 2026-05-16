@@ -411,7 +411,7 @@ fun AiTestChatRoute(
     var inputText by remember { mutableStateOf("") }
     val listState = rememberLazyListState()
 
-    LaunchedEffect(messages.size) {
+    LaunchedEffect(messages.size, messages.lastOrNull()?.content) {
         if (messages.isNotEmpty()) {
             listState.animateScrollToItem(messages.size - 1)
         }
@@ -444,14 +444,24 @@ fun AiTestChatRoute(
                 enabled = !isSending
             )
             Spacer(modifier = Modifier.width(8.dp))
-            IconButton(
-                onClick = { 
-                    viewModel.sendMessage(inputText)
-                    inputText = ""
-                },
-                enabled = !isSending && inputText.isNotBlank()
-            ) {
-                Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "发送")
+            if (isSending) {
+                IconButton(onClick = { viewModel.stopStreaming() }) {
+                    Icon(
+                        Icons.Default.Close,
+                        contentDescription = "停止生成",
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                }
+            } else {
+                IconButton(
+                    onClick = { 
+                        viewModel.sendMessage(inputText)
+                        inputText = ""
+                    },
+                    enabled = inputText.isNotBlank()
+                ) {
+                    Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "发送")
+                }
             }
         }
     }
