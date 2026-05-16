@@ -1,6 +1,7 @@
 plugins {
     id("nltimer.android.application")
     id("nltimer.android.hilt")
+    alias(libs.plugins.kotlin.serialization)
 }
 
 val APP_VERSION_NAME: String by project
@@ -79,6 +80,9 @@ dependencies {
 
     implementation(libs.datastore.preferences)
     implementation(libs.okio)
+    implementation(libs.okhttp)
+    implementation(libs.okhttp.sse)
+    implementation(libs.kotlinx.serialization.json)
     implementation(libs.profileinstaller)
     implementation(libs.splashscreen)
 
