@@ -27,6 +27,7 @@ interface CategorizableItem {
     val usageCount: Int
     val lastUsedTimestamp: Long?
     val iconKey: String?
+    val color: Long?
 }
 
 data class ActivityCategorizable(
@@ -38,6 +39,7 @@ data class ActivityCategorizable(
     override val category: String? = null
     override val usageCount: Int = activity.usageCount
     override val iconKey: String? = activity.iconKey
+    override val color: Long? = activity.color
 }
 
 data class TagCategorizable(
@@ -49,6 +51,7 @@ data class TagCategorizable(
     override val category: String? = tag.category
     override val usageCount: Int = tag.usageCount
     override val iconKey: String? = null
+    override val color: Long? = tag.color
 }
 
 data class ActivityGroupCategorizable(
@@ -60,6 +63,7 @@ data class ActivityGroupCategorizable(
     override val usageCount: Int = 0
     override val lastUsedTimestamp: Long? = null
     override val iconKey: String? = null
+    override val color: Long? = null
 }
 
 data class StringCategoryCategorizable(
@@ -71,4 +75,5 @@ data class StringCategoryCategorizable(
     override val usageCount: Int = 0
     override val lastUsedTimestamp: Long? = null
     override val iconKey: String? = null
+    override val color: Long? = null
 }

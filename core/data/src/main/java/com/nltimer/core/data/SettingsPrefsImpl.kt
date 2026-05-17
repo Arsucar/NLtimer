@@ -144,13 +144,15 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
             activityLayoutMode = try { GridLayoutMode.valueOf(prefs[actLayoutModeKey] ?: GridLayoutMode.Horizontal.name) } catch (_: IllegalArgumentException) { GridLayoutMode.Horizontal },
             activityColumnLines = prefs[actColumnLinesKey] ?: 2,
             activityHorizontalLines = prefs[actHorizontalLinesKey] ?: 2,
-            activityUseColorForText = prefs[actUseColorKey] ?: true,
             tagDisplayMode = try { ChipDisplayMode.valueOf(prefs[tagDisplayModeKey] ?: ChipDisplayMode.Filled.name) } catch (_: IllegalArgumentException) { ChipDisplayMode.Filled },
             tagLayoutMode = try { GridLayoutMode.valueOf(prefs[tagLayoutModeKey] ?: GridLayoutMode.Horizontal.name) } catch (_: IllegalArgumentException) { GridLayoutMode.Horizontal },
             tagColumnLines = prefs[tagColumnLinesKey] ?: 2,
             tagHorizontalLines = prefs[tagHorizontalLinesKey] ?: 2,
-            tagUseColorForText = prefs[tagUseColorKey] ?: true,
             showBehaviorNature = prefs[showNatureKey] ?: true,
+            displayColorConfig = DisplayColorConfig(
+                activityUseColorForText = prefs[actUseColorKey] ?: true,
+                tagUseColorForText = prefs[tagUseColorKey] ?: true,
+            ),
             pathDrawMode = try { PathDrawMode.valueOf(prefs[pathDrawModeKey] ?: PathDrawMode.StartToEnd.name) } catch (_: IllegalArgumentException) { PathDrawMode.StartToEnd },
             secondsStrategy = try { SecondsStrategy.valueOf(prefs[secondsStrategyKey] ?: SecondsStrategy.OPEN_TIME.name) } catch (_: IllegalArgumentException) { SecondsStrategy.OPEN_TIME },
             autoMatchNote = prefs[autoMatchNoteKey] ?: false,
@@ -164,12 +166,12 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
             prefs[actLayoutModeKey] = config.activityLayoutMode.name
             prefs[actColumnLinesKey] = config.activityColumnLines
             prefs[actHorizontalLinesKey] = config.activityHorizontalLines
-            prefs[actUseColorKey] = config.activityUseColorForText
+            prefs[actUseColorKey] = config.displayColorConfig.activityUseColorForText
             prefs[tagDisplayModeKey] = config.tagDisplayMode.name
             prefs[tagLayoutModeKey] = config.tagLayoutMode.name
             prefs[tagColumnLinesKey] = config.tagColumnLines
             prefs[tagHorizontalLinesKey] = config.tagHorizontalLines
-            prefs[tagUseColorKey] = config.tagUseColorForText
+            prefs[tagUseColorKey] = config.displayColorConfig.tagUseColorForText
             prefs[showNatureKey] = config.showBehaviorNature
             prefs[pathDrawModeKey] = config.pathDrawMode.name
             prefs[secondsStrategyKey] = config.secondsStrategy.name

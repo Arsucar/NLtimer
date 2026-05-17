@@ -92,7 +92,7 @@ data class GridConfig(
     val layoutMode: MutableState<GridLayoutMode>,
     val columnLines: MutableState<Int>,
     val horizontalLines: MutableState<Int>,
-    val useActivityColorForText: MutableState<Boolean>,
+    val useColorForText: MutableState<Boolean>,
 )
 
 @Preview(showBackground = true)
@@ -110,7 +110,7 @@ fun ActivityRecordCombinedPreview() {
             layoutMode = mutableStateOf(GridLayoutMode.Horizontal),
             columnLines = mutableStateOf(2),
             horizontalLines = mutableStateOf(2),
-            useActivityColorForText = mutableStateOf(true),
+            useColorForText = mutableStateOf(true),
         )
     }
     val tagConfig = remember {
@@ -119,7 +119,7 @@ fun ActivityRecordCombinedPreview() {
             layoutMode = mutableStateOf(GridLayoutMode.Horizontal),
             columnLines = mutableStateOf(2),
             horizontalLines = mutableStateOf(2),
-            useActivityColorForText = mutableStateOf(true),
+            useColorForText = mutableStateOf(true),
         )
     }
 
@@ -323,8 +323,8 @@ private fun GridConfigBlock(
             Spacer(modifier = Modifier.height(8.dp))
             ToggleControl(
                 label = "文字使用活动色",
-                checked = config.useActivityColorForText.value,
-                onCheckedChange = { config.useActivityColorForText.value = it },
+                checked = config.useColorForText.value,
+                onCheckedChange = { config.useColorForText.value = it },
             )
         }
     }
@@ -705,7 +705,7 @@ private fun ActivityRecordCombinedSheet(
                             maxLinesPerColumn = activityConfig.columnLines.value,
                             maxLinesHorizontal = horizontalLines(activityConfig),
                             chipFixedWidth = 80.dp,
-                            useActivityColorForText = activityConfig.useActivityColorForText.value,
+                            useActivityColorForText = activityConfig.useColorForText.value,
                         )
                         Spacer(modifier = Modifier.height(10.dp))
                         ActivityGridComponent(
@@ -725,7 +725,7 @@ private fun ActivityRecordCombinedSheet(
                             maxLinesPerColumn = tagConfig.columnLines.value,
                             maxLinesHorizontal = horizontalLines(tagConfig),
                             chipFixedWidth = 50.dp,
-                            useActivityColorForText = tagConfig.useActivityColorForText.value,
+                            useActivityColorForText = tagConfig.useColorForText.value,
                         )
                         var noteText by remember { mutableStateOf("") }
                         NoteInputComponent(

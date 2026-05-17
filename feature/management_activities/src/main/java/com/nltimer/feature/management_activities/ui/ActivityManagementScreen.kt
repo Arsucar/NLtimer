@@ -296,6 +296,7 @@ private data class ManagementActivityItem(
     override val usageCount: Int = activity.usageCount
     override val lastUsedTimestamp: Long? = null
     override val iconKey: String? = activity.iconKey
+    override val color: Long? = activity.color
 }
 
 @Composable
