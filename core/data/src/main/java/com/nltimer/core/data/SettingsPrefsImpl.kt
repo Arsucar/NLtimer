@@ -10,6 +10,8 @@ import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.nltimer.core.data.model.DialogGridConfig
+import com.nltimer.core.data.model.DisplayColorConfig
+import com.nltimer.core.data.model.DisplayColorMode
 import com.nltimer.core.data.model.HomeLayoutConfig
 import com.nltimer.core.data.model.GridLayoutStyle
 import com.nltimer.core.data.model.LogLayoutStyle
@@ -138,7 +140,41 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
         }
     }
 
+    override fun getDisplayColorConfigFlow(): Flow<DisplayColorConfig> = dataStore.data.map { prefs ->
+        DisplayColorConfig(
+            activityIconColorMode = try {
+                DisplayColorMode.valueOf(prefs[activityIconColorModeKey] ?: DisplayColorMode.NORMAL.name)
+            } catch (_: IllegalArgumentException) {
+                DisplayColorMode.NORMAL
+            },
+            tagDisplayColorMode = try {
+                DisplayColorMode.valueOf(prefs[tagDisplayColorModeKey] ?: DisplayColorMode.NORMAL.name)
+            } catch (_: IllegalArgumentException) {
+                DisplayColorMode.NORMAL
+            },
+        )
+    }
+
+    override suspend fun updateDisplayColorConfig(config: DisplayColorConfig) {
+        dataStore.edit { prefs ->
+            prefs[activityIconColorModeKey] = config.activityIconColorMode.name
+            prefs[tagDisplayColorModeKey] = config.tagDisplayColorMode.name
+        }
+    }
+
     override fun getDialogConfigFlow(): Flow<DialogGridConfig> = dataStore.data.map { prefs ->
+        val displayColorConfig = DisplayColorConfig(
+            activityIconColorMode = try {
+                DisplayColorMode.valueOf(prefs[activityIconColorModeKey] ?: DisplayColorMode.NORMAL.name)
+            } catch (_: IllegalArgumentException) {
+                DisplayColorMode.NORMAL
+            },
+            tagDisplayColorMode = try {
+                DisplayColorMode.valueOf(prefs[tagDisplayColorModeKey] ?: DisplayColorMode.NORMAL.name)
+            } catch (_: IllegalArgumentException) {
+                DisplayColorMode.NORMAL
+            },
+        )
         DialogGridConfig(
             activityDisplayMode = try { ChipDisplayMode.valueOf(prefs[actDisplayModeKey] ?: ChipDisplayMode.Filled.name) } catch (_: IllegalArgumentException) { ChipDisplayMode.Filled },
             activityLayoutMode = try { GridLayoutMode.valueOf(prefs[actLayoutModeKey] ?: GridLayoutMode.Horizontal.name) } catch (_: IllegalArgumentException) { GridLayoutMode.Horizontal },
@@ -149,14 +185,10 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
             tagColumnLines = prefs[tagColumnLinesKey] ?: 2,
             tagHorizontalLines = prefs[tagHorizontalLinesKey] ?: 2,
             showBehaviorNature = prefs[showNatureKey] ?: true,
-            displayColorConfig = DisplayColorConfig(
-                activityUseColorForText = prefs[actUseColorKey] ?: true,
-                tagUseColorForText = prefs[tagUseColorKey] ?: true,
-            ),
+            displayColorConfig = displayColorConfig,
             pathDrawMode = try { PathDrawMode.valueOf(prefs[pathDrawModeKey] ?: PathDrawMode.StartToEnd.name) } catch (_: IllegalArgumentException) { PathDrawMode.StartToEnd },
             secondsStrategy = try { SecondsStrategy.valueOf(prefs[secondsStrategyKey] ?: SecondsStrategy.OPEN_TIME.name) } catch (_: IllegalArgumentException) { SecondsStrategy.OPEN_TIME },
             autoMatchNote = prefs[autoMatchNoteKey] ?: false,
-
         )
     }
 
@@ -166,18 +198,16 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
             prefs[actLayoutModeKey] = config.activityLayoutMode.name
             prefs[actColumnLinesKey] = config.activityColumnLines
             prefs[actHorizontalLinesKey] = config.activityHorizontalLines
-            prefs[actUseColorKey] = config.displayColorConfig.activityUseColorForText
             prefs[tagDisplayModeKey] = config.tagDisplayMode.name
             prefs[tagLayoutModeKey] = config.tagLayoutMode.name
             prefs[tagColumnLinesKey] = config.tagColumnLines
             prefs[tagHorizontalLinesKey] = config.tagHorizontalLines
-            prefs[tagUseColorKey] = config.displayColorConfig.tagUseColorForText
             prefs[showNatureKey] = config.showBehaviorNature
             prefs[pathDrawModeKey] = config.pathDrawMode.name
             prefs[secondsStrategyKey] = config.secondsStrategy.name
             prefs[autoMatchNoteKey] = config.autoMatchNote
-
         }
+        updateDisplayColorConfig(config.displayColorConfig)
     }
 
     override fun getTimeLabelConfigFlow(): Flow<TimeLabelConfig> = dataStore.data.map { prefs ->
@@ -288,12 +318,12 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
         private val actLayoutModeKey = stringPreferencesKey("act_layout_mode")
         private val actColumnLinesKey = intPreferencesKey("act_column_lines")
         private val actHorizontalLinesKey = intPreferencesKey("act_horizontal_lines")
-        private val actUseColorKey = booleanPreferencesKey("act_use_color")
+        private val activityIconColorModeKey = stringPreferencesKey("activity_icon_color_mode")
+        private val tagDisplayColorModeKey = stringPreferencesKey("tag_display_color_mode")
         private val tagDisplayModeKey = stringPreferencesKey("tag_display_mode")
         private val tagLayoutModeKey = stringPreferencesKey("tag_layout_mode")
         private val tagColumnLinesKey = intPreferencesKey("tag_column_lines")
         private val tagHorizontalLinesKey = intPreferencesKey("tag_horizontal_lines")
-        private val tagUseColorKey = booleanPreferencesKey("tag_use_color")
         private val showNatureKey = booleanPreferencesKey("show_nature_selector")
         private val pathDrawModeKey = stringPreferencesKey("path_draw_mode")
         private val secondsStrategyKey = stringPreferencesKey("seconds_strategy")
