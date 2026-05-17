@@ -3,6 +3,7 @@ package com.nltimer.feature.tag_management.model
 import androidx.compose.runtime.Immutable
 import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
+import com.nltimer.core.data.model.DisplayColorConfig
 import com.nltimer.core.data.model.Tag
 
 /**
@@ -23,6 +24,7 @@ data class TagManagementUiState(
     val activityGroups: List<ActivityGroup> = emptyList(),
     val isLoading: Boolean = true,
     val dialogState: DialogState? = null,
+    val displayColorConfig: DisplayColorConfig = DisplayColorConfig(),
 )
 
 /**

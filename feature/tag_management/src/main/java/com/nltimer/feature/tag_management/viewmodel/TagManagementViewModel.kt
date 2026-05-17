@@ -3,6 +3,7 @@ package com.nltimer.feature.tag_management.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nltimer.core.data.SettingsPrefs
+import com.nltimer.core.data.model.DisplayColorMode
 import com.nltimer.core.data.model.Tag
 import com.nltimer.core.data.repository.ActivityManagementRepository
 import com.nltimer.core.data.repository.TagRepository
@@ -44,6 +45,11 @@ class TagManagementViewModel @Inject constructor(
         loadData()
         loadActivities()
         loadGroups()
+        settingsPrefs.getDisplayColorConfigFlow()
+            .onEach { config ->
+                _uiState.update { it.copy(displayColorConfig = config) }
+            }
+            .launchIn(viewModelScope)
     }
 
     private fun loadData() {
@@ -222,6 +228,15 @@ class TagManagementViewModel @Inject constructor(
             settingsPrefs.saveTagCategoriesOrder(updated)
             _expandedCategories.value = _expandedCategories.value - name
             dismissDialog()
+        }
+    }
+
+    fun updateTagDisplayColorMode(mode: DisplayColorMode) {
+        viewModelScope.launch {
+            val currentConfig = _uiState.value.displayColorConfig
+            settingsPrefs.updateDisplayColorConfig(
+                currentConfig.copy(tagDisplayColorMode = mode)
+            )
         }
     }
 }
