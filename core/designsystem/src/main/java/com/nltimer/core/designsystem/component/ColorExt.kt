@@ -6,9 +6,5 @@ import androidx.compose.ui.graphics.Color
 
 @Composable
 fun Long?.toComposeColor(default: Color = MaterialTheme.colorScheme.primary): Color {
-    return this?.let { c ->
-        android.graphics.Color.valueOf(c).let { cc ->
-            Color(cc.red(), cc.green(), cc.blue(), cc.alpha())
-        }
-    } ?: default
+    return this?.let { Color(it.toInt()) } ?: default
 }
