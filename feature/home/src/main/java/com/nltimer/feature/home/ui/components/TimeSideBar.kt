@@ -52,9 +52,10 @@ fun TimeSideBar(
     onHourClick: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // 合并活跃小时和当前小时，去重排序得到显示列表
+    // 合并活跃小时和当前小时，去重并按时间倒序排列：
+    // 顶部 = 较大小时（深夜/晚），底部 = 较小小时（早晨），与网格"顶部行=最新时间"的列序对齐。
     val displayedHours = remember(activeHours, currentHour) {
-        (activeHours + currentHour).sorted()
+        (activeHours + currentHour).sortedDescending()
     }
 
     var showBubble by remember { mutableStateOf(false) }

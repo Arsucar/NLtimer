@@ -82,7 +82,7 @@ class HomeUiStateBuilder {
         val momentCells = (todayCells + pendingCells + nonTodayCells).toPersistentList()
 
         val addCell = buildAddCell(todayCells, today, now)
-        val gridSections = buildGridSections(datedCellsByDate, sortedBehaviors, today, addCell, now, gridColumns, zoneId)
+        val gridSections = buildGridSections(datedCellsByDate, today, addCell, now, gridColumns)
         val items = buildListItems(datedCellsByDate, today)
 
         val lastBehaviorEndTime = calculateLastBehaviorEndTime(behaviors, zoneId)
@@ -122,34 +122,24 @@ class HomeUiStateBuilder {
 
     private fun buildGridSections(
         datedCellsByDate: Map<LocalDate, List<GridCellUiState>>,
-        sortedBehaviors: List<Behavior>,
         today: LocalDate,
         todayAddCell: GridCellUiState,
         now: LocalTime,
         gridColumns: Int,
-        zoneId: ZoneId,
     ): List<GridDaySection> {
         val sections = mutableListOf<GridDaySection>()
         datedCellsByDate.keys.sortedDescending().forEach { date ->
-            val cells = datedCellsByDate[date]!!.sortedByDescending { it.startEpochMs ?: Long.MAX_VALUE }
-            val cellsForSection = if (date == today) cells + todayAddCell else cells
-            val dateBehaviors = sortedBehaviors.filter { b ->
-                if (b.status == BehaviorNature.PENDING) date == today
-                else b.startTime > 0L && Instant.ofEpochMilli(b.startTime).atZone(zoneId).toLocalDate() == date
-            }.sortedByDescending { if (it.status == BehaviorNature.PENDING) Long.MAX_VALUE else it.startTime }
-
+            // 行内正序（旧→新）：cells 先按 startEpochMs 升序排，AddCell 追加到末尾代表"当下"。
+            val cellsAsc = datedCellsByDate[date]!!.sortedBy { it.startEpochMs ?: Long.MAX_VALUE }
+            val cellsWithAdd = if (date == today) cellsAsc + todayAddCell else cellsAsc
+            // 行序倒序：先 chunk 成时间块，再把块顺序反过来——最新一块在顶部，最旧一块在底部。
+            val rowChunks = cellsWithAdd.chunked(gridColumns).reversed()
             val isTodaySection = date == today
-            val rowsTime = if (isTodaySection) now else dateBehaviors.firstOrNull()?.let {
-                if (it.status == BehaviorNature.PENDING) now
-                else Instant.ofEpochMilli(it.startTime).atZone(zoneId).toLocalTime()
-            } ?: LocalTime.MIDNIGHT
-            val (rows, _) = buildGridRows(
-                allCells = cellsForSection,
-                sortedBehaviors = dateBehaviors,
-                now = rowsTime,
+            val rows = buildGridRows(
+                rowChunks = rowChunks,
+                now = now,
                 gridColumns = gridColumns,
                 isCurrentDay = isTodaySection,
-                zoneId = zoneId,
             )
             sections.add(GridDaySection(date = date, label = dayLabel(date, today), rows = rows.toPersistentList()))
         }
@@ -284,36 +274,26 @@ class HomeUiStateBuilder {
     }
 
     private fun buildGridRows(
-        allCells: List<GridCellUiState>,
-        sortedBehaviors: List<Behavior>,
+        rowChunks: List<List<GridCellUiState>>,
         now: LocalTime,
         gridColumns: Int = DEFAULT_GRID_COLUMNS,
         isCurrentDay: Boolean = true,
-        zoneId: ZoneId,
-    ): Pair<List<GridRowUiState>, String?> {
-        val rows = mutableListOf<GridRowUiState>()
-        var currentRowId: String? = null
-
-        allCells.chunked(gridColumns).forEachIndexed { rowIndex, rowCells ->
+    ): List<GridRowUiState> {
+        return rowChunks.mapIndexed { rowIndex, rowCells ->
             val rowId = ROW_ID_FORMAT.format(rowIndex, rowCells.firstOrNull()?.behaviorId ?: "add")
             val hasCurrentInRow = isCurrentDay && rowCells.any { it.isCurrent }
-            if (hasCurrentInRow) currentRowId = rowId
 
-            val timeForRow = if (rowIndex < allCells.size / gridColumns) {
-                val behavior = sortedBehaviors.getOrNull(rowIndex * gridColumns)
-                if (behavior != null
-                    && behavior.status != BehaviorNature.PENDING
-                    && behavior.startTime > 0L
-                ) {
-                    Instant.ofEpochMilli(behavior.startTime)
-                        .atZone(zoneId)
-                        .toLocalTime()
-                } else {
-                    now
-                }
-            } else {
-                now
-            }
+            // 行内已按时间正序排列：取首个有 behavior 的 cell 作为该行的代表时间，
+            // 这样侧边时间轴上的小时与网格的视觉起点直接绑定，不再依赖 sortedBehaviors 索引。
+            val timeForRow = rowCells
+                .firstOrNull { it.behaviorId != null && it.startTime != null }
+                ?.startTime
+                ?.toLocalTime()
+                ?: rowCells
+                    .firstOrNull { it.startTime != null }
+                    ?.startTime
+                    ?.toLocalTime()
+                ?: now
 
             val paddedCells = rowCells.toMutableList()
             while (paddedCells.size < gridColumns) {
@@ -331,18 +311,14 @@ class HomeUiStateBuilder {
                 )
             }
 
-            rows.add(
-                GridRowUiState(
-                    rowId = rowId,
-                    startTime = timeForRow,
-                    isCurrentRow = hasCurrentInRow,
-                    isLocked = false,
-                    cells = paddedCells.toPersistentList(),
-                )
+            GridRowUiState(
+                rowId = rowId,
+                startTime = timeForRow,
+                isCurrentRow = hasCurrentInRow,
+                isLocked = false,
+                cells = paddedCells.toPersistentList(),
             )
         }
-
-        return rows to currentRowId
     }
 
     private fun calculateCurrentBehavior(behaviors: List<Behavior>): Boolean {

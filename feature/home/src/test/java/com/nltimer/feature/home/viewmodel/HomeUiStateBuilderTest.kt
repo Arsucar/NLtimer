@@ -124,4 +124,75 @@ class HomeUiStateBuilderTest {
         val ids = state.momentCells.mapNotNull { it.behaviorId }
         assertEquals(listOf(2L, 1L), ids)
     }
+
+    @Test
+    fun `today grid rows are reverse-ordered with ascending cells within each row`() {
+        val behaviors = listOf(
+            behavior(1L, today, 8),
+            behavior(2L, today, 10),
+            behavior(3L, today, 12),
+            behavior(4L, today, 14),
+            behavior(5L, today, 16),
+        )
+
+        val state = builder.buildUiState(
+            behaviors = behaviors,
+            activities = emptyList(),
+            tagsByBehaviorId = emptyMap(),
+            now = LocalTime.of(17, 0),
+            currentTimeMs = epochMs(today, 17),
+            today = today,
+        )
+
+        val todaySection = state.gridSections.first { it.date == today }
+        // 5 个 behavior + 1 个 addCell = 6 cells，gridColumns=4 → 切成 [[1..4],[5,add]]，块倒序后 2 行
+        assertEquals(2, todaySection.rows.size)
+
+        // 顶部行（rows[0]）= 最新一块：先是 behavior 5（hour=16），随后是 addCell 占位，再 padding 至 4 列
+        val topRow = todaySection.rows[0]
+        val topBehaviorIds = topRow.cells.mapNotNull { it.behaviorId }
+        assertEquals(listOf(5L), topBehaviorIds)
+        assertEquals(LocalTime.of(16, 0), topRow.startTime)
+
+        // 底部行（rows[1]）= 最旧一块：行内按时间正序排列 1→2→3→4（hour=8→10→12→14）
+        val bottomRow = todaySection.rows[1]
+        val bottomBehaviorIds = bottomRow.cells.mapNotNull { it.behaviorId }
+        assertEquals(listOf(1L, 2L, 3L, 4L), bottomBehaviorIds)
+        assertEquals(LocalTime.of(8, 0), bottomRow.startTime)
+    }
+
+    @Test
+    fun `non-today grid keeps reverse rows and ascending intra-row cells`() {
+        val yesterday = today.minusDays(1)
+        val behaviors = listOf(
+            behavior(1L, yesterday, 7),
+            behavior(2L, yesterday, 9),
+            behavior(3L, yesterday, 11),
+            behavior(4L, yesterday, 13),
+            behavior(5L, yesterday, 15),
+            // 今天补一条以便 today section 仍然存在
+            behavior(6L, today, 9),
+        )
+
+        val state = builder.buildUiState(
+            behaviors = behaviors,
+            activities = emptyList(),
+            tagsByBehaviorId = emptyMap(),
+            now = LocalTime.of(10, 0),
+            currentTimeMs = epochMs(today, 10),
+            today = today,
+        )
+
+        val yesterdaySection = state.gridSections.first { it.date == yesterday }
+        // 历史日期不追加 addCell，5 个 behavior chunked(4) = [[1..4],[5]]，倒序后 2 行
+        assertEquals(2, yesterdaySection.rows.size)
+
+        val topRow = yesterdaySection.rows[0]
+        assertEquals(listOf(5L), topRow.cells.mapNotNull { it.behaviorId })
+        assertEquals(LocalTime.of(15, 0), topRow.startTime)
+
+        val bottomRow = yesterdaySection.rows[1]
+        assertEquals(listOf(1L, 2L, 3L, 4L), bottomRow.cells.mapNotNull { it.behaviorId })
+        assertEquals(LocalTime.of(7, 0), bottomRow.startTime)
+    }
 }
