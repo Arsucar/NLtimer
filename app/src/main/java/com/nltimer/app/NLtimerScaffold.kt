@@ -80,8 +80,9 @@ fun NLtimerScaffold(
     val currentRoute = navBackStackEntry?.destination?.route
     val scope = rememberCoroutineScope()
     val isSecondaryPage = currentRoute in NLtimerRoutes.SETTINGS_FULLSCREEN_ROUTES
+    val isAiInter = currentRoute == NLtimerRoutes.AI_INTER
     val visibleDateLabelState = remember { mutableStateOf<String?>(null) }
-    val isHomePage = currentRoute !in NLtimerRoutes.SETTINGS_FULLSCREEN_ROUTES && currentRoute != NLtimerRoutes.SETTINGS
+    val isHomePage = currentRoute !in NLtimerRoutes.SETTINGS_FULLSCREEN_ROUTES && currentRoute != NLtimerRoutes.SETTINGS && !isAiInter
     val isDateTitle = isHomePage && visibleDateLabelState.value != null
     val topBarTitle = when (currentRoute) {
         NLtimerRoutes.SETTINGS -> "设置"
@@ -89,6 +90,7 @@ fun NLtimerScaffold(
         NLtimerRoutes.DIALOG_CONFIG -> "弹窗配置"
         NLtimerRoutes.BEHAVIOR_MANAGEMENT -> "行为管理"
         NLtimerRoutes.CATEGORIES -> "分类管理"
+        NLtimerRoutes.AI_INTER -> "AI Inter"
         else -> visibleDateLabelState.value ?: "NLtimer"
     }
     var showLayoutPopup by remember { mutableStateOf(false) }
@@ -104,7 +106,7 @@ fun NLtimerScaffold(
         "$filterLabel · $sortLabel"
     } else null
     val layoutLabel = if (isHomePage) theme.homeLayout.toDisplayString() else null
-    val useCollapsed = theme.topBarMode == TopBarMode.COLLAPSED && !isSecondaryPage
+    val useCollapsed = theme.topBarMode == TopBarMode.COLLAPSED && (!isSecondaryPage || isAiInter)
     val isImmersive = theme.isImmersive && !isSecondaryPage
     val topBarScrollBehavior = if (useCollapsed) {
         TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -174,7 +176,7 @@ fun NLtimerScaffold(
                 ),
                 containerColor = Color.Transparent,
                 topBar = {
-                    if (isSecondaryPage) {
+                    if (isSecondaryPage && !isAiInter) {
                         TopAppBar(
                             title = { Text(topBarTitle) },
                             navigationIcon = {
@@ -193,6 +195,16 @@ fun NLtimerScaffold(
                                 isDateTitle = isDateTitle,
                                 isImmersive = isImmersive,
                                 scrollBehavior = topBarScrollBehavior,
+                                navigationIcon = if (isAiInter) {
+                                    {
+                                        IconButton(onClick = { navController.popBackStack() }) {
+                                            Icon(
+                                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                                contentDescription = "返回",
+                                            )
+                                        }
+                                    }
+                                } else { {} },
                                 layoutLabel = layoutLabel,
                                 onLayoutChange = if (isHomePage) { { themeViewModel.onHomeLayoutChange(it) } } else null,
                                 momentFilterLabel = momentFilterLabel,
@@ -208,6 +220,16 @@ fun NLtimerScaffold(
                                 title = topBarTitle,
                                 isDateTitle = isDateTitle,
                                 isImmersive = isImmersive,
+                                navigationIcon = if (isAiInter) {
+                                    {
+                                        IconButton(onClick = { navController.popBackStack() }) {
+                                            Icon(
+                                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                                contentDescription = "返回",
+                                            )
+                                        }
+                                    }
+                                } else { {} },
                                 layoutLabel = layoutLabel,
                                 onLayoutChange = if (isHomePage) { { themeViewModel.onHomeLayoutChange(it) } } else null,
                                 momentFilterLabel = momentFilterLabel,

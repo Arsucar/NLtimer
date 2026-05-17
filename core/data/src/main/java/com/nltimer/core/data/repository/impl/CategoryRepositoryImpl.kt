@@ -58,4 +58,10 @@ class CategoryRepositoryImpl @Inject constructor(
     override suspend fun resetTagCategory(category: String) {
         tagDao.resetCategory(category)
     }
+
+    override suspend fun addTagCategoryStub(name: String): Boolean {
+        if (name.isBlank()) return false
+        val existing = tagDao.getDistinctCategoriesSync()
+        return name !in existing
+    }
 }

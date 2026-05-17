@@ -23,6 +23,7 @@ import androidx.compose.material.icons.automirrored.filled.EventNote
 import androidx.compose.material.icons.automirrored.filled.Label
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Brightness5
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
@@ -63,6 +64,7 @@ internal data class DrawerMenuItem(
 )
 
 internal val drawerMenuItems = CopyOnWriteArrayList(listOf(
+    DrawerMenuItem(NLtimerRoutes.AI_INTER, "AI Inter", Icons.Default.AutoAwesome),
     DrawerMenuItem(NLtimerRoutes.THEME_SETTINGS, "主题配置", Icons.Default.Brightness5),
     DrawerMenuItem(NLtimerRoutes.SETTINGS, "设置", Icons.Default.Settings),
 ))

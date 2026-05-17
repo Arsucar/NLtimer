@@ -1,0 +1,75 @@
+package com.nltimer.app.experimental.ai_inter.data
+
+import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.preferencesDataStore
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import javax.inject.Inject
+import javax.inject.Singleton
+
+private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "ai_inter_settings")
+
+@Singleton
+class AiInterRepository @Inject constructor(
+    @param:ApplicationContext private val context: Context,
+    private val aiCallLogDao: AiCallLogDao
+) {
+    private val API_ADDRESS = stringPreferencesKey("api_address")
+    private val API_PATH = stringPreferencesKey("api_path")
+    private val API_KEY = stringPreferencesKey("api_key")
+    private val MODEL_NAME = stringPreferencesKey("model_name")
+    private val PROMPT_NOTES = stringPreferencesKey("prompt_notes")
+    private val PROMPT_TASK_GEN = stringPreferencesKey("prompt_task_gen")
+    private val PROMPT_CHAT = stringPreferencesKey("prompt_chat")
+
+    val config: Flow<AiInterConfig> = context.dataStore.data.map { preferences ->
+        AiInterConfig(
+            apiAddress = preferences[API_ADDRESS] ?: "https://integrate.api.nvidia.com/v1",
+            apiPath = preferences[API_PATH] ?: "/chat/completions",
+            apiKey = preferences[API_KEY] ?: "",
+            modelName = preferences[MODEL_NAME] ?: "openai/gpt-oss-120b",
+            promptNotes = preferences[PROMPT_NOTES] ?: "",
+            promptTaskGen = preferences[PROMPT_TASK_GEN] ?: "",
+            promptChat = preferences[PROMPT_CHAT] ?: ""
+        )
+    }
+
+    suspend fun updateConfig(update: (AiInterConfig) -> AiInterConfig) {
+        context.dataStore.edit { preferences ->
+            val current = AiInterConfig(
+                apiAddress = preferences[API_ADDRESS] ?: "https://integrate.api.nvidia.com/v1",
+                apiPath = preferences[API_PATH] ?: "/chat/completions",
+                apiKey = preferences[API_KEY] ?: "",
+                modelName = preferences[MODEL_NAME] ?: "openai/gpt-oss-120b",
+                promptNotes = preferences[PROMPT_NOTES] ?: "",
+                promptTaskGen = preferences[PROMPT_TASK_GEN] ?: "",
+                promptChat = preferences[PROMPT_CHAT] ?: ""
+            )
+            val updated = update(current)
+            preferences[API_ADDRESS] = updated.apiAddress
+            preferences[API_PATH] = updated.apiPath
+            preferences[API_KEY] = updated.apiKey
+            preferences[MODEL_NAME] = updated.modelName
+            preferences[PROMPT_NOTES] = updated.promptNotes
+            preferences[PROMPT_TASK_GEN] = updated.promptTaskGen
+            preferences[PROMPT_CHAT] = updated.promptChat
+        }
+    }
+
+    val allLogs: Flow<List<AiCallLogEntity>> = aiCallLogDao.getAllLogs()
+
+    fun getLogById(id: Long): Flow<AiCallLogEntity?> = aiCallLogDao.getLogById(id)
+
+    suspend fun addLog(log: AiCallLogEntity) {
+        aiCallLogDao.insertLog(log)
+    }
+
+    suspend fun clearLogs() {
+        aiCallLogDao.clearLogs()
+    }
+}
