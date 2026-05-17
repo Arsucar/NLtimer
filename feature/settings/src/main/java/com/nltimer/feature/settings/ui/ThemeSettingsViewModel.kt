@@ -113,7 +113,9 @@ class ThemeSettingsViewModel @Inject constructor(
 
     fun onTopBarModeChange(mode: TopBarMode) = updateTheme { copy(topBarMode = mode) }
 
-    fun onBottomBarModeChange(mode: BottomBarMode) = updateTheme { copy(bottomBarMode = mode) }
+    fun onBottomBarModeChange(mode: BottomBarMode) = updateTheme {
+        copy(bottomBarMode = if (mode == BottomBarMode.FLOATING) BottomBarMode.CENTER_FAB else mode)
+    }
 
     fun onImmersiveToggle(enabled: Boolean) = updateTheme { copy(isImmersive = enabled) }
 }

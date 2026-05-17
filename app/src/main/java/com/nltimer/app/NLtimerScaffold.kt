@@ -94,6 +94,7 @@ fun NLtimerScaffold(
         else -> visibleDateLabelState.value ?: "NLtimer"
     }
     var showLayoutPopup by remember { mutableStateOf(false) }
+    var timeLabelSettingsRequestKey by remember { mutableStateOf(0) }
     var momentFilterKey by remember { mutableStateOf("ALL") }
     var momentSortKey by remember { mutableStateOf("TIME_DESC") }
     val theme = LocalTheme.current
@@ -128,6 +129,7 @@ fun NLtimerScaffold(
                 add("更改布局")
                 if (theme.homeLayout == HomeLayout.GRID) {
                     add(if (theme.showTimeSideBar) "关闭侧边时间轴" else "开启侧边时间轴")
+                    add("时间标签设置")
                 }
             }
         }
@@ -144,6 +146,7 @@ fun NLtimerScaffold(
             "更改布局" -> showLayoutPopup = true
             "开启侧边时间轴" -> themeViewModel.onShowTimeSideBarToggle(true)
             "关闭侧边时间轴" -> themeViewModel.onShowTimeSideBarToggle(false)
+            "时间标签设置" -> timeLabelSettingsRequestKey += 1
         }
     }
 
@@ -248,6 +251,7 @@ fun NLtimerScaffold(
                 CompositionLocalProvider(LocalImmersiveTopPadding provides immersiveTopPadding) {
                     NLtimerNavHost(
                         navController = navController,
+                        timeLabelSettingsRequestKey = timeLabelSettingsRequestKey,
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(

@@ -41,13 +41,14 @@ import com.nltimer.feature.tag_management.ui.TagManagementRoute
 fun NLtimerNavHost(
     navController: NavHostController,
     modifier: Modifier = Modifier,
+    timeLabelSettingsRequestKey: Int = 0,
 ) {
     NavHost(
         navController = navController,
         startDestination = NLtimerRoutes.HOME,
         modifier = modifier,
     ) {
-        composable(NLtimerRoutes.HOME) { HomeRoute() }
+        composable(NLtimerRoutes.HOME) { HomeRoute(timeLabelSettingsRequestKey = timeLabelSettingsRequestKey) }
         composable(NLtimerRoutes.AI_INTER) { AiInterRoute(navController) }
         composable(NLtimerRoutes.AI_PROVIDER_CONFIG) { AiProviderConfigRoute() }
         composable(NLtimerRoutes.AI_TOOLS_LIST) { AiToolsListRoute() }

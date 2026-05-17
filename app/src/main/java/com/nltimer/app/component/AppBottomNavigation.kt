@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Timelapse
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -265,7 +266,7 @@ fun AppCenterFabBottomBar(
         ) {
             DraggableMenuAnchor(
                 state = settingsDragState,
-                modifier = Modifier.size(48.dp),
+                modifier = Modifier.size(56.dp),
                 onOptionSelected = onSettingsDragOptionSelected,
             ) {
                 Surface(
@@ -413,6 +414,7 @@ private fun CompactSettingsDragMenuItem(
 private fun settingsDragOptionIcon(option: String): ImageVector =
     when (option) {
         "更改布局" -> Icons.Default.Dashboard
+        "时间标签设置" -> Icons.Default.Schedule
         "开启侧边时间轴", "关闭侧边时间轴" -> Icons.Default.Timelapse
         else -> Icons.Default.Settings
     }

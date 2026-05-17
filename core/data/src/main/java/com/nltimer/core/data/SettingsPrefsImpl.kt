@@ -67,7 +67,10 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
             homeLayout = try { HomeLayout.valueOf(homeLayoutName) } catch (_: IllegalArgumentException) { HomeLayout.GRID },
             showTimeSideBar = prefs[showTimeSideBarKey] != false,
             topBarMode = try { TopBarMode.valueOf(prefs[topBarModeKey] ?: TopBarMode.PINNED.name) } catch (_: IllegalArgumentException) { TopBarMode.PINNED },
-            bottomBarMode = try { BottomBarMode.valueOf(prefs[bottomBarModeKey] ?: BottomBarMode.STANDARD.name) } catch (_: IllegalArgumentException) { BottomBarMode.STANDARD },
+            bottomBarMode = try {
+                val mode = BottomBarMode.valueOf(prefs[bottomBarModeKey] ?: BottomBarMode.STANDARD.name)
+                if (mode == BottomBarMode.FLOATING) BottomBarMode.CENTER_FAB else mode
+            } catch (_: IllegalArgumentException) { BottomBarMode.STANDARD },
             isImmersive = prefs[isImmersiveKey] == true,
             style = StyleConfig(
                 cornerPreset = try { CornerPreset.valueOf(prefs[cornerPresetKey] ?: CornerPreset.STANDARD.name) } catch (_: IllegalArgumentException) { CornerPreset.STANDARD },
