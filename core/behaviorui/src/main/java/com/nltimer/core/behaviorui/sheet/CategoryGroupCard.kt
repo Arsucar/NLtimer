@@ -47,6 +47,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nltimer.core.designsystem.icon.IconRenderer
+import com.nltimer.core.designsystem.theme.DisplayColorMode
 import com.nltimer.core.designsystem.theme.styledAlpha
 import kotlin.math.roundToInt
 
@@ -74,6 +75,7 @@ fun <T : CategorizableItem> CategoryGroupCard(
     showHeader: Boolean = true,
     headerActions: @Composable (() -> Unit)? = null,
     onAddItem: (() -> Unit)? = null,
+    displayColorMode: DisplayColorMode = DisplayColorMode.NORMAL,
     onDragStart: () -> Unit = {},
     onDrag: (Float) -> Unit = {},
     onDragEnd: () -> Unit = {},
@@ -209,6 +211,7 @@ fun <T : CategorizableItem> CategoryGroupCard(
                                     item = item,
                                     isSelected = isSelected,
                                     showIcon = showItemIcon && item is ActivityCategorizable,
+                                    displayColorMode = displayColorMode,
                                     onClick = {
                                         if (multiSelect) {
                                             val newIds = if (isSelected) selectedIds - item.itemId else selectedIds + item.itemId
@@ -236,18 +239,29 @@ private fun <T : CategorizableItem> ItemChip(
     item: T,
     isSelected: Boolean,
     showIcon: Boolean = true,
+    displayColorMode: DisplayColorMode = DisplayColorMode.NORMAL,
     onClick: () -> Unit,
     onLongClick: () -> Unit,
 ) {
-    val containerColor = if (isSelected) {
-        MaterialTheme.colorScheme.primaryContainer
-    } else {
-        MaterialTheme.colorScheme.surfaceContainerHigh
+    val itemColor = item.color?.let { Color(it) }
+    val themePrimary = MaterialTheme.colorScheme.primary
+
+    val containerColor = when {
+        isSelected -> MaterialTheme.colorScheme.primaryContainer
+        displayColorMode == DisplayColorMode.BACKGROUND && itemColor != null -> itemColor.copy(alpha = 0.15f)
+        else -> MaterialTheme.colorScheme.surfaceContainerHigh
     }
-    val contentColor = if (isSelected) {
-        MaterialTheme.colorScheme.onPrimaryContainer
-    } else {
-        MaterialTheme.colorScheme.onSurface
+
+    val contentColor = when {
+        isSelected -> MaterialTheme.colorScheme.onPrimaryContainer
+        displayColorMode == DisplayColorMode.TEXT && itemColor != null -> itemColor
+        else -> MaterialTheme.colorScheme.onSurface
+    }
+
+    val iconTint = when (displayColorMode) {
+        DisplayColorMode.BACKGROUND -> itemColor ?: MaterialTheme.colorScheme.onSurface
+        DisplayColorMode.TEXT -> themePrimary
+        DisplayColorMode.NORMAL -> MaterialTheme.colorScheme.onSurface
     }
 
     Surface(
@@ -267,6 +281,7 @@ private fun <T : CategorizableItem> ItemChip(
                         iconKey = item.iconKey,
                         defaultEmoji = "❓",
                         iconSize = 20.dp,
+                        tint = iconTint,
                     )
                 },
             )
