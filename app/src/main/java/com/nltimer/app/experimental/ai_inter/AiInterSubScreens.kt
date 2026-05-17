@@ -26,9 +26,15 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.ErrorOutline
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
@@ -55,16 +61,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.nltimer.app.experimental.ai_inter.viewmodel.AiInterViewModel
+import com.nltimer.app.experimental.ai_inter.viewmodel.ChatMessage
+import com.nltimer.app.experimental.ai_inter.viewmodel.ToolCallRecord
 import com.nltimer.core.designsystem.component.GroupCard
 import com.nltimer.core.designsystem.component.PlaceholderScreen
 import com.nltimer.core.designsystem.component.SettingsEntryCard
 import com.nltimer.core.designsystem.theme.LocalImmersiveTopPadding
+import dev.jeziellago.compose.markdowntext.MarkdownText
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -467,12 +477,12 @@ fun AiTestChatRoute(
 ) {
     val messages by viewModel.chatMessages.collectAsState()
     val isSending by viewModel.isSending.collectAsState()
-    val streamingContent by viewModel.streamingContent.collectAsState()
+    val streamingState by viewModel.streamingState.collectAsState()
     val config by viewModel.config.collectAsState()
     var inputText by remember { mutableStateOf("") }
     val listState = rememberLazyListState()
 
-    LaunchedEffect(messages.size, streamingContent) {
+    LaunchedEffect(messages.size, streamingState) {
         val targetIndex = (messages.size - 1).coerceAtLeast(0) + if (isSending) 1 else 0
         if (targetIndex >= 0 && (messages.isNotEmpty() || isSending)) {
             listState.animateScrollToItem(targetIndex)
@@ -510,7 +520,11 @@ fun AiTestChatRoute(
             }
             if (isSending) {
                 item {
-                    StreamingBubble(streamingContent)
+                    StreamingBubble(
+                        reasoning = streamingState.reasoning,
+                        content = streamingState.content,
+                        toolCalls = streamingState.toolCalls,
+                    )
                 }
             }
         }
@@ -562,7 +576,11 @@ fun AiTestChatRoute(
 }
 
 @Composable
-private fun StreamingBubble(content: String) {
+private fun StreamingBubble(
+    reasoning: String,
+    content: String,
+    toolCalls: List<ToolCallRecord>,
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.Start
@@ -570,19 +588,38 @@ private fun StreamingBubble(content: String) {
         Surface(
             color = MaterialTheme.colorScheme.secondaryContainer,
             shape = RoundedCornerShape(12.dp),
-            modifier = Modifier.widthIn(max = 280.dp)
+            modifier = Modifier.widthIn(max = 320.dp)
         ) {
-            Text(
-                text = content.ifEmpty { "正在生成…" },
-                modifier = Modifier.padding(12.dp),
-                style = MaterialTheme.typography.bodyMedium
-            )
+            Column(modifier = Modifier.padding(12.dp)) {
+                if (reasoning.isNotEmpty()) {
+                    ReasoningBlock(reasoning, defaultExpanded = false)
+                }
+                if (toolCalls.isNotEmpty()) {
+                    if (reasoning.isNotEmpty()) Spacer(modifier = Modifier.height(8.dp))
+                    ToolCallsBlock(toolCalls, defaultExpanded = false)
+                }
+                if (content.isNotEmpty()) {
+                    if (reasoning.isNotEmpty() || toolCalls.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+                    MarkdownText(
+                        markdown = content,
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                }
+                if (reasoning.isEmpty() && toolCalls.isEmpty() && content.isEmpty()) {
+                    Text(
+                        text = "正在生成…",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
         }
     }
 }
 
 @Composable
-private fun ChatBubble(msg: com.nltimer.app.experimental.ai_inter.viewmodel.ChatMessage) {
+private fun ChatBubble(msg: ChatMessage) {
     val isUser = msg.role == "user"
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -591,12 +628,184 @@ private fun ChatBubble(msg: com.nltimer.app.experimental.ai_inter.viewmodel.Chat
         Surface(
             color = if (isUser) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.secondaryContainer,
             shape = RoundedCornerShape(12.dp),
-            modifier = Modifier.widthIn(max = 280.dp)
+            modifier = Modifier.widthIn(max = 320.dp)
         ) {
+            if (isUser) {
+                Text(
+                    text = msg.content,
+                    modifier = Modifier.padding(12.dp),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            } else {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    if (msg.reasoning.isNotEmpty()) {
+                        ReasoningBlock(msg.reasoning, defaultExpanded = false)
+                    }
+                    if (msg.toolCalls.isNotEmpty()) {
+                        if (msg.reasoning.isNotEmpty()) Spacer(modifier = Modifier.height(8.dp))
+                        ToolCallsBlock(msg.toolCalls, defaultExpanded = false)
+                    }
+                    if (msg.reasoning.isNotEmpty() || msg.toolCalls.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+                    MarkdownText(
+                        markdown = msg.content,
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                }
+            }
+        }
+    }
+}
+
+/**
+ * 折叠的"思考过程"区块；点击 header 切换展开。默认折叠以减少对正文的干扰。
+ */
+@Composable
+private fun ReasoningBlock(reasoning: String, defaultExpanded: Boolean = false) {
+    var expanded by remember { mutableStateOf(defaultExpanded) }
+    Surface(
+        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f),
+        shape = MaterialTheme.shapes.small,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { expanded = !expanded }
+                    .padding(horizontal = 8.dp, vertical = 6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    Icons.Default.Psychology,
+                    contentDescription = null,
+                    modifier = Modifier.size(14.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = "思考过程",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.weight(1f)
+                )
+                Icon(
+                    if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                    contentDescription = if (expanded) "收起" else "展开",
+                    modifier = Modifier.size(16.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            if (expanded) {
+                MarkdownText(
+                    markdown = reasoning,
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    ),
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                )
+            }
+        }
+    }
+}
+
+/**
+ * 折叠的"调用工具"区块；点击 header 切换展开，展开后逐条列出工具调用 + 结果。
+ */
+@Composable
+private fun ToolCallsBlock(toolCalls: List<ToolCallRecord>, defaultExpanded: Boolean = false) {
+    var expanded by remember(toolCalls.size) { mutableStateOf(defaultExpanded) }
+    Surface(
+        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f),
+        shape = MaterialTheme.shapes.small,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { expanded = !expanded }
+                    .padding(horizontal = 8.dp, vertical = 6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    Icons.Default.Build,
+                    contentDescription = null,
+                    modifier = Modifier.size(14.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = "调用工具 (${toolCalls.size})",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.weight(1f)
+                )
+                Icon(
+                    if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                    contentDescription = if (expanded) "收起" else "展开",
+                    modifier = Modifier.size(16.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            if (expanded) {
+                Column(
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    toolCalls.forEach { call ->
+                        ToolCallCard(call)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ToolCallCard(call: ToolCallRecord) {
+    Surface(
+        color = MaterialTheme.colorScheme.surfaceVariant,
+        shape = MaterialTheme.shapes.small,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(modifier = Modifier.padding(8.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    if (call.success) Icons.Default.CheckCircle else Icons.Default.ErrorOutline,
+                    contentDescription = null,
+                    modifier = Modifier.size(14.dp),
+                    tint = if (call.success) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = call.name.ifEmpty { "(未知工具)" },
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.weight(1f)
+                )
+                Text(
+                    text = "${call.durationMs}ms",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            if (call.arguments.isNotBlank()) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "参数：${call.arguments}",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontFamily = FontFamily.Monospace
+                )
+            }
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = msg.content,
-                modifier = Modifier.padding(12.dp),
-                style = MaterialTheme.typography.bodyMedium
+                text = "结果：${call.result}",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurface,
+                fontFamily = FontFamily.Monospace
             )
         }
     }

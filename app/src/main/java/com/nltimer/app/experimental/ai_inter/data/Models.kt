@@ -17,7 +17,14 @@ data class AiCallLogEntity(
     val errorMessage: String? = null,
     val requestUrl: String = "",
     val requestTokens: Int = 0,
-    val responseTokens: Int = 0
+    val responseTokens: Int = 0,
+    /** 模型推理过程（reasoning_content），可能为空 */
+    val reasoning: String = "",
+    /**
+     * 工具调用明细 JSON 数组字符串；空字符串表示当轮未触发工具调用。
+     * 每个元素：{"name":..., "arguments":..., "result":..., "success":..., "durationMs":...}
+     */
+    val toolCallsJson: String = ""
 )
 
 data class AiInterConfig(

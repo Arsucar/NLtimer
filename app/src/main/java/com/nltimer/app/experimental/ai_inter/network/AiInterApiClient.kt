@@ -12,6 +12,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -117,22 +118,23 @@ class AiInterApiClient @Inject constructor() {
 
     fun streamChat(
         baseUrl: String, path: String, apiKey: String,
-        model: String, messages: List<ChatMessage>
-    ): Flow<String> = callbackFlow {
+        model: String,
+        /** OpenAI wire 协议 messages 数组（支持 role=tool、assistant.tool_calls 等扩展字段） */
+        messagesJson: JsonArray,
+        /** 可选：tools 数组（OpenAI function calling 协议）；空表示不开启工具调用 */
+        toolsJson: JsonArray? = null,
+    ): Flow<StreamEvent> = callbackFlow {
         val url = baseUrl.trimEnd('/') + path
         val host = try { url.toHttpUrl().host } catch (_: Exception) { "" }
 
         val requestBody = buildJsonObject {
             put("model", model)
-            putJsonArray("messages") {
-                messages.forEach { msg ->
-                    add(buildJsonObject {
-                        put("role", msg.role)
-                        put("content", msg.content)
-                    })
-                }
-            }
+            put("messages", messagesJson)
             put("stream", true)
+            if (!toolsJson.isNullOrEmpty()) {
+                put("tools", toolsJson)
+                put("tool_choice", "auto")
+            }
             // 借鉴 rikkahub：mistral 不支持 stream_options，其他服务都受益
             if (host != "api.mistral.ai") {
                 putJsonObject("stream_options") {
@@ -199,10 +201,37 @@ class AiInterApiClient @Inject constructor() {
                         }
 
                         if (!content.isNullOrEmpty()) {
-                            trySend(content)
-                        } else if (!reasoning.isNullOrEmpty()) {
-                            // reasoning 模型尚未给出最终回答，但思考过程也发给 UI
-                            trySend(reasoning)
+                            trySend(StreamEvent.Content(content))
+                        }
+                        if (!reasoning.isNullOrEmpty()) {
+                            trySend(StreamEvent.Reasoning(reasoning))
+                        }
+
+                        // 工具调用增量：delta.tool_calls = [ {index, id?, function:{name?, arguments?}} ]
+                        delta["tool_calls"]?.let { rawCalls ->
+                            val callsArr = rawCalls as? JsonArray ?: return@let
+                            callsArr.forEach { entry ->
+                                val obj = entry as? JsonObject ?: return@forEach
+                                val callIndex = obj["index"]?.jsonPrimitive?.intOrNull ?: 0
+                                val callId = obj["id"]?.let {
+                                    (it as? JsonPrimitive)?.contentOrNull
+                                }
+                                val fn = obj["function"] as? JsonObject
+                                val fnName = fn?.get("name")?.let {
+                                    (it as? JsonPrimitive)?.contentOrNull
+                                }
+                                val fnArgsChunk = fn?.get("arguments")?.let {
+                                    (it as? JsonPrimitive)?.contentOrNull
+                                } ?: ""
+                                trySend(
+                                    StreamEvent.ToolCallDelta(
+                                        index = callIndex,
+                                        id = callId,
+                                        name = fnName,
+                                        argumentsChunk = fnArgsChunk,
+                                    )
+                                )
+                            }
                         }
                     } catch (_: Exception) {
                         // 跳过单行 parse 失败

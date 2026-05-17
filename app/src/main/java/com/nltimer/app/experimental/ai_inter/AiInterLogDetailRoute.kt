@@ -1,17 +1,27 @@
 package com.nltimer.app.experimental.ai_inter
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.ErrorOutline
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -24,7 +34,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
@@ -32,9 +44,19 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nltimer.app.experimental.ai_inter.viewmodel.AiInterViewModel
+import com.nltimer.app.experimental.ai_inter.viewmodel.ToolCallRecord
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.booleanOrNull
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.longOrNull
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+
+private val detailJson = Json { ignoreUnknownKeys = true }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -71,6 +93,10 @@ fun AiLogDetailRoute(
             return@Scaffold
         }
 
+        val toolCalls = remember(currentLog.toolCallsJson) {
+            parseToolCallRecords(currentLog.toolCallsJson)
+        }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -97,6 +123,30 @@ fun AiLogDetailRoute(
 
             SectionHeader("提示词")
             CodeBlock(currentLog.prompt.ifEmpty { "(空)" })
+
+            if (currentLog.reasoning.isNotBlank()) {
+                CollapsibleSection(
+                    title = "思考过程",
+                    icon = Icons.Default.Psychology,
+                    defaultExpanded = false,
+                ) {
+                    CodeBlock(currentLog.reasoning)
+                }
+            }
+
+            if (toolCalls.isNotEmpty()) {
+                CollapsibleSection(
+                    title = "调用工具 (${toolCalls.size})",
+                    icon = Icons.Default.Build,
+                    defaultExpanded = true,
+                ) {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        toolCalls.forEach { call ->
+                            ToolCallDetailCard(call)
+                        }
+                    }
+                }
+            }
 
             SectionHeader("响应体")
             CodeBlock(
@@ -184,5 +234,127 @@ private fun CodeBlock(text: String) {
             fontFamily = FontFamily.Monospace,
             style = MaterialTheme.typography.bodySmall
         )
+    }
+}
+
+@Composable
+private fun CollapsibleSection(
+    title: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    defaultExpanded: Boolean,
+    content: @Composable () -> Unit,
+) {
+    var expanded by remember { mutableStateOf(defaultExpanded) }
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { expanded = !expanded },
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                icon,
+                contentDescription = null,
+                modifier = Modifier.size(16.dp),
+                tint = MaterialTheme.colorScheme.primary
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.weight(1f)
+            )
+            Icon(
+                if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                contentDescription = if (expanded) "收起" else "展开",
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        if (expanded) content()
+    }
+}
+
+@Composable
+private fun ToolCallDetailCard(call: ToolCallRecord) {
+    Surface(
+        color = MaterialTheme.colorScheme.surfaceVariant,
+        shape = MaterialTheme.shapes.small,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    if (call.success) Icons.Default.CheckCircle else Icons.Default.ErrorOutline,
+                    contentDescription = null,
+                    modifier = Modifier.size(16.dp),
+                    tint = if (call.success) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = call.name.ifEmpty { "(未知工具)" },
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.weight(1f)
+                )
+                Text(
+                    text = "${call.durationMs}ms",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            if (call.id.isNotBlank()) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "id: ${call.id}",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontFamily = FontFamily.Monospace
+                )
+            }
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(
+                text = "参数",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                text = call.arguments.ifEmpty { "(无)" },
+                style = MaterialTheme.typography.bodySmall,
+                fontFamily = FontFamily.Monospace
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(
+                text = "返回结果",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                text = call.result.ifEmpty { "(空)" },
+                style = MaterialTheme.typography.bodySmall,
+                fontFamily = FontFamily.Monospace
+            )
+        }
+    }
+}
+
+private fun parseToolCallRecords(jsonStr: String): List<ToolCallRecord> {
+    if (jsonStr.isBlank()) return emptyList()
+    return try {
+        val element = detailJson.parseToJsonElement(jsonStr)
+        val arr = element as? JsonArray ?: return emptyList()
+        arr.mapNotNull { entry ->
+            val obj = entry as? JsonObject ?: return@mapNotNull null
+            ToolCallRecord(
+                id = (obj["id"] as? JsonPrimitive)?.contentOrNull.orEmpty(),
+                name = (obj["name"] as? JsonPrimitive)?.contentOrNull.orEmpty(),
+                arguments = (obj["arguments"] as? JsonPrimitive)?.contentOrNull.orEmpty(),
+                result = (obj["result"] as? JsonPrimitive)?.contentOrNull.orEmpty(),
+                success = (obj["success"] as? JsonPrimitive)?.booleanOrNull ?: false,
+                durationMs = (obj["durationMs"] as? JsonPrimitive)?.longOrNull ?: 0L,
+            )
+        }
+    } catch (_: Exception) {
+        emptyList()
     }
 }

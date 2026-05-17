@@ -31,4 +31,20 @@ abstract class TimingToolsModule {
     @Binds
     @IntoSet
     abstract fun bindStartBehaviorTool(impl: StartBehaviorTool): ToolDefinition
+
+    @Binds
+    @IntoSet
+    abstract fun bindEndBehaviorTool(impl: EndBehaviorTool): ToolDefinition
+
+    @Binds
+    @IntoSet
+    abstract fun bindRecordBehaviorTool(impl: RecordBehaviorTool): ToolDefinition
+
+    @Binds
+    @IntoSet
+    abstract fun bindCreateGoalTool(impl: CreateGoalTool): ToolDefinition
+
+    @Binds
+    @IntoSet
+    abstract fun bindDeleteBehaviorTool(impl: DeleteBehaviorTool): ToolDefinition
 }

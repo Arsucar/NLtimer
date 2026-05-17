@@ -34,6 +34,7 @@ animation = "1.11.0"
 kotlinx-collections-immutable = "0.3.7"
 compose_material3_expressive = "1.5.0-alpha12"
 kotlinx_serialization = "1.8.1"
+compose_markdown = "0.5.7"
 
 [libraries]
 junit = { module = "junit:junit", version.ref = "junit" }
@@ -85,6 +86,7 @@ plugin-ksp = { module = "com.google.devtools.ksp:com.google.devtools.ksp.gradle.
 animation = { group = "androidx.compose.animation", name = "animation", version.ref = "animation" }
 kotlinx-collections-immutable = { module = "org.jetbrains.kotlinx:kotlinx-collections-immutable", version.ref = "kotlinx-collections-immutable" }
 kotlinx_serialization_json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx_serialization" }
+compose-markdown = { module = "com.github.jeziellago:compose-markdown", version.ref = "compose_markdown" }
 
 [plugins]
 android_application = { id = "com.android.application", version.ref = "agp" }

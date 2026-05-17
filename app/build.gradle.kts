@@ -88,6 +88,7 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.okhttp.sse)
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.compose.markdown)
     implementation(libs.profileinstaller)
     implementation(libs.splashscreen)
 
