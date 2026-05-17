@@ -323,3 +323,7 @@ docs/Android-SimpleTimeTracker/
 
 docs/reference/Tomato/
 wsl
+gradle.properties
+app/src/main/res/values/strings.xml
+app/build.gradle.kts
+.gitignore
