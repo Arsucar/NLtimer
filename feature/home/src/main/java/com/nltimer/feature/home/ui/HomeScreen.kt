@@ -112,6 +112,7 @@ fun HomeScreen(
     onLoadMore: () -> Unit = {},
     timeLabelConfig: TimeLabelConfig = TimeLabelConfig(),
     timeLabelSettingsRequestKey: Int = 0,
+    onTimeLabelSettingsShown: () -> Unit = {},
     onTimeLabelConfigChange: (TimeLabelConfig) -> Unit = {},
     onHomeLayoutConfigChange: (HomeLayoutConfig) -> Unit = {},
     onHomeLayoutChange: (HomeLayout) -> Unit = {},
@@ -126,6 +127,7 @@ fun HomeScreen(
     LaunchedEffect(timeLabelSettingsRequestKey) {
         if (timeLabelSettingsRequestKey > 0) {
             showTimeLabelSettings = true
+            onTimeLabelSettingsShown()
         }
     }
 

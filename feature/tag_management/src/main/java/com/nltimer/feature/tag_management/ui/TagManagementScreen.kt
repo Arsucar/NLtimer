@@ -289,6 +289,7 @@ private data class ManagementTagItem(
     override val usageCount: Int = tag.usageCount
     override val lastUsedTimestamp: Long? = null
     override val iconKey: String? = tag.iconKey
+    override val color: Long? = tag.color
 }
 
 @Composable

@@ -44,4 +44,9 @@ interface SettingsPrefs {
     fun getHasSeenIntroFlow(): Flow<Boolean>
     /** 设置已看过引导页 */
     suspend fun setHasSeenIntro(seen: Boolean)
+
+    /** 以 Flow 形式监听显示颜色配置 */
+    fun getDisplayColorConfigFlow(): Flow<com.nltimer.core.data.model.DisplayColorConfig>
+    /** 更新显示颜色配置并持久化 */
+    suspend fun updateDisplayColorConfig(config: com.nltimer.core.data.model.DisplayColorConfig)
 }

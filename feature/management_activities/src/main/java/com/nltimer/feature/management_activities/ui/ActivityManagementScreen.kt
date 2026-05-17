@@ -41,7 +41,7 @@ import com.nltimer.core.behaviorui.sheet.CategoryGroupCard
 import com.nltimer.core.behaviorui.sheet.CategorizableItem
 import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
-import com.nltimer.core.data.model.DisplayColorMode
+import com.nltimer.core.designsystem.theme.DisplayColorMode
 import com.nltimer.core.designsystem.component.BottomBarDragFab
 import com.nltimer.core.designsystem.component.EmptyStateView
 import com.nltimer.core.designsystem.component.LocalNavBarWidth
@@ -320,6 +320,7 @@ private data class ManagementActivityItem(
     override val usageCount: Int = activity.usageCount
     override val lastUsedTimestamp: Long? = null
     override val iconKey: String? = activity.iconKey
+    override val color: Long? = activity.color
 }
 
 @Composable

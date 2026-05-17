@@ -8,8 +8,8 @@ import com.nltimer.core.data.model.ActivityStats
 import com.nltimer.core.data.repository.ActivityManagementRepository
 import com.nltimer.core.data.repository.TagRepository
 import com.nltimer.core.data.usecase.AddActivityUseCase
-import com.nltimer.core.data.model.DisplayColorMode
-import com.nltimer.core.datastore.SettingsPrefs
+import com.nltimer.core.designsystem.theme.DisplayColorMode
+import com.nltimer.core.data.SettingsPrefs
 import com.nltimer.feature.management_activities.model.ActivityManagementUiState
 import com.nltimer.feature.management_activities.model.DialogState
 import com.nltimer.feature.management_activities.model.GroupWithActivities

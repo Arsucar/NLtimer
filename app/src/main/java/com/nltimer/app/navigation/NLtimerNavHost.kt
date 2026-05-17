@@ -42,13 +42,14 @@ fun NLtimerNavHost(
     navController: NavHostController,
     modifier: Modifier = Modifier,
     timeLabelSettingsRequestKey: Int = 0,
+    onTimeLabelSettingsShown: () -> Unit = {},
 ) {
     NavHost(
         navController = navController,
         startDestination = NLtimerRoutes.HOME,
         modifier = modifier,
     ) {
-        composable(NLtimerRoutes.HOME) { HomeRoute(timeLabelSettingsRequestKey = timeLabelSettingsRequestKey) }
+        composable(NLtimerRoutes.HOME) { HomeRoute(timeLabelSettingsRequestKey = timeLabelSettingsRequestKey, onTimeLabelSettingsShown = onTimeLabelSettingsShown) }
         composable(NLtimerRoutes.AI_INTER) { AiInterRoute(navController) }
         composable(NLtimerRoutes.AI_PROVIDER_CONFIG) { AiProviderConfigRoute() }
         composable(NLtimerRoutes.AI_TOOLS_LIST) { AiToolsListRoute() }

@@ -172,6 +172,7 @@ private class CategoryCategorizableItem(
     override val usageCount: Int = 0
     override val lastUsedTimestamp: Long? = null
     override val iconKey: String? = null
+    override val color: Long? = null
 }
 
 @Composable

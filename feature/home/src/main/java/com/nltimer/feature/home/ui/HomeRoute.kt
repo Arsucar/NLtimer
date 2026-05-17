@@ -14,6 +14,7 @@ import java.time.ZoneId
 fun HomeRoute(
     viewModel: HomeViewModel = hiltViewModel(),
     timeLabelSettingsRequestKey: Int = 0,
+    onTimeLabelSettingsShown: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val activities by viewModel.activities.collectAsStateWithLifecycle()
@@ -116,6 +117,7 @@ fun HomeRoute(
         onLoadMore = viewModel::loadMore,
         timeLabelConfig = timeLabelConfig,
         timeLabelSettingsRequestKey = timeLabelSettingsRequestKey,
+        onTimeLabelSettingsShown = onTimeLabelSettingsShown,
         onTimeLabelConfigChange = onTimeLabelConfigChange,
         onHomeLayoutConfigChange = onHomeLayoutConfigChange,
         onHomeLayoutChange = onHomeLayoutChange,

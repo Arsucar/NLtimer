@@ -49,6 +49,7 @@ import androidx.compose.ui.unit.sp
 import com.nltimer.core.designsystem.icon.IconRenderer
 import com.nltimer.core.designsystem.theme.DisplayColorMode
 import com.nltimer.core.designsystem.theme.styledAlpha
+import androidx.compose.ui.graphics.Color
 import kotlin.math.roundToInt
 
 @Suppress("LongParameterList")

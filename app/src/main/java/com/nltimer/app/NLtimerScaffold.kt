@@ -252,6 +252,7 @@ fun NLtimerScaffold(
                     NLtimerNavHost(
                         navController = navController,
                         timeLabelSettingsRequestKey = timeLabelSettingsRequestKey,
+                        onTimeLabelSettingsShown = { timeLabelSettingsRequestKey = 0 },
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(
