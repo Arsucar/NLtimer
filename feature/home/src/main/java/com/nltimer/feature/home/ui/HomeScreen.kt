@@ -71,6 +71,7 @@ import com.nltimer.feature.home.model.GridRowUiState
 import com.nltimer.feature.home.model.HomeUiState
 import com.nltimer.feature.home.model.TagUiState
 import com.nltimer.feature.home.ui.components.BehaviorLogView
+import com.nltimer.feature.home.ui.components.LayoutConfigDialog
 import com.nltimer.feature.home.ui.components.MomentFocusCard
 import com.nltimer.feature.home.ui.components.MomentView
 import com.nltimer.feature.home.ui.components.TimeAxisGrid
@@ -122,6 +123,7 @@ fun HomeScreen(
     val theme = LocalTheme.current
     val layout = theme.homeLayout
     var showTimeLabelSettings by remember { mutableStateOf(false) }
+    var configDialogLayout: HomeLayout? by remember { mutableStateOf(null) }
 
     LaunchedEffect(timeLabelSettingsRequestKey) {
         if (timeLabelSettingsRequestKey > 0) {
@@ -156,7 +158,13 @@ fun HomeScreen(
     }
 
     val dragFabState = rememberDragFabState()
-    val dragOptions = if (uiState.hasActiveBehavior) DragOptionsWithActive else DragOptionsWithoutActive
+    val layoutSettingsLabel = when (layout) {
+        HomeLayout.GRID -> "网格设置"
+        HomeLayout.TIMELINE_REVERSE -> "时间轴设置"
+        HomeLayout.LOG -> "日志设置"
+        HomeLayout.MOMENT -> "当前时刻设置"
+    }
+    val dragOptions = (if (uiState.hasActiveBehavior) DragOptionsWithActive else DragOptionsWithoutActive) + layoutSettingsLabel
 
     Box(
         modifier = modifier.onGloballyPositioned { dragFabState.boxPositionInWindow = it.positionInWindow() }
@@ -233,6 +241,7 @@ fun HomeScreen(
                     }
                     "当前" -> onShowAddSheet(AddSheetMode.CURRENT)
                     "目标" -> onShowAddSheet(AddSheetMode.TARGET)
+                    layoutSettingsLabel -> configDialogLayout = layout
                     else -> Toast.makeText(context, "触发功能: $option", Toast.LENGTH_SHORT).show()
                 }
             },
@@ -243,6 +252,15 @@ fun HomeScreen(
                 config = timeLabelConfig,
                 onConfigChange = onTimeLabelConfigChange,
                 onDismiss = { showTimeLabelSettings = false },
+            )
+        }
+
+        configDialogLayout?.let { dialogLayout ->
+            LayoutConfigDialog(
+                layout = dialogLayout,
+                config = homeLayoutConfig,
+                onConfigChange = onHomeLayoutConfigChange,
+                onDismiss = { configDialogLayout = null },
             )
         }
     }
