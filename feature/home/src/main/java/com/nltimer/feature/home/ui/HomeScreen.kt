@@ -111,6 +111,7 @@ fun HomeScreen(
     onHourClick: (Int) -> Unit,
     onLoadMore: () -> Unit = {},
     timeLabelConfig: TimeLabelConfig = TimeLabelConfig(),
+    timeLabelSettingsRequestKey: Int = 0,
     onTimeLabelConfigChange: (TimeLabelConfig) -> Unit = {},
     onHomeLayoutConfigChange: (HomeLayoutConfig) -> Unit = {},
     onHomeLayoutChange: (HomeLayout) -> Unit = {},
@@ -121,6 +122,12 @@ fun HomeScreen(
     val theme = LocalTheme.current
     val layout = theme.homeLayout
     var showTimeLabelSettings by remember { mutableStateOf(false) }
+
+    LaunchedEffect(timeLabelSettingsRequestKey) {
+        if (timeLabelSettingsRequestKey > 0) {
+            showTimeLabelSettings = true
+        }
+    }
 
     val activeCell by remember(uiState.momentCells) {
         derivedStateOf {
@@ -175,7 +182,6 @@ fun HomeScreen(
                         onStartBehavior = onStartBehavior,
                         onLoadMore = onLoadMore,
                         timeLabelConfig = timeLabelConfig,
-                        onTimeLabelSettingsClick = { showTimeLabelSettings = true },
                         homeLayoutConfig = homeLayoutConfig,
                         onHomeLayoutChange = onHomeLayoutChange,
                         modifier = Modifier.weight(1f),
@@ -256,7 +262,6 @@ private fun HomeLayoutContent(
     onStartBehavior: (Long) -> Unit,
     onLoadMore: () -> Unit,
     timeLabelConfig: TimeLabelConfig,
-    onTimeLabelSettingsClick: () -> Unit,
     homeLayoutConfig: HomeLayoutConfig = HomeLayoutConfig(),
     onHomeLayoutChange: (HomeLayout) -> Unit = {},
     modifier: Modifier = Modifier,
@@ -375,7 +380,6 @@ private fun HomeLayoutContent(
                 onHourClick = onHourClick,
                 onLoadMore = onLoadMore,
                 timeLabelConfig = timeLabelConfig,
-                onTimeLabelSettingsClick = onTimeLabelSettingsClick,
                 gridStyle = homeLayoutConfig.grid,
                 header = focusCard,
                 modifier = Modifier.fillMaxSize(),
@@ -425,7 +429,6 @@ private fun GridContent(
     onHourClick: (Int) -> Unit,
     onLoadMore: () -> Unit,
     timeLabelConfig: TimeLabelConfig,
-    onTimeLabelSettingsClick: () -> Unit,
     gridStyle: GridLayoutStyle = GridLayoutStyle(),
     header: @Composable (() -> Unit)? = null,
     modifier: Modifier = Modifier,
@@ -442,7 +445,6 @@ private fun GridContent(
             currentHour = uiState.selectedTimeHour,
             showTimeSideBar = showSideBar,
             timeLabelConfig = timeLabelConfig,
-            onTimeLabelSettingsClick = onTimeLabelSettingsClick,
             gridStyle = gridStyle,
             header = header?.let { { it() } },
             modifier = Modifier.weight(1f),

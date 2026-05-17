@@ -463,12 +463,13 @@ private fun LazyListScope.ThemeSettingsContent(
                                 }
                             }
 
+                            val bottomBarModes = remember { listOf(BottomBarMode.STANDARD, BottomBarMode.CENTER_FAB) }
                             SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-                                BottomBarMode.entries.forEachIndexed { index, mode ->
+                                bottomBarModes.forEachIndexed { index, mode ->
                                     SegmentedButton(
                                         shape = SegmentedButtonDefaults.itemShape(
                                             index = index,
-                                            count = BottomBarMode.entries.size
+                                            count = bottomBarModes.size
                                         ),
                                         onClick = { onBottomBarModeChange(mode) },
                                         selected = theme.bottomBarMode == mode,

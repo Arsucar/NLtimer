@@ -8,11 +8,19 @@ val APP_VERSION_NAME: String by project
 val APP_VERSION_CODE: String by project
 val APP_ID: String by project
 
+fun String.toApplicationIdSegment(): String {
+    val segment = lowercase()
+        .replace(Regex("[^a-z0-9_]"), "_")
+        .trim('_')
+        .take(20)
+        .trim('_')
+        .ifBlank { "worktree" }
+    return if (segment.first() in 'a'..'z') segment else "wt_$segment"
+}
+
 val worktreeSuffix = rootDir.name
-    .lowercase()
-    .replace(Regex("[^a-z0-9_]"), "_")
-    .take(20)
-    .let { if (it == rootProject.name.lowercase()) "" else "_$it" }
+    .toApplicationIdSegment()
+    .let { if (it == rootProject.name.toApplicationIdSegment()) "" else ".$it" }
 
 android {
     namespace = APP_ID

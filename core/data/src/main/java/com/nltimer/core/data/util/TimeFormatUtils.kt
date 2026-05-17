@@ -85,6 +85,8 @@ fun formatEpochTimeRange(startMs: Long, endMs: Long?): String {
 
 fun formatGridDurationHours(ms: Long): String {
     if (ms <= 0L) return ""
+    val totalMinutes = (ms / 60_000).coerceAtLeast(1)
+    if (totalMinutes < 6) return "${totalMinutes}m"
     val tenths = ((ms * 10) / 3_600_000).coerceAtLeast(1)
     val hours = tenths / 10
     val fraction = tenths % 10

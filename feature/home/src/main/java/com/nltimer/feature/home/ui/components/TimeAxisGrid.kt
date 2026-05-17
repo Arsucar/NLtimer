@@ -51,7 +51,6 @@ fun TimeAxisGrid(
     currentHour: Int = 0,
     showTimeSideBar: Boolean = false,
     timeLabelConfig: TimeLabelConfig = TimeLabelConfig(),
-    onTimeLabelSettingsClick: () -> Unit = {},
     gridStyle: GridLayoutStyle = GridLayoutStyle(),
     header: @Composable (LazyItemScope.() -> Unit)? = null,
 ) {

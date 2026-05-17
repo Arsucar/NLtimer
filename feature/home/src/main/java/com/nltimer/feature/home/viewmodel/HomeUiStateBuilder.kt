@@ -38,7 +38,7 @@ class HomeUiStateBuilder {
         gridColumns: Int = DEFAULT_GRID_COLUMNS,
     ): HomeUiState {
         if (behaviors.isEmpty()) {
-            return buildEmptyState(now)
+            return buildEmptyState(today, now)
         }
 
         val zoneId = ZoneId.systemDefault()
@@ -81,8 +81,7 @@ class HomeUiStateBuilder {
         }
         val momentCells = (todayCells + pendingCells + nonTodayCells).toPersistentList()
 
-        val addCell = buildAddCell(todayCells, today, now)
-        val gridSections = buildGridSections(datedCellsByDate, sortedBehaviors, today, addCell, now, gridColumns, zoneId)
+        val gridSections = buildGridSections(datedCellsByDate, sortedBehaviors, today, now, gridColumns, zoneId)
         val items = buildListItems(datedCellsByDate, today)
 
         val lastBehaviorEndTime = calculateLastBehaviorEndTime(behaviors, zoneId)
@@ -124,25 +123,25 @@ class HomeUiStateBuilder {
         datedCellsByDate: Map<LocalDate, List<GridCellUiState>>,
         sortedBehaviors: List<Behavior>,
         today: LocalDate,
-        todayAddCell: GridCellUiState,
         now: LocalTime,
         gridColumns: Int,
         zoneId: ZoneId,
     ): List<GridDaySection> {
         val sections = mutableListOf<GridDaySection>()
         datedCellsByDate.keys.sortedDescending().forEach { date ->
-            val cells = datedCellsByDate[date]!!.sortedByDescending { it.startEpochMs ?: Long.MAX_VALUE }
-            val cellsForSection = if (date == today) cells + todayAddCell else cells
+            val cells = datedCellsByDate[date]!!.sortedBy { it.startEpochMs ?: Long.MAX_VALUE }
+            val sectionEndTime = if (date == today) now else LocalTime.MAX.truncatedTo(ChronoUnit.MINUTES)
+            val cellsForSection = cells + buildAddCell(cells, date, sectionEndTime)
             val dateBehaviors = sortedBehaviors.filter { b ->
                 if (b.status == BehaviorNature.PENDING) date == today
                 else b.startTime > 0L && Instant.ofEpochMilli(b.startTime).atZone(zoneId).toLocalDate() == date
-            }.sortedByDescending { if (it.status == BehaviorNature.PENDING) Long.MAX_VALUE else it.startTime }
+            }.sortedBy { if (it.status == BehaviorNature.PENDING) Long.MAX_VALUE else it.startTime }
 
             val isTodaySection = date == today
             val rowsTime = if (isTodaySection) now else dateBehaviors.firstOrNull()?.let {
-                if (it.status == BehaviorNature.PENDING) now
+                if (it.status == BehaviorNature.PENDING) sectionEndTime
                 else Instant.ofEpochMilli(it.startTime).atZone(zoneId).toLocalTime()
-            } ?: LocalTime.MIDNIGHT
+            } ?: sectionEndTime
             val (rows, _) = buildGridRows(
                 allCells = cellsForSection,
                 sortedBehaviors = dateBehaviors,
@@ -156,7 +155,8 @@ class HomeUiStateBuilder {
         return sections
     }
 
-    private fun buildEmptyState(now: LocalTime): HomeUiState {
+    private fun buildEmptyState(today: LocalDate, now: LocalTime): HomeUiState {
+        val nowDateTime = today.atTime(now)
         val addCell = GridCellUiState(
             behaviorId = null,
             activityIconKey = null,
@@ -165,6 +165,8 @@ class HomeUiStateBuilder {
             status = null,
             isCurrent = false,
             isAddPlaceholder = true,
+            startTime = nowDateTime,
+            endTime = nowDateTime,
             formattedDuration = "",
             platinumStrength = 0f,
         )
@@ -178,7 +180,7 @@ class HomeUiStateBuilder {
         return HomeUiState(
             gridSections = persistentListOf(
                 GridDaySection(
-                    date = LocalDate.now(),
+                    date = today,
                     label = "今天",
                     rows = persistentListOf(row),
                 )
@@ -262,11 +264,9 @@ class HomeUiStateBuilder {
         }
     }
 
-    private fun buildAddCell(cells: List<GridCellUiState>, today: LocalDate, now: LocalTime): GridCellUiState {
-        val nowDateTime = today.atTime(now)
-        val lastEnd = cells.lastOrNull()?.endTime
-        val idleStart = lastEnd ?: nowDateTime
-        val idleEnd = nowDateTime
+    private fun buildAddCell(cells: List<GridCellUiState>, date: LocalDate, endTime: LocalTime): GridCellUiState {
+        val idleEnd = date.atTime(endTime)
+        val idleStart = cells.lastOrNull()?.endTime?.takeIf { it.toLocalDate() == date } ?: idleEnd
 
         return GridCellUiState(
             behaviorId = null,
