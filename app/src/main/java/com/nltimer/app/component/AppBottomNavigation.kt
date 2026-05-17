@@ -266,7 +266,7 @@ fun AppCenterFabBottomBar(
         ) {
             DraggableMenuAnchor(
                 state = settingsDragState,
-                modifier = Modifier.size(56.dp),
+                modifier = Modifier.size(48.dp),
                 onOptionSelected = onSettingsDragOptionSelected,
             ) {
                 Surface(

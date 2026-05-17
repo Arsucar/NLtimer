@@ -78,7 +78,7 @@ class HomeUiStateBuilderTest {
             today = today,
         )
 
-        assertEquals(listOf(yesterday, today), state.gridSections.map { it.date })
+        assertEquals(listOf(today, yesterday), state.gridSections.map { it.date })
         assertTrue(state.gridSections.all { it.rows.isNotEmpty() })
     }
 
@@ -101,7 +101,7 @@ class HomeUiStateBuilderTest {
 
         val dividerDates = state.items.filterIsInstance<HomeListItem.DayDivider>().map { it.date }
         assertEquals(listOf(twoDaysAgo, today), dividerDates)
-        assertEquals(listOf(twoDaysAgo, today), state.gridSections.map { it.date })
+        assertEquals(listOf(today, twoDaysAgo), state.gridSections.map { it.date })
     }
 
     @Test

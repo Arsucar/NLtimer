@@ -129,9 +129,11 @@ class HomeUiStateBuilder {
     ): List<GridDaySection> {
         val sections = mutableListOf<GridDaySection>()
         datedCellsByDate.keys.sortedDescending().forEach { date ->
-            val cells = datedCellsByDate[date]!!.sortedBy { it.startEpochMs ?: Long.MAX_VALUE }
+            val cellsAsc = datedCellsByDate[date]!!.sortedBy { it.startEpochMs ?: Long.MAX_VALUE }
             val sectionEndTime = if (date == today) now else LocalTime.MAX.truncatedTo(ChronoUnit.MINUTES)
-            val cellsForSection = cells + buildAddCell(cells, date, sectionEndTime)
+            val cellsWithAdd = cellsAsc + buildAddCell(cellsAsc, date, sectionEndTime)
+            // 行序倒置（最近行在最上方），但行内 cells 保持时间正序
+            val cellsForSection = cellsWithAdd.chunked(gridColumns).reversed().flatten()
             val dateBehaviors = sortedBehaviors.filter { b ->
                 if (b.status == BehaviorNature.PENDING) date == today
                 else b.startTime > 0L && Instant.ofEpochMilli(b.startTime).atZone(zoneId).toLocalDate() == date

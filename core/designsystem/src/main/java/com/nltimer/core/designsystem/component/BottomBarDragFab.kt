@@ -52,13 +52,13 @@ fun BoxScope.BottomBarDragFab(
                     Modifier
                         .align(Alignment.BottomStart)
                         .navigationBarsPadding()
-                        .padding(start = navBarWidth + 28.dp, end = 24.dp, bottom = 12.dp)
+                        .padding(start = navBarWidth + 20.dp, end = 20.dp, bottom = 8.dp)
                         .fillMaxWidth()
                 } else {
                     Modifier
                         .align(Alignment.BottomStart)
                         .navigationBarsPadding()
-                        .padding(start = 20.dp, bottom = 12.dp)
+                        .padding(start = 12.dp, bottom = 8.dp)
                 }
             ),
     )
