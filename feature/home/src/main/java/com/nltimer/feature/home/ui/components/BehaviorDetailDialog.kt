@@ -19,16 +19,18 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.util.formatDuration
 import com.nltimer.core.data.util.hhmmssFormatter
-import com.nltimer.core.data.util.yyyyMMddHHmmFormatter
 import com.nltimer.feature.home.model.GridCellUiState
 import java.time.Instant
 import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+
+private val yyyyMMddHHmmssSSSFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")
 
 private fun epochToMsString(epochMs: Long?): String {
     if (epochMs == null) return "(空)"
     return Instant.ofEpochMilli(epochMs)
         .atZone(ZoneId.systemDefault())
-        .format(yyyyMMddHHmmFormatter)
+        .format(yyyyMMddHHmmssSSSFormatter)
 }
 
 private fun buildExportText(cell: GridCellUiState): String {
@@ -130,12 +132,12 @@ fun DetailRow(label: String, value: String) {
             text = label,
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(0.4f),
+            modifier = Modifier.weight(0.43f),
         )
         Text(
             text = value,
             style = MaterialTheme.typography.bodySmall,
-            modifier = Modifier.weight(0.6f),
+            modifier = Modifier.weight(0.57f),
         )
     }
 }

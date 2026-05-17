@@ -47,7 +47,7 @@ fun AddBehaviorSheet(
     tagLastUsedMap: Map<Long, Long?> = emptyMap(),
     tagCategoryOrder: List<String> = emptyList(),
     onDismiss: () -> Unit,
-    onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalDateTime, endTime: LocalDateTime?, nature: BehaviorNature, note: String?) -> Unit,
+    onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalDateTime, endTime: LocalDateTime?, nature: BehaviorNature, note: String?, estimatedDurationMs: Long?) -> Unit,
     onActivityGroupsReordered: (List<Long>) -> Unit = {},
     onTagCategoriesReordered: (List<String>) -> Unit = {},
     onAddActivity: AddActivityCallback = { _, _, _, _, _, _ -> },
@@ -101,7 +101,7 @@ fun AddCurrentBehaviorSheet(
     tagLastUsedMap: Map<Long, Long?> = emptyMap(),
     tagCategoryOrder: List<String> = emptyList(),
     onDismiss: () -> Unit,
-    onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalDateTime, endTime: LocalDateTime?, nature: BehaviorNature, note: String?) -> Unit,
+    onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalDateTime, endTime: LocalDateTime?, nature: BehaviorNature, note: String?, estimatedDurationMs: Long?) -> Unit,
     onActivityGroupsReordered: (List<Long>) -> Unit = {},
     onTagCategoriesReordered: (List<String>) -> Unit = {},
     onAddActivity: AddActivityCallback = { _, _, _, _, _, _ -> },
@@ -153,7 +153,7 @@ fun AddTargetBehaviorSheet(
     tagLastUsedMap: Map<Long, Long?> = emptyMap(),
     tagCategoryOrder: List<String> = emptyList(),
     onDismiss: () -> Unit,
-    onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalDateTime, endTime: LocalDateTime?, nature: BehaviorNature, note: String?) -> Unit,
+    onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalDateTime, endTime: LocalDateTime?, nature: BehaviorNature, note: String?, estimatedDurationMs: Long?) -> Unit,
     onActivityGroupsReordered: (List<Long>) -> Unit = {},
     onTagCategoriesReordered: (List<String>) -> Unit = {},
     onAddActivity: AddActivityCallback = { _, _, _, _, _, _ -> },
@@ -207,7 +207,7 @@ private fun BehaviorSheetWrapper(
     tagLastUsedMap: Map<Long, Long?> = emptyMap(),
     tagCategoryOrder: List<String> = emptyList(),
     onDismiss: () -> Unit,
-    onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalDateTime, endTime: LocalDateTime?, nature: BehaviorNature, note: String?) -> Unit,
+    onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalDateTime, endTime: LocalDateTime?, nature: BehaviorNature, note: String?, estimatedDurationMs: Long?) -> Unit,
     onActivityGroupsReordered: (List<Long>) -> Unit = {},
     onTagCategoriesReordered: (List<String>) -> Unit = {},
     onAddActivity: AddActivityCallback,
@@ -242,8 +242,8 @@ private fun BehaviorSheetWrapper(
             activityLastUsedMap = activityLastUsedMap,
             tagLastUsedMap = tagLastUsedMap,
             tagCategoryOrder = tagCategoryOrder,
-            onConfirm = { activityId, tagIds, startTime, endTime, nature, note ->
-                onConfirm(activityId, tagIds, startTime, endTime, nature, note)
+            onConfirm = { activityId, tagIds, startTime, endTime, nature, note, estDuration ->
+                onConfirm(activityId, tagIds, startTime, endTime, nature, note, estDuration)
                 onDismiss()
             },
             onDismiss = onDismiss,
@@ -282,7 +282,7 @@ private fun AddBehaviorSheetPreview() {
                 allTags = sampleTags,
                 dialogConfig = DialogGridConfig(),
                 existingBehaviors = emptyList(),
-                onConfirm = { _, _, _, _, _, _ -> },
+                onConfirm = { _, _, _, _, _, _, _ -> },
                 onDismiss = { },
             )
         }

@@ -37,7 +37,7 @@ fun HomeRoute(
         { cell: com.nltimer.feature.home.model.GridCellUiState -> viewModel.showEditSheet(cell) }
     }
     val onAddBehavior = remember(viewModel) {
-        { activityId: Long, tagIds: List<Long>, startTime: LocalDateTime, endTime: LocalDateTime?, nature: com.nltimer.core.data.model.BehaviorNature, note: String? ->
+        { activityId: Long, tagIds: List<Long>, startTime: LocalDateTime, endTime: LocalDateTime?, nature: com.nltimer.core.data.model.BehaviorNature, note: String?, estimatedDurationMs: Long? ->
             val startEpochMillis = startTime
                 .atZone(ZoneId.systemDefault())
                 .toInstant()
@@ -47,7 +47,7 @@ fun HomeRoute(
                     .toInstant()
                     .toEpochMilli()
             }
-            viewModel.addBehavior(activityId, tagIds, startEpochMillis, endEpochMillis, nature, note)
+            viewModel.addBehavior(activityId, tagIds, startEpochMillis, endEpochMillis, nature, note, estimatedDurationMs)
         }
     }
     val onDismissSheet = remember(viewModel) { { viewModel.hideAddSheet() } }

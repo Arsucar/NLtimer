@@ -30,7 +30,7 @@ internal fun HomeSheetRouter(
     tagLastUsedMap: Map<Long, Long?> = emptyMap(),
     tagCategoryOrder: List<String> = emptyList(),
     onDismissSheet: () -> Unit,
-    onAddBehavior: (activityId: Long, tagIds: List<Long>, startTime: LocalDateTime, endTime: LocalDateTime?, nature: BehaviorNature, note: String?) -> Unit,
+    onAddBehavior: (activityId: Long, tagIds: List<Long>, startTime: LocalDateTime, endTime: LocalDateTime?, nature: BehaviorNature, note: String?, estimatedDurationMs: Long?) -> Unit,
     onAddActivity: (name: String, iconKey: String?, color: Long?, groupId: Long?, keywords: String?, tagIds: List<Long>) -> Unit,
     onAddTag: (name: String, color: Long?, icon: String?, priority: Int, category: String?, keywords: String?, activityId: Long?) -> Unit,
     onActivityGroupsReordered: (List<Long>) -> Unit = {},

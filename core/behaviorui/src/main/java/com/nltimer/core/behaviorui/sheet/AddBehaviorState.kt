@@ -32,6 +32,7 @@ internal fun rememberAddBehaviorState(
     editBehaviorId: Long?,
     existingBehaviors: List<Behavior>,
     dialogConfig: DialogGridConfig,
+    initialEstimatedDurationMs: Long? = null,
 ): AddBehaviorState {
     return remember(
         mode,
@@ -54,6 +55,7 @@ internal fun rememberAddBehaviorState(
             editBehaviorId = editBehaviorId,
             existingBehaviors = existingBehaviors,
             dialogConfig = dialogConfig,
+            initialEstimatedDurationMs = initialEstimatedDurationMs,
         )
     }.also { state ->
         LaunchedEffect(initialActivityId) {
@@ -72,6 +74,7 @@ internal class AddBehaviorState(
     private val editBehaviorId: Long?,
     private val existingBehaviors: List<Behavior>,
     dialogConfig: DialogGridConfig,
+    initialEstimatedDurationMs: Long? = null,
 ) {
     var selectedActivityId by mutableStateOf(initialActivityId)
     var selectedTagIds by mutableStateOf(initialTagIds.toSet())
@@ -106,6 +109,8 @@ internal class AddBehaviorState(
     }
 
     var note by mutableStateOf(initialNote ?: "")
+
+    var estimatedDurationMs by mutableStateOf(initialEstimatedDurationMs)
 
     val hasTimeConflict: Boolean by derivedStateOf {
         if (mode == BehaviorNature.PENDING) return@derivedStateOf false

@@ -86,7 +86,7 @@ internal fun AddBehaviorSheetContent(
     activityLastUsedMap: Map<Long, Long?> = emptyMap(),
     tagLastUsedMap: Map<Long, Long?> = emptyMap(),
     tagCategoryOrder: List<String> = emptyList(),
-    onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalDateTime, endTime: LocalDateTime?, nature: BehaviorNature, note: String?) -> Unit,
+    onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalDateTime, endTime: LocalDateTime?, nature: BehaviorNature, note: String?, estimatedDurationMs: Long?) -> Unit,
     onDismiss: () -> Unit,
     onActivityGroupsReordered: (List<Long>) -> Unit = {},
     onTagCategoriesReordered: (List<String>) -> Unit = {},
@@ -191,7 +191,7 @@ private fun SheetMainContent(
     allTags: List<Tag>,
     dialogConfig: DialogGridConfig,
     emphasisColor: Color,
-    onConfirm: (Long, List<Long>, LocalDateTime, LocalDateTime?, BehaviorNature, String?) -> Unit,
+    onConfirm: (Long, List<Long>, LocalDateTime, LocalDateTime?, BehaviorNature, String?, Long?) -> Unit,
     onDismiss: () -> Unit,
     onProcessNote: OnProcessNote,
     onMatchNote: (String) -> NoteScanResult,
@@ -252,6 +252,7 @@ private fun SheetMainContent(
                 TimePickerSection(
                     mode = mode,
                     state = state,
+                    emphasisColor = emphasisColor,
                 )
                 Spacer(modifier = Modifier.height(16.dp))
             }
@@ -379,6 +380,7 @@ private fun DurationDisplayRow(
 private fun TimePickerSection(
     mode: BehaviorNature,
     state: AddBehaviorState,
+    emphasisColor: Color = MaterialTheme.colorScheme.secondary,
 ) {
     when (mode) {
         BehaviorNature.COMPLETED -> {
@@ -402,7 +404,14 @@ private fun TimePickerSection(
                 onCenterClick = { state.showTimeAdjustments = !state.showTimeAdjustments },
             )
         }
-        BehaviorNature.PENDING -> {}
+        BehaviorNature.PENDING -> {
+            DurationPicker(
+                durationMs = state.estimatedDurationMs,
+                onDurationChanged = { state.estimatedDurationMs = it },
+                emphasisColor = emphasisColor,
+                animate = !state.showTimeAdjustments,
+            )
+        }
     }
 }
 
@@ -412,7 +421,7 @@ private fun ConfirmButtonRow(
     state: AddBehaviorState,
     mode: BehaviorNature,
     secondsStrategy: SecondsStrategy,
-    onConfirm: (Long, List<Long>, LocalDateTime, LocalDateTime?, BehaviorNature, String?) -> Unit,
+    onConfirm: (Long, List<Long>, LocalDateTime, LocalDateTime?, BehaviorNature, String?, Long?) -> Unit,
     onDismiss: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -457,7 +466,8 @@ private fun ConfirmButtonRow(
                         resolvedStartTime,
                         resolvedEndTime,
                         mode,
-                        state.note.ifBlank { null }
+                        state.note.ifBlank { null },
+                        state.estimatedDurationMs,
                     )
                 }
             },

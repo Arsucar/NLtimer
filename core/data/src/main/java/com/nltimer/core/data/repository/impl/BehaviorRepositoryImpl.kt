@@ -134,7 +134,7 @@ class BehaviorRepositoryImpl @Inject constructor(
                     startTime = currentEntity.startTime,
                     endTime = clampedEndTime,
                     wasPlanned = currentEntity.wasPlanned,
-                    estimatedDurationMinutes = currentEntity.estimatedDuration,
+                    estimatedDurationMinutes = currentEntity.estimatedDuration?.let { it / 60_000L },
                 )
                 behaviorDao.setActualDuration(currentId, result.durationMs)
                 if (result.achievementLevel != null) {

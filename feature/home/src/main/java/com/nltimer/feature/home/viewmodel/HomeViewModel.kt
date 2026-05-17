@@ -303,6 +303,7 @@ class HomeViewModel @Inject constructor(
         endTime: Long?,
         status: BehaviorNature,
         note: String?,
+        estimatedDurationMs: Long? = null,
     ) {
         val editId = _uiState.value.editBehaviorId
         viewModelScope.launch {
@@ -314,6 +315,7 @@ class HomeViewModel @Inject constructor(
                 status = status,
                 note = note,
                 editBehaviorId = editId,
+                estimatedDurationMs = estimatedDurationMs,
             )) {
                 is AddBehaviorUseCase.Result.Success -> hideAddSheet()
                 is AddBehaviorUseCase.Result.Conflict ->

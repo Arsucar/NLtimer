@@ -31,6 +31,7 @@ class AddBehaviorUseCase @Inject constructor(
         status: BehaviorNature,
         note: String?,
         editBehaviorId: Long? = null,
+        estimatedDurationMs: Long? = null,
     ): Result {
         val now = clockService.currentTimeMillis()
 
@@ -71,7 +72,7 @@ class AddBehaviorUseCase @Inject constructor(
                 note = note,
                 pomodoroCount = 0,
                 sequence = newSequence,
-                estimatedDuration = null,
+                estimatedDuration = estimatedDurationMs,
                 actualDuration = actualDuration,
                 achievementLevel = null,
                 wasPlanned = wasPlanned,

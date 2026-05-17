@@ -247,7 +247,7 @@ fun BehaviorManagementScreen(
             tagLastUsedMap = tagLastUsedMap,
             tagCategoryOrder = tagCategoryOrder,
             onDismiss = viewModel::finishEditBehavior,
-            onConfirm = { activityId, tagIds, startTime, endTime, nature, note ->
+            onConfirm = { activityId, tagIds, startTime, endTime, nature, note, _ ->
                 viewModel.updateBehavior(
                     bwd.behavior.id, activityId, tagIds, startTime, endTime, nature, note,
                 )
