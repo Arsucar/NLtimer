@@ -41,6 +41,7 @@ import com.nltimer.core.behaviorui.sheet.CategoryGroupCard
 import com.nltimer.core.behaviorui.sheet.CategorizableItem
 import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
+import com.nltimer.core.data.model.DisplayColorMode
 import com.nltimer.core.designsystem.component.BottomBarDragFab
 import com.nltimer.core.designsystem.component.EmptyStateView
 import com.nltimer.core.designsystem.component.LocalNavBarWidth
@@ -156,6 +157,7 @@ fun ActivityManagementScreen(
                             collapsed = false,
                             showDragHandle = false,
                             emptyText = "暂无未分类活动",
+                            displayColorMode = uiState.displayColorConfig.activityIconColorMode,
                             onItemSelected = { id ->
                                 uiState.uncategorizedActivities
                                     .firstOrNull { it.id == id }
@@ -184,6 +186,7 @@ fun ActivityManagementScreen(
                             collapsed = !uiState.expandedGroupIds.contains(groupWithActivities.group.id),
                             showDragHandle = true,
                             emptyText = "暂无活动",
+                            displayColorMode = uiState.displayColorConfig.activityIconColorMode,
                             isDragging = draggedIndex == index,
                             dragOffsetY = if (draggedIndex == index) dragOffsetY else 0f,
                             shiftOffset = shiftOffsets[index] ?: 0f,
@@ -253,15 +256,36 @@ fun ActivityManagementScreen(
             }
         }
 
+        val activityColorMode = uiState.displayColorConfig.activityIconColorMode
+        val dragOptions = listOf(
+            "添加活动",
+            "添加分组",
+            when (activityColorMode) {
+                DisplayColorMode.BACKGROUND -> "✓ 图标：背景色模式"
+                else -> "图标：背景色模式"
+            },
+            when (activityColorMode) {
+                DisplayColorMode.TEXT -> "✓ 图标：文字色模式"
+                else -> "图标：文字色模式"
+            },
+            when (activityColorMode) {
+                DisplayColorMode.NORMAL -> "✓ 图标：正常模式"
+                else -> "图标：正常模式"
+            },
+        )
+
         BottomBarDragFab(
             state = dragFabState,
             icon = Icons.Default.Add,
-            dragOptions = listOf("添加活动", "添加分组"),
+            dragOptions = dragOptions,
             onClick = { viewModel.showAddActivityDialog() },
             onOptionSelected = { option ->
-                when (option) {
-                    "添加活动" -> viewModel.showAddActivityDialog()
-                    "添加分组" -> viewModel.showAddGroupDialog()
+                when {
+                    option.startsWith("添加活动") -> viewModel.showAddActivityDialog()
+                    option.startsWith("添加分组") -> viewModel.showAddGroupDialog()
+                    option.contains("背景色模式") -> viewModel.updateActivityIconColorMode(DisplayColorMode.BACKGROUND)
+                    option.contains("文字色模式") -> viewModel.updateActivityIconColorMode(DisplayColorMode.TEXT)
+                    option.contains("正常模式") -> viewModel.updateActivityIconColorMode(DisplayColorMode.NORMAL)
                 }
             },
         )
