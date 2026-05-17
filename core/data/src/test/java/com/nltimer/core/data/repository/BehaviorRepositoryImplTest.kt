@@ -192,6 +192,24 @@ class BehaviorRepositoryImplTest {
         assertNull(result)
     }
 
+    @Test
+    fun `getBehaviorsWithDetailsOverlappingTimeRange includes behavior crossing range start`() = runTest {
+        fakeBehaviorDao.behaviors.add(
+            BehaviorEntity(id = 1, activityId = 10, startTime = 1_000, endTime = 6_000, status = "completed")
+        )
+        fakeBehaviorDao.behaviors.add(
+            BehaviorEntity(id = 2, activityId = 10, startTime = 6_000, endTime = 8_000, status = "completed")
+        )
+        fakeActivityDao.activities.add(
+            ActivityEntity(id = 10, name = "活动A", iconKey = "icon")
+        )
+
+        val result = repository.getBehaviorsWithDetailsOverlappingTimeRange(5_000, 6_000).first()
+
+        assertEquals(1, result.size)
+        assertEquals(1L, result.first().behavior.id)
+    }
+
     // --- insert ---
 
     @Ignore("MockK cannot mock Room's inline withTransaction returning non-Unit; use instrumented test")
@@ -616,6 +634,11 @@ class BehaviorRepositoryImplTest {
             MutableStateFlow(behaviors.filter {
                 it.startTime < rangeEnd && (it.endTime == null || it.endTime >= rangeStart) && it.status != "pending" && it.startTime > 0
             })
+
+        override fun getByOverlappingTimeRange(rangeStart: Long, rangeEnd: Long): Flow<List<BehaviorEntity>> =
+            MutableStateFlow(behaviors.filter {
+                it.startTime < rangeEnd && (it.endTime == null || it.endTime > rangeStart) && it.status != "pending" && it.startTime > 0
+            }.sortedBy { it.startTime })
 
         override fun getByTimeRange(startTime: Long, endTime: Long): Flow<List<BehaviorEntity>> =
             MutableStateFlow(behaviors.filter { it.startTime in startTime until endTime })

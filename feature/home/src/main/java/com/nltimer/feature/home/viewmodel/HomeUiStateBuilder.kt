@@ -11,8 +11,11 @@ import com.nltimer.feature.home.model.HomeListItem
 import com.nltimer.feature.home.model.HomeUiState
 import com.nltimer.feature.home.model.TagUiState
 import com.nltimer.core.data.util.formatGridDurationHours
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toPersistentList
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
@@ -76,17 +79,17 @@ class HomeUiStateBuilder {
                 cell.behaviorId != null && cell.status != BehaviorNature.PENDING -> nonTodayCells.add(cell)
             }
         }
-        val momentCells = todayCells + pendingCells + nonTodayCells
+        val momentCells = (todayCells + pendingCells + nonTodayCells).toPersistentList()
 
-        val addCell = buildAddCell(todayCells, now)
+        val addCell = buildAddCell(todayCells, today, now)
         val gridSections = buildGridSections(datedCellsByDate, sortedBehaviors, today, addCell, now, gridColumns, zoneId)
         val items = buildListItems(datedCellsByDate, today)
 
         val lastBehaviorEndTime = calculateLastBehaviorEndTime(behaviors, zoneId)
 
         return HomeUiState(
-            items = items,
-            gridSections = gridSections,
+            items = items.toPersistentList(),
+            gridSections = gridSections.toPersistentList(),
             momentCells = momentCells,
             isLoading = false,
             selectedTimeHour = now.hour,
@@ -127,13 +130,13 @@ class HomeUiStateBuilder {
         zoneId: ZoneId,
     ): List<GridDaySection> {
         val sections = mutableListOf<GridDaySection>()
-        datedCellsByDate.keys.sorted().forEach { date ->
-            val cells = datedCellsByDate[date]!!.sortedBy { it.startEpochMs ?: Long.MAX_VALUE }
+        datedCellsByDate.keys.sortedDescending().forEach { date ->
+            val cells = datedCellsByDate[date]!!.sortedByDescending { it.startEpochMs ?: Long.MAX_VALUE }
             val cellsForSection = if (date == today) cells + todayAddCell else cells
             val dateBehaviors = sortedBehaviors.filter { b ->
                 if (b.status == BehaviorNature.PENDING) date == today
                 else b.startTime > 0L && Instant.ofEpochMilli(b.startTime).atZone(zoneId).toLocalDate() == date
-            }.sortedBy { if (it.status == BehaviorNature.PENDING) Long.MAX_VALUE else it.startTime }
+            }.sortedByDescending { if (it.status == BehaviorNature.PENDING) Long.MAX_VALUE else it.startTime }
 
             val isTodaySection = date == today
             val rowsTime = if (isTodaySection) now else dateBehaviors.firstOrNull()?.let {
@@ -148,7 +151,7 @@ class HomeUiStateBuilder {
                 isCurrentDay = isTodaySection,
                 zoneId = zoneId,
             )
-            sections.add(GridDaySection(date = date, label = dayLabel(date, today), rows = rows))
+            sections.add(GridDaySection(date = date, label = dayLabel(date, today), rows = rows.toPersistentList()))
         }
         return sections
     }
@@ -158,7 +161,7 @@ class HomeUiStateBuilder {
             behaviorId = null,
             activityIconKey = null,
             activityName = null,
-            tags = emptyList(),
+            tags = persistentListOf(),
             status = null,
             isCurrent = false,
             isAddPlaceholder = true,
@@ -170,17 +173,17 @@ class HomeUiStateBuilder {
             startTime = now,
             isCurrentRow = true,
             isLocked = false,
-            cells = listOf(addCell),
+            cells = persistentListOf(addCell),
         )
         return HomeUiState(
-            gridSections = listOf(
+            gridSections = persistentListOf(
                 GridDaySection(
                     date = LocalDate.now(),
                     label = "今天",
-                    rows = listOf(row),
+                    rows = persistentListOf(row),
                 )
             ),
-            momentCells = emptyList(),
+            momentCells = persistentListOf(),
             isLoading = false,
             selectedTimeHour = now.hour,
             hasActiveBehavior = false,
@@ -217,12 +220,12 @@ class HomeUiStateBuilder {
             } else {
                 Instant.ofEpochMilli(behavior.startTime)
                     .atZone(zoneId)
-                    .toLocalTime()
+                    .toLocalDateTime()
             }
             val endLocal = behavior.endTime?.let {
                 Instant.ofEpochMilli(it)
                     .atZone(zoneId)
-                    .toLocalTime()
+                    .toLocalDateTime()
             }
 
             val isPlatinum = behavior.wasPlanned && behavior.status == BehaviorNature.COMPLETED
@@ -237,7 +240,7 @@ class HomeUiStateBuilder {
                 behaviorId = behavior.id,
                 activityIconKey = activity?.iconKey,
                 activityName = activity?.name,
-                tags = tags.map { TagUiState(id = it.id, name = it.name, color = it.color, isActive = !it.isArchived) },
+                tags = tags.map { TagUiState(id = it.id, name = it.name, color = it.color, isActive = !it.isArchived) }.toPersistentList(),
                 status = behavior.status,
                 isCurrent = isActive,
                 wasPlanned = behavior.wasPlanned,
@@ -259,16 +262,17 @@ class HomeUiStateBuilder {
         }
     }
 
-    private fun buildAddCell(cells: List<GridCellUiState>, now: LocalTime): GridCellUiState {
+    private fun buildAddCell(cells: List<GridCellUiState>, today: LocalDate, now: LocalTime): GridCellUiState {
+        val nowDateTime = today.atTime(now)
         val lastEnd = cells.lastOrNull()?.endTime
-        val idleStart = lastEnd ?: now
-        val idleEnd = now
+        val idleStart = lastEnd ?: nowDateTime
+        val idleEnd = nowDateTime
 
         return GridCellUiState(
             behaviorId = null,
             activityIconKey = null,
             activityName = null,
-            tags = emptyList(),
+            tags = persistentListOf(),
             status = null,
             isCurrent = false,
             isAddPlaceholder = true,
@@ -318,7 +322,7 @@ class HomeUiStateBuilder {
                         behaviorId = null,
                         activityIconKey = null,
                         activityName = null,
-                        tags = emptyList(),
+                        tags = persistentListOf(),
                         status = null,
                         isCurrent = false,
                         formattedDuration = "",
@@ -333,7 +337,7 @@ class HomeUiStateBuilder {
                     startTime = timeForRow,
                     isCurrentRow = hasCurrentInRow,
                     isLocked = false,
-                    cells = paddedCells,
+                    cells = paddedCells.toPersistentList(),
                 )
             )
         }
@@ -345,14 +349,14 @@ class HomeUiStateBuilder {
         return behaviors.any { it.status == BehaviorNature.ACTIVE }
     }
 
-    private fun calculateLastBehaviorEndTime(behaviors: List<Behavior>, zoneId: ZoneId): LocalTime? {
+    private fun calculateLastBehaviorEndTime(behaviors: List<Behavior>, zoneId: ZoneId): LocalDateTime? {
         return behaviors
             .filter { it.endTime != null }
             .maxByOrNull { it.endTime ?: 0 }
             ?.let {
                 Instant.ofEpochMilli(it.endTime!!)
                     .atZone(zoneId)
-                    .toLocalTime()
+                    .toLocalDateTime()
             }
     }
 }

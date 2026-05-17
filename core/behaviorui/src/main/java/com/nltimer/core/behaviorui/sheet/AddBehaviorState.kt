@@ -18,23 +18,33 @@ import com.nltimer.core.designsystem.theme.PathDrawMode
 import com.nltimer.core.tools.match.NoteScanResult
 import java.time.Duration
 import java.time.LocalDateTime
-import java.time.LocalTime
 import java.time.ZoneId
 
 @Suppress("LongParameterList")
 @Composable
 internal fun rememberAddBehaviorState(
     mode: BehaviorNature,
-    initialStartTime: LocalTime?,
-    initialEndTime: LocalTime?,
+    initialStartTime: LocalDateTime?,
+    initialEndTime: LocalDateTime?,
     initialActivityId: Long?,
     initialTagIds: List<Long>,
     initialNote: String?,
     editBehaviorId: Long?,
     existingBehaviors: List<Behavior>,
     dialogConfig: DialogGridConfig,
+    initialEstimatedDurationMs: Long? = null,
 ): AddBehaviorState {
-    return remember {
+    return remember(
+        mode,
+        initialStartTime,
+        initialEndTime,
+        initialActivityId,
+        initialTagIds,
+        initialNote,
+        editBehaviorId,
+        existingBehaviors,
+        dialogConfig,
+    ) {
         AddBehaviorState(
             mode = mode,
             initialStartTime = initialStartTime,
@@ -45,6 +55,7 @@ internal fun rememberAddBehaviorState(
             editBehaviorId = editBehaviorId,
             existingBehaviors = existingBehaviors,
             dialogConfig = dialogConfig,
+            initialEstimatedDurationMs = initialEstimatedDurationMs,
         )
     }.also { state ->
         LaunchedEffect(initialActivityId) {
@@ -55,14 +66,15 @@ internal fun rememberAddBehaviorState(
 
 internal class AddBehaviorState(
     private val mode: BehaviorNature,
-    initialStartTime: LocalTime?,
-    initialEndTime: LocalTime?,
+    private val initialStartTime: LocalDateTime?,
+    private val initialEndTime: LocalDateTime?,
     initialActivityId: Long?,
     initialTagIds: List<Long>,
     initialNote: String?,
     private val editBehaviorId: Long?,
     private val existingBehaviors: List<Behavior>,
     dialogConfig: DialogGridConfig,
+    initialEstimatedDurationMs: Long? = null,
 ) {
     var selectedActivityId by mutableStateOf(initialActivityId)
     var selectedTagIds by mutableStateOf(initialTagIds.toSet())
@@ -71,12 +83,8 @@ internal class AddBehaviorState(
     private val now = sheetOpenTime
     var userAdjustedTime by mutableStateOf(false)
         private set
-    var startTime by mutableStateOf(
-        initialStartTime?.let { now.withHour(it.hour).withMinute(it.minute).withSecond(it.second) } ?: now
-    )
-    var endTime by mutableStateOf(
-        initialEndTime?.let { now.withHour(it.hour).withMinute(it.minute).withSecond(it.second) } ?: now
-    )
+    var startTime by mutableStateOf(initialStartTime ?: now)
+    var endTime by mutableStateOf(initialEndTime ?: now)
 
     /**
      * endTime 是否随系统时钟自动推进。
@@ -102,16 +110,17 @@ internal class AddBehaviorState(
 
     var note by mutableStateOf(initialNote ?: "")
 
+    var estimatedDurationMs by mutableStateOf(initialEstimatedDurationMs)
+
     val hasTimeConflict: Boolean by derivedStateOf {
         if (mode == BehaviorNature.PENDING) return@derivedStateOf false
-        val today = LocalDateTime.now().toLocalDate()
         val nowEpoch = System.currentTimeMillis()
-        val startEpoch = today.atTime(startTime.toLocalTime())
+        val startEpoch = startTime
             .atZone(ZoneId.systemDefault())
             .toInstant()
             .toEpochMilli()
         val endEpoch = if (mode == BehaviorNature.COMPLETED) {
-            today.atTime(endTime.toLocalTime())
+            endTime
                 .atZone(ZoneId.systemDefault())
                 .toInstant()
                 .toEpochMilli()
@@ -146,6 +155,10 @@ internal class AddBehaviorState(
     var innerBoxPositionInWindow by mutableStateOf(Offset.Zero)
 
     fun resolveStartTime(strategy: SecondsStrategy, confirmTime: LocalDateTime): LocalDateTime {
+        // 补记空闲段会携带毫秒级边界；用户未改时间时必须保留，避免边界重叠。
+        if (mode == BehaviorNature.COMPLETED) {
+            return if (userAdjustedTime) startTime.withSecond(0).withNano(0) else initialStartTime ?: startTime
+        }
         return if (userAdjustedTime) {
             startTime.withSecond(0).withNano(0)
         } else {
@@ -155,6 +168,11 @@ internal class AddBehaviorState(
             }
             startTime.withSecond(sourceSeconds).withNano(0)
         }
+    }
+
+    fun resolveEndTime(): LocalDateTime? {
+        if (mode != BehaviorNature.COMPLETED) return null
+        return if (userAdjustedTime) endTime.withSecond(0).withNano(0) else initialEndTime ?: endTime
     }
 
     /**

@@ -34,7 +34,7 @@ import com.nltimer.core.designsystem.theme.TimeLabelConfig
 import com.nltimer.feature.home.model.GridCellUiState
 import com.nltimer.feature.home.model.GridDaySection
 import com.nltimer.feature.home.model.GridRowUiState
-import java.time.LocalTime
+import java.time.LocalDateTime
 import java.util.TreeMap
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
@@ -43,7 +43,7 @@ import kotlinx.coroutines.flow.filter
 fun TimeAxisGrid(
     modifier: Modifier = Modifier,
     sections: List<GridDaySection>,
-    onEmptyCellClick: (idleStart: LocalTime?, idleEnd: LocalTime?) -> Unit,
+    onEmptyCellClick: (idleStart: LocalDateTime?, idleEnd: LocalDateTime?) -> Unit,
     onCellLongClick: (GridCellUiState) -> Unit = {},
     onLoadMore: () -> Unit = {},
     isLoadingMore: Boolean = false,
@@ -53,32 +53,22 @@ fun TimeAxisGrid(
     timeLabelConfig: TimeLabelConfig = TimeLabelConfig(),
     onTimeLabelSettingsClick: () -> Unit = {},
     gridStyle: GridLayoutStyle = GridLayoutStyle(),
-    footer: @Composable (LazyItemScope.() -> Unit)? = null,
+    header: @Composable (LazyItemScope.() -> Unit)? = null,
 ) {
     val listState = rememberLazyListState()
     val visibleDateLabelState = LocalVisibleDateLabel.current
     val initialScrollDone = rememberSaveable { mutableStateOf(false) }
 
-    // 初始定位到今天及当前小时
     LaunchedEffect(sections) {
         if (sections.isNotEmpty() && !initialScrollDone.value) {
-            val todaySection = sections.lastOrNull()
-            if (todaySection != null) {
-                val precedingItems = sections.dropLast(1).sumOf { 1 + it.rows.size }
-                val todayHeaderIndex = if (isLoadingMore) precedingItems + 1 else precedingItems
-                val targetRowIndex = todaySection.rows.indexOfFirst { it.startTime.hour >= currentHour }
-                val absoluteIndex = todayHeaderIndex + 1 + (if (targetRowIndex >= 0) targetRowIndex else 0)
-                
-                listState.scrollToItem(absoluteIndex)
-                initialScrollDone.value = true
-            }
+            initialScrollDone.value = true
         }
     }
 
     val dateIndexMap = remember(sections) {
         val map = TreeMap<Int, String>()
         var index = 0
-        if (isLoadingMore) index++
+        if (header != null) index++
         sections.forEach { section ->
             map[index] = section.label
             index++
@@ -98,22 +88,14 @@ fun TimeAxisGrid(
         visibleDateLabelState.value = currentLabel
     }
 
-    LaunchedEffect(currentHour) {
-        if (!initialScrollDone.value) return@LaunchedEffect
-        val todaySection = sections.lastOrNull() ?: return@LaunchedEffect
-        val targetIndex = todaySection.rows.indexOfFirst { it.startTime.hour >= currentHour }
-        if (targetIndex >= 0) {
-            val precedingItems = sections.dropLast(1).sumOf { 1 + it.rows.size }
-            val absoluteIndex = precedingItems + 1 + targetIndex
-            listState.animateScrollToItem(absoluteIndex)
-        }
-    }
-
     LaunchedEffect(sections, hasReachedEarliest) {
         if (hasReachedEarliest) return@LaunchedEffect
-        snapshotFlow { listState.firstVisibleItemIndex }
-            .distinctUntilChanged()
-            .filter { it <= 5 && initialScrollDone.value }
+        snapshotFlow {
+            val total = listState.layoutInfo.totalItemsCount
+            val lastVisible = listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+            total to lastVisible
+        }.distinctUntilChanged()
+            .filter { (total, last) -> total > 0 && last >= total - 5 && initialScrollDone.value }
             .collect { onLoadMore() }
     }
 
@@ -131,7 +113,11 @@ fun TimeAxisGrid(
         verticalArrangement = Arrangement.spacedBy(0.dp),
         contentPadding = PaddingValues(bottom = 130.dp, top = LocalImmersiveTopPadding.current),
     ) {
-        if (isLoadingMore) item("loading-top") { LoadingMoreIndicator() }
+        if (header != null) {
+            item(key = "header", contentType = "header") {
+                header()
+            }
+        }
         sections.forEach { section ->
             item(
                 key = "header-${section.date}",
@@ -153,11 +139,7 @@ fun TimeAxisGrid(
                 )
             }
         }
-        if (footer != null) {
-            item(key = "footer", contentType = "footer") {
-                footer()
-            }
-        }
+        if (isLoadingMore) item("loading-bottom") { LoadingMoreIndicator() }
     }
 }
 

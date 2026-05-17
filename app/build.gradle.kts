@@ -8,6 +8,12 @@ val APP_VERSION_NAME: String by project
 val APP_VERSION_CODE: String by project
 val APP_ID: String by project
 
+val worktreeSuffix = rootDir.name
+    .lowercase()
+    .replace(Regex("[^a-z0-9_]"), "_")
+    .take(20)
+    .let { if (it == rootProject.name.lowercase()) "" else "_$it" }
+
 android {
     namespace = APP_ID
 
@@ -30,6 +36,9 @@ android {
 
         getByName("debug") {
             isDebuggable = true
+            if (worktreeSuffix.isNotEmpty()) {
+                applicationIdSuffix = worktreeSuffix
+            }
         }
 
         getByName("release") {

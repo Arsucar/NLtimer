@@ -6,28 +6,6 @@ import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
 import com.nltimer.core.data.model.Tag
 
-private data class ActivityCategorizable(
-    val activity: Activity,
-    override val lastUsedTimestamp: Long? = null,
-) : CategorizableItem {
-    override val itemId: Long = activity.id
-    override val itemName: String = activity.name
-    override val category: String? = null
-    override val usageCount: Int = activity.usageCount
-    override val iconKey: String? = activity.iconKey
-}
-
-private data class TagCategorizable(
-    val tag: Tag,
-    override val lastUsedTimestamp: Long? = null,
-) : CategorizableItem {
-    override val itemId: Long = tag.id
-    override val itemName: String = tag.name
-    override val category: String? = tag.category
-    override val usageCount: Int = tag.usageCount
-    override val iconKey: String? = null
-}
-
 @Suppress("LongParameterList")
 @Composable
 internal fun SheetPickerDialogs(
@@ -74,6 +52,7 @@ internal fun SheetPickerDialogs(
         AddTagDialog(
             categories = emptyList(),
             allActivities = activities,
+            activityGroups = activityGroups,
             onDismiss = onAddTagDialogDismiss,
             onConfirm = { name, color, icon, priority, category, keywords, activityId ->
                 onAddTag(name, color, icon, priority, category, keywords, activityId)

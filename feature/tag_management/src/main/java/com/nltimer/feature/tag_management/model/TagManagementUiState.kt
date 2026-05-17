@@ -2,6 +2,7 @@ package com.nltimer.feature.tag_management.model
 
 import androidx.compose.runtime.Immutable
 import com.nltimer.core.data.model.Activity
+import com.nltimer.core.data.model.ActivityGroup
 import com.nltimer.core.data.model.Tag
 
 /**
@@ -19,6 +20,7 @@ data class TagManagementUiState(
     val categoryNames: List<String> = emptyList(),
     val expandedCategoryNames: Set<String> = emptySet(),
     val allActivities: List<Activity> = emptyList(),
+    val activityGroups: List<ActivityGroup> = emptyList(),
     val isLoading: Boolean = true,
     val dialogState: DialogState? = null,
 )

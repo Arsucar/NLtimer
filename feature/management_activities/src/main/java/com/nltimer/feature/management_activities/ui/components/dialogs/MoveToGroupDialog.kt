@@ -21,6 +21,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
+import com.nltimer.core.behaviorui.sheet.ActivityGroupCategorizable
+import com.nltimer.core.behaviorui.sheet.CategoryGroup
+import com.nltimer.core.behaviorui.sheet.CategoryPickerDialog
 
 /**
  * 移动活动到分组弹窗
@@ -32,7 +35,6 @@ import com.nltimer.core.data.model.ActivityGroup
  * @param onDismiss 关闭弹窗回调
  * @param onConfirm 确认移动回调，参数为目标分组 ID（null 表示未分类）
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MoveToGroupDialog(
     activity: Activity,
@@ -40,76 +42,32 @@ fun MoveToGroupDialog(
     onDismiss: () -> Unit,
     onConfirm: (Long?) -> Unit,
 ) {
-    // 当前选中的目标分组，默认为活动所属分组
-    var selectedGroupId by remember { mutableStateOf(activity.groupId) }
-    var groupName by remember {
-        mutableStateOf(
-            allGroups.find { it.id == activity.groupId }?.name ?: "未分类"
+    val groupItems = remember(allGroups) {
+        allGroups.map { ActivityGroupCategorizable(it) }
+    }
+    val groupedGroups = remember(groupItems) {
+        listOf(
+            CategoryGroup(
+                id = 0L,
+                name = "所有分组",
+                items = groupItems,
+                onClear = {
+                    onConfirm(null)
+                },
+                clearLabel = "清除",
+            )
         )
     }
-    var expanded by remember { mutableStateOf(false) }
 
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("移动活动到分组") },
-        text = {
-            Text(text = "将「${activity.name}」移动到：")
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // 分组选择下拉框
-            ExposedDropdownMenuBox(
-                expanded = expanded,
-                onExpandedChange = { expanded = it },
-            ) {
-                OutlinedTextField(
-                    value = groupName,
-                    onValueChange = {},
-                    readOnly = true,
-                    trailingIcon = {
-                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
-                )
-
-                ExposedDropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false },
-                ) {
-                    // 移回未分类
-                    DropdownMenuItem(
-                        text = { Text("未分类") },
-                        onClick = {
-                            selectedGroupId = null
-                            groupName = "未分类"
-                            expanded = false
-                        },
-                    )
-
-                    allGroups.forEach { group ->
-                        DropdownMenuItem(
-                            text = { Text(group.name) },
-                            onClick = {
-                                selectedGroupId = group.id
-                                groupName = group.name
-                                expanded = false
-                            },
-                        )
-                    }
-                }
-            }
+    CategoryPickerDialog(
+        title = "移动活动「${activity.name}」到：",
+        items = groupItems,
+        categoryGroups = groupedGroups,
+        selectedId = activity.groupId ?: 0L,
+        onItemSelected = { id ->
+            onConfirm(id)
         },
-        confirmButton = {
-            TextButton(onClick = { onConfirm(selectedGroupId) }) {
-                Text("确定")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("取消")
-            }
-        },
+        onDismiss = onDismiss,
+        showHeader = false,
     )
 }

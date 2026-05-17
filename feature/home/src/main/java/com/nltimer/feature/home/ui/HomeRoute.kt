@@ -7,8 +7,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nltimer.feature.home.model.AddSheetMode
 import com.nltimer.feature.home.viewmodel.HomeViewModel
-import java.time.LocalDate
-import java.time.LocalTime
+import java.time.LocalDateTime
 import java.time.ZoneId
 
 @Composable
@@ -27,8 +26,8 @@ fun HomeRoute(
     val homeLayoutConfig by viewModel.homeLayoutConfig.collectAsStateWithLifecycle()
 
     val onEmptyCellClick = remember(viewModel) {
-        { idleStart: LocalTime?, idleEnd: LocalTime? ->
-            viewModel.showAddSheet(AddSheetMode.CURRENT, idleStart, idleEnd)
+        { idleStart: LocalDateTime?, idleEnd: LocalDateTime? ->
+            viewModel.showAddSheet(AddSheetMode.COMPLETED, idleStart, idleEnd)
         }
     }
     val onShowAddSheet = remember(viewModel) {
@@ -38,20 +37,17 @@ fun HomeRoute(
         { cell: com.nltimer.feature.home.model.GridCellUiState -> viewModel.showEditSheet(cell) }
     }
     val onAddBehavior = remember(viewModel) {
-        { activityId: Long, tagIds: List<Long>, startTime: LocalTime, endTime: LocalTime?, nature: com.nltimer.core.data.model.BehaviorNature, note: String? ->
-            val startEpochMillis = LocalDate.now()
-                .atTime(startTime)
+        { activityId: Long, tagIds: List<Long>, startTime: LocalDateTime, endTime: LocalDateTime?, nature: com.nltimer.core.data.model.BehaviorNature, note: String?, estimatedDurationMs: Long? ->
+            val startEpochMillis = startTime
                 .atZone(ZoneId.systemDefault())
                 .toInstant()
                 .toEpochMilli()
             val endEpochMillis = endTime?.let {
-                LocalDate.now()
-                    .atTime(it)
-                    .atZone(ZoneId.systemDefault())
+                it.atZone(ZoneId.systemDefault())
                     .toInstant()
                     .toEpochMilli()
             }
-            viewModel.addBehavior(activityId, tagIds, startEpochMillis, endEpochMillis, nature, note)
+            viewModel.addBehavior(activityId, tagIds, startEpochMillis, endEpochMillis, nature, note, estimatedDurationMs)
         }
     }
     val onDismissSheet = remember(viewModel) { { viewModel.hideAddSheet() } }

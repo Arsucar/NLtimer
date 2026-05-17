@@ -77,7 +77,9 @@ import com.nltimer.feature.home.ui.components.TimeAxisGrid
 import com.nltimer.feature.home.ui.components.TimeLabelSettingsDialog
 import com.nltimer.feature.home.ui.components.TimeSideBar
 import com.nltimer.feature.home.ui.components.TimelineReverseView
+import java.time.LocalDateTime
 import java.time.LocalTime
+import kotlinx.collections.immutable.persistentListOf
 
 private val DragOptionsWithActive = listOf("完成", "放弃", "特记", "+自定义")
 private val DragOptionsWithoutActive = listOf("完成", "目标", "当前", "+自定义")
@@ -93,10 +95,10 @@ fun HomeScreen(
     activityLastUsedMap: Map<Long, Long?> = emptyMap(),
     tagLastUsedMap: Map<Long, Long?> = emptyMap(),
     tagCategoryOrder: List<String> = emptyList(),
-    onEmptyCellClick: (idleStart: LocalTime?, idleEnd: LocalTime?) -> Unit,
+    onEmptyCellClick: (idleStart: LocalDateTime?, idleEnd: LocalDateTime?) -> Unit,
     onShowAddSheet: (AddSheetMode) -> Unit,
     onCellLongClick: (GridCellUiState) -> Unit,
-    onAddBehavior: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, endTime: LocalTime?, nature: BehaviorNature, note: String?) -> Unit,
+    onAddBehavior: (activityId: Long, tagIds: List<Long>, startTime: LocalDateTime, endTime: LocalDateTime?, nature: BehaviorNature, note: String?, estimatedDurationMs: Long?) -> Unit,
     onDismissSheet: () -> Unit,
     onCompleteBehavior: (Long) -> Unit,
     onToggleIdleMode: () -> Unit,
@@ -246,7 +248,7 @@ private fun HomeLayoutContent(
     uiState: HomeUiState,
     activeCell: GridCellUiState?,
     nextPendingCell: GridCellUiState?,
-    onEmptyCellClick: (idleStart: LocalTime?, idleEnd: LocalTime?) -> Unit,
+    onEmptyCellClick: (idleStart: LocalDateTime?, idleEnd: LocalDateTime?) -> Unit,
     onCellLongClick: (GridCellUiState) -> Unit,
     onHourClick: (Int) -> Unit,
     onCompleteBehavior: (Long) -> Unit,
@@ -375,7 +377,7 @@ private fun HomeLayoutContent(
                 timeLabelConfig = timeLabelConfig,
                 onTimeLabelSettingsClick = onTimeLabelSettingsClick,
                 gridStyle = homeLayoutConfig.grid,
-                footer = focusCard,
+                header = focusCard,
                 modifier = Modifier.fillMaxSize(),
             )
             HomeLayout.TIMELINE_REVERSE -> TimelineReverseContent(
@@ -418,14 +420,14 @@ private fun HomeLayoutContent(
 @Composable
 private fun GridContent(
     uiState: HomeUiState,
-    onEmptyCellClick: (idleStart: LocalTime?, idleEnd: LocalTime?) -> Unit,
+    onEmptyCellClick: (idleStart: LocalDateTime?, idleEnd: LocalDateTime?) -> Unit,
     onCellLongClick: (GridCellUiState) -> Unit,
     onHourClick: (Int) -> Unit,
     onLoadMore: () -> Unit,
     timeLabelConfig: TimeLabelConfig,
     onTimeLabelSettingsClick: () -> Unit,
     gridStyle: GridLayoutStyle = GridLayoutStyle(),
-    footer: @Composable (() -> Unit)? = null,
+    header: @Composable (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
     val showSideBar = LocalTheme.current.showTimeSideBar
@@ -442,13 +444,13 @@ private fun GridContent(
             timeLabelConfig = timeLabelConfig,
             onTimeLabelSettingsClick = onTimeLabelSettingsClick,
             gridStyle = gridStyle,
-            footer = footer?.let { { it() } },
+            header = header?.let { { it() } },
             modifier = Modifier.weight(1f),
         )
         if (showSideBar) {
             val activeHours by remember {
                 derivedStateOf {
-                    uiState.gridSections.lastOrNull()?.rows.orEmpty()
+                    uiState.gridSections.firstOrNull()?.rows.orEmpty()
                         .filter { it.cells.any { cell -> cell.behaviorId != null } || it.isCurrentRow }
                         .map { it.startTime.hour }
                         .toSet()
@@ -466,7 +468,7 @@ private fun GridContent(
 @Composable
 private fun TimelineReverseContent(
     uiState: HomeUiState,
-    onEmptyCellClick: (idleStart: LocalTime?, idleEnd: LocalTime?) -> Unit,
+    onEmptyCellClick: (idleStart: LocalDateTime?, idleEnd: LocalDateTime?) -> Unit,
     onCellLongClick: (GridCellUiState) -> Unit,
     onLoadMore: () -> Unit,
     timelineStyle: TimelineLayoutStyle = TimelineLayoutStyle(),
@@ -512,7 +514,7 @@ private fun MomentContent(
     uiState: HomeUiState,
     activeCell: GridCellUiState?,
     nextPendingCell: GridCellUiState?,
-    onEmptyCellClick: (idleStart: LocalTime?, idleEnd: LocalTime?) -> Unit,
+    onEmptyCellClick: (idleStart: LocalDateTime?, idleEnd: LocalDateTime?) -> Unit,
     onCellLongClick: (GridCellUiState) -> Unit,
     onCompleteBehavior: (Long) -> Unit,
     onStartNextPending: () -> Unit,
@@ -556,18 +558,18 @@ private fun HomeScreenPreview() {
     val sampleSection = GridDaySection(
         date = java.time.LocalDate.of(2026, 5, 13),
         label = "今天 5/13",
-        rows = listOf(
+        rows = persistentListOf(
             GridRowUiState(
                 rowId = "1",
                 startTime = LocalTime.of(9, 0),
                 isCurrentRow = true,
                 isLocked = false,
-                cells = listOf(
+                cells = persistentListOf(
                     GridCellUiState(
                         behaviorId = 1L,
                         activityIconKey = "😊",
                         activityName = "Activity 1",
-                        tags = listOf(TagUiState(1, "Tag 1", null)),
+                        tags = persistentListOf(TagUiState(1, "Tag 1", null)),
                         status = BehaviorNature.ACTIVE,
                         isCurrent = true,
                     )
@@ -577,7 +579,7 @@ private fun HomeScreenPreview() {
     )
     val sampleUiState = HomeUiState(
         isLoading = false,
-        gridSections = listOf(sampleSection),
+        gridSections = persistentListOf(sampleSection),
         selectedTimeHour = 9,
     )
 
@@ -590,7 +592,7 @@ private fun HomeScreenPreview() {
             onEmptyCellClick = { _, _ -> },
             onShowAddSheet = {},
             onCellLongClick = {},
-            onAddBehavior = { _, _, _, _, _, _ -> },
+            onAddBehavior = { _, _, _, _, _, _, _ -> },
             onDismissSheet = {},
             onCompleteBehavior = {},
             onToggleIdleMode = {},

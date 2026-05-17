@@ -36,7 +36,7 @@ import com.nltimer.core.designsystem.theme.LocalImmersiveTopPadding
 import com.nltimer.feature.home.model.GridCellUiState
 import java.time.Instant
 import java.time.LocalDate
-import java.time.LocalTime
+import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 import java.util.TreeMap
@@ -109,7 +109,7 @@ fun MomentView(
     onCompleteBehavior: (Long) -> Unit,
     onStartNextPending: () -> Unit,
     onStartBehavior: (Long) -> Unit,
-    onEmptyCellClick: (idleStart: LocalTime?, idleEnd: LocalTime?) -> Unit,
+    onEmptyCellClick: (idleStart: LocalDateTime?, idleEnd: LocalDateTime?) -> Unit,
     onCellLongClick: (GridCellUiState) -> Unit,
     onLoadMore: () -> Unit = {},
     isLoadingMore: Boolean = false,

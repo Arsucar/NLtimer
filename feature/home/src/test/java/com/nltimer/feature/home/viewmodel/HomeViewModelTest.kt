@@ -25,6 +25,7 @@ import com.nltimer.core.tools.match.ApplyNoteDirectivesUseCase
 import com.nltimer.core.tools.match.NoteMatcher
 import com.nltimer.feature.home.match.KeywordMatchStrategy
 import com.nltimer.feature.home.model.GridCellUiState
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -403,7 +404,7 @@ class HomeViewModelTest {
             behaviorId = 42L,
             activityIconKey = null,
             activityName = null,
-            tags = emptyList(),
+            tags = persistentListOf(),
             status = BehaviorNature.COMPLETED,
             isCurrent = false,
             wasPlanned = false,
@@ -574,6 +575,7 @@ class HomeViewModelTest {
         }
         override suspend fun updateTagsForBehavior(behaviorId: Long, tagIds: List<Long>) {}
         override fun getBehaviorsWithDetailsByTimeRange(startTime: Long, endTime: Long): Flow<List<BehaviorWithDetails>> = flowOf(emptyList())
+        override fun getBehaviorsWithDetailsOverlappingTimeRange(startTime: Long, endTime: Long): Flow<List<BehaviorWithDetails>> = flowOf(emptyList())
         override suspend fun getBehaviorsWithDetailsByTimeRangeSync(startTime: Long, endTime: Long): List<BehaviorWithDetails> = emptyList()
         override suspend fun getTagsForBehaviors(behaviorIds: List<Long>): Map<Long, List<Tag>> = emptyMap()
         override suspend fun getEarliestBehaviorDate(): java.time.LocalDate? = earliestDate

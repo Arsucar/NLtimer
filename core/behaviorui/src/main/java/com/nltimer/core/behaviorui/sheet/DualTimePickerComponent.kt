@@ -53,23 +53,16 @@ fun DualTimePicker(
     onLeftCenterClick: () -> Unit = {},
     onRightCenterClick: () -> Unit = {},
 ) {
-    val startProperty = remember(startTime) { startTime.withNano(0) }
-    val endProperty = remember(endTime) { endTime.withNano(0) }
+    val startProperty = remember(startTime) { startTime.withSecond(0).withNano(0) }
+    val endProperty = remember(endTime) { endTime.withSecond(0).withNano(0) }
 
     val today = LocalDate.now()
-    val threeDaysAgo = today.minusDays(3)
-    val dateFormatter = mmddFormatter
 
-    val sharedDates = remember(today) {
-        (0..6).map { offset ->
-            val date = threeDaysAgo.plusDays(offset.toLong())
-            val isToday = date == today
-            DateItem(
-                displayText = if (isToday) "今天" else date.format(dateFormatter),
-                date = date,
-                isSpecial = isToday,
-            )
-        }
+    val sharedDates = remember(today, startProperty, endProperty) {
+        buildDateItems(
+            today = today,
+            requiredDates = setOf(startProperty.toLocalDate(), endProperty.toLocalDate()),
+        )
     }
 
     val todayIndex = sharedDates.indexOfFirst { it.date == today }
@@ -104,11 +97,9 @@ fun DualTimePicker(
 
     val leftDateTime = remember(leftSelectedDate, leftSelectedHour, leftSelectedMinute) {
         leftSelectedDate.date.atTime(leftSelectedHour.toInt(), leftSelectedMinute.toInt())
-            .withSecond(startProperty.second)
     }
     val rightDateTime = remember(rightSelectedDate, rightSelectedHour, rightSelectedMinute) {
         rightSelectedDate.date.atTime(rightSelectedHour.toInt(), rightSelectedMinute.toInt())
-            .withSecond(endProperty.second)
     }
 
     LaunchedEffect(leftDateTime, rightDateTime) {
@@ -218,22 +209,12 @@ fun SingleTimePicker(
     onTimeChanged: (LocalDateTime) -> Unit = {},
     onCenterClick: () -> Unit = {},
 ) {
-    val startProperty = remember(startTime) { startTime.withNano(0) }
+    val startProperty = remember(startTime) { startTime.withSecond(0).withNano(0) }
 
     val today = LocalDate.now()
-    val threeDaysAgo = today.minusDays(3)
-    val dateFormatter = mmddFormatter
 
-    val sharedDates = remember(today) {
-        (0..6).map { offset ->
-            val date = threeDaysAgo.plusDays(offset.toLong())
-            val isToday = date == today
-            DateItem(
-                displayText = if (isToday) "今天" else date.format(dateFormatter),
-                date = date,
-                isSpecial = isToday,
-            )
-        }
+    val sharedDates = remember(today, startProperty) {
+        buildDateItems(today = today, requiredDates = setOf(startProperty.toLocalDate()))
     }
 
     val todayIndex = sharedDates.indexOfFirst { it.date == today }
@@ -257,7 +238,6 @@ fun SingleTimePicker(
 
     val currentDateTime = remember(selectedDate, selectedHour, selectedMinute) {
         selectedDate.date.atTime(selectedHour.toInt(), selectedMinute.toInt())
-            .withSecond(startProperty.second)
     }
 
     LaunchedEffect(currentDateTime) {
@@ -408,4 +388,25 @@ private fun TimePickerColon() {
         fontSize = 16.sp,
         modifier = Modifier.padding(bottom = 0.dp),
     )
+}
+
+private fun buildDateItems(
+    today: LocalDate,
+    requiredDates: Set<LocalDate>,
+): List<DateItem> {
+    val defaultStart = today.minusDays(3)
+    val defaultEnd = today.plusDays(3)
+    val start = requiredDates.minOrNull()?.let { minOf(defaultStart, it) } ?: defaultStart
+    val end = requiredDates.maxOrNull()?.let { maxOf(defaultEnd, it) } ?: defaultEnd
+    val dateFormatter = mmddFormatter
+
+    return generateSequence(start) { date ->
+        date.plusDays(1).takeIf { !it.isAfter(end) }
+    }.map { date ->
+        DateItem(
+            displayText = if (date == today) "今天" else date.format(dateFormatter),
+            date = date,
+            isSpecial = date == today,
+        )
+    }.toList()
 }

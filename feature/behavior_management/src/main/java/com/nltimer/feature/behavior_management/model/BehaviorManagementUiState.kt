@@ -10,6 +10,7 @@ import java.time.LocalDate
 data class BehaviorManagementUiState(
     val timeRange: TimeRangePreset = TimeRangePreset.ONE_DAY,
     val rangeStartDate: LocalDate = LocalDate.now(),
+    val rangeStartHour: Int = 0,
     val selectedActivityGroup: String? = null,
     val selectedTagCategory: String? = null,
     val selectedStatus: BehaviorNature? = null,

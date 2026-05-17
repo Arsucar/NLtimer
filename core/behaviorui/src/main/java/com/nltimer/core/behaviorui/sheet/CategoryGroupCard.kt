@@ -71,6 +71,7 @@ fun <T : CategorizableItem> CategoryGroupCard(
     showDragHandle: Boolean = true,
     emptyText: String = "暂无项目",
     showItemIcon: Boolean = true,
+    showHeader: Boolean = true,
     headerActions: @Composable (() -> Unit)? = null,
     onAddItem: (() -> Unit)? = null,
     onDragStart: () -> Unit = {},
@@ -123,55 +124,57 @@ fun <T : CategorizableItem> CategoryGroupCard(
         },
     ) {
         Column(modifier = Modifier.padding(8.dp)) {
-            val headerModifier = if (onToggleCollapsed != null) {
-                Modifier
-                    .fillMaxWidth()
-                    .clickable { onToggleCollapsed() }
-            } else {
-                Modifier.fillMaxWidth()
-            }
-            Row(
-                modifier = headerModifier,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                if (showDragHandle) {
-                    Icon(
-                        imageVector = Icons.Default.DragHandle,
-                        contentDescription = "拖拽排序",
-                        modifier = Modifier
-                            .size(32.dp)
-                            .alpha(0.5f)
-                            .pointerInput(index) {
-                                detectDragGesturesAfterLongPress(
-                                    onDragStart = { onDragStart() },
-                                    onDrag = { change, dragAmount ->
-                                        change.consume()
-                                        onDrag(dragAmount.y)
-                                    },
-                                    onDragEnd = { onDragEnd() },
-                                    onDragCancel = { onDragCancel() },
-                                )
-                            },
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
+            if (showHeader) {
+                val headerModifier = if (onToggleCollapsed != null) {
+                    Modifier
+                        .fillMaxWidth()
+                        .clickable { onToggleCollapsed() }
+                } else {
+                    Modifier.fillMaxWidth()
                 }
-                Text(
-                    text = groupName,
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary,
-                )
-                Spacer(modifier = Modifier.weight(1f))
-                Text(
-                    text = "${items.size}",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = styledAlpha(0.6f)),
-                )
-                headerActions?.invoke()
+                Row(
+                    modifier = headerModifier,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    if (showDragHandle) {
+                        Icon(
+                            imageVector = Icons.Default.DragHandle,
+                            contentDescription = "拖拽排序",
+                            modifier = Modifier
+                                .size(32.dp)
+                                .alpha(0.5f)
+                                .pointerInput(index) {
+                                    detectDragGesturesAfterLongPress(
+                                        onDragStart = { onDragStart() },
+                                        onDrag = { change, dragAmount ->
+                                            change.consume()
+                                            onDrag(dragAmount.y)
+                                        },
+                                        onDragEnd = { onDragEnd() },
+                                        onDragCancel = { onDragCancel() },
+                                    )
+                                },
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                    }
+                    Text(
+                        text = groupName,
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                    Spacer(modifier = Modifier.weight(1f))
+                    Text(
+                        text = "${items.size}",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = styledAlpha(0.6f)),
+                    )
+                    headerActions?.invoke()
+                }
             }
             AnimatedVisibility(
-                visible = !collapsed,
+                visible = !collapsed || !showHeader,
                 enter = expandVertically(animationSpec = tween(200)),
                 exit = shrinkVertically(animationSpec = tween(200)),
             ) {
@@ -205,7 +208,7 @@ fun <T : CategorizableItem> CategoryGroupCard(
                                 ItemChip(
                                     item = item,
                                     isSelected = isSelected,
-                                    showIcon = showItemIcon,
+                                    showIcon = showItemIcon && item is ActivityCategorizable,
                                     onClick = {
                                         if (multiSelect) {
                                             val newIds = if (isSelected) selectedIds - item.itemId else selectedIds + item.itemId

@@ -43,6 +43,7 @@ class TagManagementViewModel @Inject constructor(
         }
         loadData()
         loadActivities()
+        loadGroups()
     }
 
     private fun loadData() {
@@ -85,6 +86,14 @@ class TagManagementViewModel @Inject constructor(
         activityRepository.getAllActivities()
             .onEach { activities ->
                 _uiState.update { it.copy(allActivities = activities) }
+            }
+            .launchIn(viewModelScope)
+    }
+
+    private fun loadGroups() {
+        activityRepository.getAllGroups()
+            .onEach { groups ->
+                _uiState.update { it.copy(activityGroups = groups) }
             }
             .launchIn(viewModelScope)
     }

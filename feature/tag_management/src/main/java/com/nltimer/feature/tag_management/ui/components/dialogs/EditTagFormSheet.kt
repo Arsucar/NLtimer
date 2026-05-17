@@ -20,9 +20,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.Activity
+import com.nltimer.core.data.model.ActivityGroup
 import com.nltimer.core.data.model.Tag
-import com.nltimer.core.designsystem.component.CategoryPickerPopup
-import com.nltimer.core.designsystem.component.SingleSelectPickerPopup
+import com.nltimer.core.behaviorui.sheet.ActivityCategorizable
+import com.nltimer.core.behaviorui.sheet.CategoryGroup
+import com.nltimer.core.behaviorui.sheet.CategoryPickerDialog
+import com.nltimer.core.behaviorui.sheet.StringCategoryCategorizable
 import com.nltimer.core.designsystem.form.ActivityFormSpecs
 import com.nltimer.core.designsystem.form.FormRow
 import com.nltimer.core.designsystem.form.GenericFormSheet
@@ -36,6 +39,7 @@ fun EditTagFormSheet(
     tag: Tag,
     categories: List<String>,
     allActivities: List<Activity>,
+    activityGroups: List<ActivityGroup>,
     initialActivityId: Long?,
     onDismiss: () -> Unit,
     onConfirm: (Tag, Long?) -> Unit,
@@ -125,19 +129,91 @@ fun EditTagFormSheet(
                 }
             }
             if (showCategoryPicker) {
-                CategoryPickerPopup(
-                    categories = categories,
-                    selected = selectedCategory,
-                    onSelected = { selectedCategory = it },
+                val categoryItems = remember(categories) {
+                    categories.map { StringCategoryCategorizable(it) }
+                }
+                val groupedCategories = remember(categoryItems) {
+                    listOf(
+                        CategoryGroup(
+                            id = 0L,
+                            name = "所有分类",
+                            items = categoryItems,
+                            onClear = {
+                                selectedCategory = null
+                                showCategoryPicker = false
+                            },
+                            clearLabel = "清除",
+                        )
+                    )
+                }
+                CategoryPickerDialog(
+                    title = "选择所属分类",
+                    items = categoryItems,
+                    categoryGroups = groupedCategories,
+                    selectedId = selectedCategory?.hashCode()?.toLong() ?: 0L,
+                    onItemSelected = { id ->
+                        val selectedName = categoryItems.find { it.itemId == id }?.name
+                        selectedCategory = selectedName
+                        showCategoryPicker = false
+                    },
                     onDismiss = { showCategoryPicker = false },
+                    showHeader = false,
                 )
             }
             if (showActivityPicker) {
-                SingleSelectPickerPopup(
+                val categorizableActivities = remember(allActivities) {
+                    allActivities.map { ActivityCategorizable(it) }
+                }
+                val activityGroupsMap = remember(activityGroups) {
+                    activityGroups.associateBy { it.id }
+                }
+                val groupedActivities = remember(allActivities, activityGroups) {
+                    val initialGroups = allActivities.groupBy { it.groupId }
+                    val hasUncategorized = initialGroups.containsKey(null)
+                    
+                    val baseGroups = initialGroups.map { (groupId, items) ->
+                        val group = if (groupId != null) activityGroupsMap[groupId] else null
+                        CategoryGroup(
+                            id = groupId ?: -1L,
+                            name = group?.name ?: "未分类",
+                            items = items.map { ActivityCategorizable(it) },
+                            onClear = if (groupId == null) {
+                                {
+                                    selectedActivityId = null
+                                    showActivityPicker = false
+                                }
+                            } else null,
+                            clearLabel = if (groupId == null) "清除" else null,
+                        )
+                    }
+                    
+                    val finalGroups = if (hasUncategorized) {
+                        baseGroups
+                    } else {
+                        baseGroups + CategoryGroup<ActivityCategorizable>(
+                            id = -1L,
+                            name = "未分类",
+                            items = emptyList(),
+                            onClear = {
+                                selectedActivityId = null
+                                showActivityPicker = false
+                            },
+                            clearLabel = "未关联",
+                        )
+                    }
+                    
+                    finalGroups.sortedBy { if (it.id == -1L) Long.MIN_VALUE else activityGroupsMap[it.id]?.sortOrder?.toLong() ?: Long.MAX_VALUE }
+                }
+
+                CategoryPickerDialog(
                     title = "关联活动",
-                    items = listOf(null to "未关联") + allActivities.map { it.id to it.name },
-                    selectedId = selectedActivityId,
-                    onSelected = { selectedActivityId = it },
+                    items = categorizableActivities,
+                    categoryGroups = groupedActivities,
+                    selectedId = selectedActivityId ?: -1L,
+                    onItemSelected = { id ->
+                        selectedActivityId = if (id == -1L) null else id
+                        showActivityPicker = false
+                    },
                     onDismiss = { showActivityPicker = false },
                 )
             }

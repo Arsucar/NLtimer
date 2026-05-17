@@ -12,6 +12,7 @@ import com.nltimer.core.data.database.entity.BehaviorEntity
 import com.nltimer.core.data.database.entity.BehaviorTagCrossRefEntity
 import com.nltimer.core.data.database.entity.TagEntity
 import kotlinx.coroutines.flow.first
+import androidx.room.withTransaction
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -29,50 +30,54 @@ class DebugDatabaseHelper @Inject constructor(
 ) {
     // 按外键依赖顺序清除所有表数据
     suspend fun clearAllTables() {
-        behaviorDao.deleteAllTagCrossRefs()
-        behaviorDao.deleteAllActivityTagBindings()
-        behaviorDao.deleteAll()
-        activityDao.deleteAll()
-        tagDao.deleteAll()
-        activityGroupDao.deleteAll()
+        database.withTransaction {
+            behaviorDao.deleteAllTagCrossRefs()
+            behaviorDao.deleteAllActivityTagBindings()
+            behaviorDao.deleteAll()
+            activityDao.deleteAll()
+            tagDao.deleteAll()
+            activityGroupDao.deleteAll()
+        }
     }
 
     // 为所有表批量插入测试数据，建立关联关系
     suspend fun insertAllTestData() {
-        val groupIdWork = activityGroupDao.insert(ActivityGroupEntity(name = "工作", sortOrder = 0))
-        val groupIdLife = activityGroupDao.insert(ActivityGroupEntity(name = "生活", sortOrder = 1))
-        val groupIdSport = activityGroupDao.insert(ActivityGroupEntity(name = "运动", sortOrder = 2))
+        database.withTransaction {
+            val groupIdWork = activityGroupDao.insert(ActivityGroupEntity(name = "工作", sortOrder = 0))
+            val groupIdLife = activityGroupDao.insert(ActivityGroupEntity(name = "生活", sortOrder = 1))
+            val groupIdSport = activityGroupDao.insert(ActivityGroupEntity(name = "运动", sortOrder = 2))
 
-        val activityIdRun = activityDao.insert(ActivityEntity(name = "跑步", iconKey = "🏃", groupId = groupIdSport))
-        val activityIdRead = activityDao.insert(ActivityEntity(name = "阅读", iconKey = "📖", groupId = groupIdLife))
-        val activityIdCode = activityDao.insert(ActivityEntity(name = "编程", iconKey = "💻", groupId = groupIdWork))
-        val activityIdMeeting = activityDao.insert(ActivityEntity(name = "会议", iconKey = "📋", groupId = groupIdWork))
-        val activityIdMeditate = activityDao.insert(ActivityEntity(name = "冥想", iconKey = "🧘", groupId = groupIdLife))
+            val activityIdRun = activityDao.insert(ActivityEntity(name = "跑步", iconKey = "🏃", groupId = groupIdSport))
+            val activityIdRead = activityDao.insert(ActivityEntity(name = "阅读", iconKey = "📖", groupId = groupIdLife))
+            val activityIdCode = activityDao.insert(ActivityEntity(name = "编程", iconKey = "💻", groupId = groupIdWork))
+            val activityIdMeeting = activityDao.insert(ActivityEntity(name = "会议", iconKey = "📋", groupId = groupIdWork))
+            val activityIdMeditate = activityDao.insert(ActivityEntity(name = "冥想", iconKey = "🧘", groupId = groupIdLife))
 
-        val tagIdImportant = tagDao.insert(TagEntity(name = "重要", color = 0xFFFF4444, category = "优先级", priority = 3))
-        val tagIdUrgent = tagDao.insert(TagEntity(name = "紧急", color = 0xFFFF9800, category = "优先级", priority = 2))
-        val tagIdDaily = tagDao.insert(TagEntity(name = "日常", color = 0xFF2196F3, category = "类型", priority = 1))
-        val tagIdFocus = tagDao.insert(TagEntity(name = "专注", color = 0xFF4CAF50, category = "类型", priority = 1))
+            val tagIdImportant = tagDao.insert(TagEntity(name = "重要", color = 0xFFFF4444, category = "优先级", priority = 3))
+            val tagIdUrgent = tagDao.insert(TagEntity(name = "紧急", color = 0xFFFF9800, category = "优先级", priority = 2))
+            val tagIdDaily = tagDao.insert(TagEntity(name = "日常", color = 0xFF2196F3, category = "类型", priority = 1))
+            val tagIdFocus = tagDao.insert(TagEntity(name = "专注", color = 0xFF4CAF50, category = "类型", priority = 1))
 
-        val now = System.currentTimeMillis()
-        val behaviorIdRun = behaviorDao.insert(BehaviorEntity(activityId = activityIdRun, startTime = now - 3600000, endTime = now - 1800000, status = "completed", note = "晨跑30分钟"))
-        val behaviorIdRead = behaviorDao.insert(BehaviorEntity(activityId = activityIdRead, startTime = now - 7200000, endTime = null, status = "active", note = "正在阅读"))
-        val behaviorIdCode = behaviorDao.insert(BehaviorEntity(activityId = activityIdCode, startTime = 0, endTime = null, status = "pending", note = "待开始编程"))
+            val now = System.currentTimeMillis()
+            val behaviorIdRun = behaviorDao.insert(BehaviorEntity(activityId = activityIdRun, startTime = now - 3600000, endTime = now - 1800000, status = "completed", note = "晨跑30分钟"))
+            val behaviorIdRead = behaviorDao.insert(BehaviorEntity(activityId = activityIdRead, startTime = now - 7200000, endTime = null, status = "active", note = "正在阅读"))
+            val behaviorIdCode = behaviorDao.insert(BehaviorEntity(activityId = activityIdCode, startTime = 0, endTime = null, status = "pending", note = "待开始编程"))
 
-        behaviorDao.insertActivityTagBindings(
-            listOf(
-                ActivityTagBindingEntity(activityId = activityIdRun, tagId = tagIdDaily),
-                ActivityTagBindingEntity(activityId = activityIdCode, tagId = tagIdFocus),
-                ActivityTagBindingEntity(activityId = activityIdMeeting, tagId = tagIdUrgent),
+            behaviorDao.insertActivityTagBindings(
+                listOf(
+                    ActivityTagBindingEntity(activityId = activityIdRun, tagId = tagIdDaily),
+                    ActivityTagBindingEntity(activityId = activityIdCode, tagId = tagIdFocus),
+                    ActivityTagBindingEntity(activityId = activityIdMeeting, tagId = tagIdUrgent),
+                )
             )
-        )
 
-        behaviorDao.insertTagCrossRefs(
-            listOf(
-                BehaviorTagCrossRefEntity(behaviorId = behaviorIdRun, tagId = tagIdDaily),
-                BehaviorTagCrossRefEntity(behaviorId = behaviorIdRead, tagId = tagIdFocus),
+            behaviorDao.insertTagCrossRefs(
+                listOf(
+                    BehaviorTagCrossRefEntity(behaviorId = behaviorIdRun, tagId = tagIdDaily),
+                    BehaviorTagCrossRefEntity(behaviorId = behaviorIdRead, tagId = tagIdFocus),
+                )
             )
-        )
+        }
     }
 
     // 清除指定表数据

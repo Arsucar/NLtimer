@@ -2,7 +2,9 @@ package com.nltimer.feature.home.model
 
 import androidx.compose.runtime.Immutable
 import com.nltimer.core.data.model.BehaviorNature
-import java.time.LocalTime
+import kotlinx.collections.immutable.PersistentList
+import kotlinx.collections.immutable.persistentListOf
+import java.time.LocalDateTime
 
 enum class AddSheetMode(val nature: BehaviorNature) {
     COMPLETED(BehaviorNature.COMPLETED),
@@ -12,9 +14,9 @@ enum class AddSheetMode(val nature: BehaviorNature) {
 
 @Immutable
 data class HomeUiState(
-    val items: List<HomeListItem> = emptyList(),
-    val gridSections: List<GridDaySection> = emptyList(),
-    val momentCells: List<GridCellUiState> = emptyList(),
+    val items: PersistentList<HomeListItem> = persistentListOf(),
+    val gridSections: PersistentList<GridDaySection> = persistentListOf(),
+    val momentCells: PersistentList<GridCellUiState> = persistentListOf(),
     val isLoadingMore: Boolean = false,
     val hasReachedEarliest: Boolean = false,
     val addSheetMode: AddSheetMode? = null,
@@ -26,11 +28,11 @@ data class HomeUiState(
     val detailBehavior: BehaviorDetailUiState? = null,
     val isSaving: Boolean = false,
     val errorMessage: String? = null,
-    val lastBehaviorEndTime: LocalTime? = null,
-    val idleStartTime: LocalTime? = null,
-    val idleEndTime: LocalTime? = null,
+    val lastBehaviorEndTime: LocalDateTime? = null,
+    val idleStartTime: LocalDateTime? = null,
+    val idleEndTime: LocalDateTime? = null,
     val editBehaviorId: Long? = null,
     val editInitialActivityId: Long? = null,
-    val editInitialTagIds: List<Long> = emptyList(),
+    val editInitialTagIds: PersistentList<Long> = persistentListOf(),
     val editInitialNote: String? = null,
 )

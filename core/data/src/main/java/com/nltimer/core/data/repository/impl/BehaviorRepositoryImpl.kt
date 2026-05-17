@@ -134,7 +134,7 @@ class BehaviorRepositoryImpl @Inject constructor(
                     startTime = currentEntity.startTime,
                     endTime = clampedEndTime,
                     wasPlanned = currentEntity.wasPlanned,
-                    estimatedDurationMinutes = currentEntity.estimatedDuration,
+                    estimatedDurationMinutes = currentEntity.estimatedDuration?.let { it / 60_000L },
                 )
                 behaviorDao.setActualDuration(currentId, result.durationMs)
                 if (result.achievementLevel != null) {
@@ -226,6 +226,11 @@ class BehaviorRepositoryImpl @Inject constructor(
 
     override fun getBehaviorsWithDetailsByTimeRange(startTime: Long, endTime: Long): Flow<List<BehaviorWithDetails>> =
         behaviorDao.getByTimeRange(startTime, endTime).map { entities ->
+            assembleBehaviorWithDetailsList(entities)
+        }.catch { emit(emptyList()) }
+
+    override fun getBehaviorsWithDetailsOverlappingTimeRange(startTime: Long, endTime: Long): Flow<List<BehaviorWithDetails>> =
+        behaviorDao.getByOverlappingTimeRange(startTime, endTime).map { entities ->
             assembleBehaviorWithDetailsList(entities)
         }.catch { emit(emptyList()) }
 

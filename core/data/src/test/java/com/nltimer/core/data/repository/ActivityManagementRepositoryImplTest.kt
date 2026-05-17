@@ -417,6 +417,7 @@ class ActivityManagementRepositoryImplTest {
         override suspend fun getAllCrossRefsSync(): List<BehaviorTagCrossRefEntity> = emptyList()
         override suspend fun getAllActivityTagBindingsSync(): List<ActivityTagBindingEntity> = emptyList()
         override fun getBehaviorsOverlappingRange(rangeStart: Long, rangeEnd: Long): Flow<List<BehaviorEntity>> = flowOf(emptyList())
+        override fun getByOverlappingTimeRange(rangeStart: Long, rangeEnd: Long): Flow<List<BehaviorEntity>> = flowOf(emptyList())
         override fun getByTimeRange(startTime: Long, endTime: Long): Flow<List<BehaviorEntity>> = flowOf(emptyList())
         override suspend fun getByTimeRangeSync(startTime: Long, endTime: Long): List<BehaviorEntity> = emptyList()
         override suspend fun getTagsForBehaviorsSync(behaviorIds: List<Long>): List<BehaviorTagRow> = emptyList()

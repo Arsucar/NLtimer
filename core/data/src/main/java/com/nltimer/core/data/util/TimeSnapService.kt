@@ -21,6 +21,20 @@ class TimeSnapService {
         var adjustedStart = newStart
         var adjustedEnd = newEnd
 
+        if (newStatus == BehaviorNature.COMPLETED) {
+            val effectiveNewEnd = adjustedEnd ?: adjustedStart
+            val hasConflict = effectiveNewEnd > adjustedStart &&
+                hasTimeConflict(
+                    newStart = adjustedStart,
+                    newEnd = adjustedEnd,
+                    newStatus = newStatus,
+                    existingBehaviors = overlappingBehaviors,
+                    currentTime = currentTime,
+                    ignoreBehaviorId = ignoreBehaviorId,
+                )
+            return SnapResult(adjustedStart, adjustedEnd, hasConflict)
+        }
+
         if (newStatus != BehaviorNature.PENDING) {
             val prevBehavior = overlappingBehaviors
                 .filter { it.endTime != null && it.endTime >= adjustedStart }

@@ -21,13 +21,14 @@ import com.nltimer.core.data.model.GridLayoutStyle
 import com.nltimer.core.designsystem.theme.TimeLabelConfig
 import com.nltimer.feature.home.model.GridCellUiState
 import com.nltimer.feature.home.model.GridRowUiState
+import java.time.LocalDateTime
 import java.time.LocalTime
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun GridRow(
     row: GridRowUiState,
-    onEmptyCellClick: (idleStart: LocalTime?, idleEnd: LocalTime?) -> Unit,
+    onEmptyCellClick: (idleStart: LocalDateTime?, idleEnd: LocalDateTime?) -> Unit,
     onCellLongClick: (GridCellUiState) -> Unit = {},
     timeLabelConfig: TimeLabelConfig = TimeLabelConfig(),
     modifier: Modifier = Modifier,

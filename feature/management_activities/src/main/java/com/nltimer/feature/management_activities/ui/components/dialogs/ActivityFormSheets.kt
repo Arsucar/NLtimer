@@ -16,8 +16,10 @@ import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
 import com.nltimer.core.data.model.Tag
 import com.nltimer.core.data.model.AddActivityCallback
-import com.nltimer.core.designsystem.component.GroupPickerPopup
-import com.nltimer.core.designsystem.component.MultiSelectPickerPopup
+import com.nltimer.core.behaviorui.sheet.ActivityGroupCategorizable
+import com.nltimer.core.behaviorui.sheet.CategoryGroup
+import com.nltimer.core.behaviorui.sheet.CategoryPickerDialog
+import com.nltimer.core.behaviorui.sheet.TagCategorizable
 import com.nltimer.core.designsystem.form.ActivityFormSpecs
 import com.nltimer.core.designsystem.form.FormRow
 import com.nltimer.core.designsystem.form.GenericFormSheet
@@ -75,21 +77,58 @@ fun AddActivityFormSheet(
         },
         overlay = {
             if (showGroupPicker) {
-                GroupPickerPopup(
-                    groups = allGroups.map { it.id to it.name },
-                    selectedId = selectedGroupId,
-                    onSelected = { selectedGroupId = it },
+                val groupItems = remember(allGroups) {
+                    allGroups.map { ActivityGroupCategorizable(it) }
+                }
+                val groupedGroups = remember(groupItems) {
+                    listOf(
+                        CategoryGroup(
+                            id = 0L,
+                            name = "所有分组",
+                            items = groupItems,
+                            onClear = {
+                                selectedGroupId = null
+                                showGroupPicker = false
+                            },
+                            clearLabel = "清除",
+                        )
+                    )
+                }
+                CategoryPickerDialog(
+                    title = "选择所属分组",
+                    items = groupItems,
+                    categoryGroups = groupedGroups,
+                    selectedId = selectedGroupId ?: 0L,
+                    onItemSelected = { id ->
+                        selectedGroupId = id
+                        showGroupPicker = false
+                    },
                     onDismiss = { showGroupPicker = false },
+                    showHeader = false,
                 )
             }
             if (showTagPicker) {
-                MultiSelectPickerPopup(
+                val categorizableTags = remember(allTags) {
+                    allTags.map { TagCategorizable(it) }
+                }
+                val groupedTags = remember(allTags) {
+                    allTags.groupBy { it.category ?: "未分类" }
+                        .map { (category, items) ->
+                            CategoryGroup(
+                                id = category.hashCode().toLong(),
+                                name = category,
+                                items = items.map { TagCategorizable(it) }
+                            )
+                        }
+                        .sortedBy { if (it.name == "未分类") "" else it.name }
+                }
+                CategoryPickerDialog(
                     title = "关联标签",
-                    items = allTags,
-                    label = { it.name },
+                    items = categorizableTags,
+                    categoryGroups = groupedTags,
                     selectedIds = selectedTagIds,
-                    itemId = { it.id },
-                    onSelectionChanged = { selectedTagIds = it },
+                    multiSelect = true,
+                    onItemsSelected = { selectedTagIds = it },
                     onDismiss = { showTagPicker = false },
                 )
             }
@@ -169,21 +208,58 @@ fun EditActivityFormSheet(
         },
         overlay = {
             if (showGroupPicker) {
-                GroupPickerPopup(
-                    groups = allGroups.map { it.id to it.name },
-                    selectedId = selectedGroupId,
-                    onSelected = { selectedGroupId = it },
+                val groupItems = remember(allGroups) {
+                    allGroups.map { ActivityGroupCategorizable(it) }
+                }
+                val groupedGroups = remember(groupItems) {
+                    listOf(
+                        CategoryGroup(
+                            id = 0L,
+                            name = "所有分组",
+                            items = groupItems,
+                            onClear = {
+                                selectedGroupId = null
+                                showGroupPicker = false
+                            },
+                            clearLabel = "清除",
+                        )
+                    )
+                }
+                CategoryPickerDialog(
+                    title = "选择所属分组",
+                    items = groupItems,
+                    categoryGroups = groupedGroups,
+                    selectedId = selectedGroupId ?: 0L,
+                    onItemSelected = { id ->
+                        selectedGroupId = id
+                        showGroupPicker = false
+                    },
                     onDismiss = { showGroupPicker = false },
+                    showHeader = false,
                 )
             }
             if (showTagPicker) {
-                MultiSelectPickerPopup(
+                val categorizableTags = remember(allTags) {
+                    allTags.map { TagCategorizable(it) }
+                }
+                val groupedTags = remember(allTags) {
+                    allTags.groupBy { it.category ?: "未分类" }
+                        .map { (category, items) ->
+                            CategoryGroup(
+                                id = category.hashCode().toLong(),
+                                name = category,
+                                items = items.map { TagCategorizable(it) }
+                            )
+                        }
+                        .sortedBy { if (it.name == "未分类") "" else it.name }
+                }
+                CategoryPickerDialog(
                     title = "关联标签",
-                    items = allTags,
-                    label = { it.name },
+                    items = categorizableTags,
+                    categoryGroups = groupedTags,
                     selectedIds = selectedTagIds,
-                    itemId = { it.id },
-                    onSelectionChanged = { selectedTagIds = it },
+                    multiSelect = true,
+                    onItemsSelected = { selectedTagIds = it },
                     onDismiss = { showTagPicker = false },
                 )
             }

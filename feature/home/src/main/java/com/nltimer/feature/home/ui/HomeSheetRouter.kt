@@ -17,9 +17,7 @@ import com.nltimer.core.behaviorui.sheet.AddCurrentBehaviorSheet
 import com.nltimer.core.behaviorui.sheet.AddTargetBehaviorSheet
 import com.nltimer.core.tools.match.NoteProcessOutcome
 import com.nltimer.core.tools.match.NoteScanResult
-import java.time.LocalDate
-import java.time.LocalTime
-import java.time.ZoneId
+import java.time.LocalDateTime
 
 @Composable
 internal fun HomeSheetRouter(
@@ -32,7 +30,7 @@ internal fun HomeSheetRouter(
     tagLastUsedMap: Map<Long, Long?> = emptyMap(),
     tagCategoryOrder: List<String> = emptyList(),
     onDismissSheet: () -> Unit,
-    onAddBehavior: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, endTime: LocalTime?, nature: BehaviorNature, note: String?) -> Unit,
+    onAddBehavior: (activityId: Long, tagIds: List<Long>, startTime: LocalDateTime, endTime: LocalDateTime?, nature: BehaviorNature, note: String?, estimatedDurationMs: Long?) -> Unit,
     onAddActivity: (name: String, iconKey: String?, color: Long?, groupId: Long?, keywords: String?, tagIds: List<Long>) -> Unit,
     onAddTag: (name: String, color: Long?, icon: String?, priority: Int, category: String?, keywords: String?, activityId: Long?) -> Unit,
     onActivityGroupsReordered: (List<Long>) -> Unit = {},
@@ -50,16 +48,9 @@ internal fun HomeSheetRouter(
                     Behavior(
                         id = cell.behaviorId!!,
                         activityId = 0,
-                        startTime = cell.startTime
-                            ?.atDate(LocalDate.now())
-                            ?.atZone(ZoneId.systemDefault())
-                            ?.toInstant()
-                            ?.toEpochMilli() ?: 0,
-                        endTime = cell.endTime
-                            ?.atDate(LocalDate.now())
-                            ?.atZone(ZoneId.systemDefault())
-                            ?.toInstant()
-                            ?.toEpochMilli(),
+                        startTime = cell.startEpochMs
+                            ?: error("startEpochMs missing for behaviorId=${cell.behaviorId}"),
+                        endTime = cell.endEpochMs,
                         status = cell.status!!,
                         note = cell.note,
                         pomodoroCount = cell.pomodoroCount,
@@ -104,7 +95,7 @@ internal fun HomeSheetRouter(
             activityGroups = activityGroups,
             allTags = allTags,
             dialogConfig = dialogConfig,
-            initialStartTime = uiState.idleStartTime ?: LocalTime.now(),
+            initialStartTime = uiState.idleStartTime ?: LocalDateTime.now(),
             initialActivityId = uiState.editInitialActivityId,
             initialTagIds = uiState.editInitialTagIds,
             initialNote = uiState.editInitialNote,

@@ -1,5 +1,6 @@
 package com.nltimer.feature.behavior_management.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,7 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
@@ -33,12 +34,15 @@ import com.nltimer.core.behaviorui.sheet.AddBehaviorSheet
 import com.nltimer.core.designsystem.component.EmptyStateView
 import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.model.BehaviorWithDetails
-import com.nltimer.core.data.util.epochToLocalTime
+import com.nltimer.core.data.util.epochToLocalDate
+import com.nltimer.core.data.util.epochToLocalDateTime
 import com.nltimer.core.data.util.formatDurationCompactHm
 import com.nltimer.feature.behavior_management.model.DuplicateHandling
 import com.nltimer.feature.behavior_management.model.ViewMode
 import com.nltimer.feature.behavior_management.viewmodel.BehaviorManagementViewModel
-import java.time.LocalTime
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -62,6 +66,9 @@ fun BehaviorManagementScreen(
 
     val editBehavior = remember(uiState.editBehaviorId, uiState.behaviors) {
         uiState.behaviors.find { it.behavior.id == uiState.editBehaviorId }
+    }
+    val displayItems = remember(uiState.behaviors) {
+        buildDisplayItems(uiState.behaviors)
     }
 
     Box(modifier = modifier.fillMaxSize()) {
@@ -107,8 +114,10 @@ fun BehaviorManagementScreen(
                     TimeRangeSelector(
                         currentPreset = uiState.timeRange,
                         currentDate = uiState.rangeStartDate,
+                        currentHour = uiState.rangeStartHour,
                         onPresetChange = viewModel::setTimeRange,
                         onDateChange = viewModel::setRangeStartDate,
+                        onHourChange = viewModel::setRangeStartHour,
                         onNavigate = viewModel::navigateRange,
                         modifier = Modifier.weight(1f),
                     )
@@ -158,41 +167,55 @@ fun BehaviorManagementScreen(
                     contentPadding = PaddingValues(vertical = 4.dp),
                 ) {
                     if (uiState.viewMode == ViewMode.LIST) {
-                        itemsIndexed(
-                            items = uiState.behaviors,
-                            key = { _, item -> item.behavior.id },
-                        ) { index, item ->
-                            BehaviorListItem(
-                                behaviorWithDetails = item,
-                                isSelected = item.behavior.id in uiState.selectedBehaviorIds,
-                                onClick = {
-                                    if (uiState.isMultiSelectMode) {
-                                        viewModel.toggleMultiSelect(item.behavior.id)
-                                    } else {
-                                        viewModel.startEditBehavior(item.behavior.id)
-                                    }
-                                },
-                                onLongClick = { viewModel.toggleMultiSelect(item.behavior.id) },
-                                isEvenItem = index % 2 == 0,
-                            )
+                        items(
+                            items = displayItems,
+                            key = { it.key },
+                            contentType = { if (it is BehaviorManagementDisplayItem.DayDivider) "day" else "behavior" },
+                        ) { displayItem ->
+                            when (displayItem) {
+                                is BehaviorManagementDisplayItem.DayDivider -> DayDividerRow(displayItem.label)
+                                is BehaviorManagementDisplayItem.BehaviorRow -> {
+                                    val item = displayItem.behaviorWithDetails
+                                    BehaviorListItem(
+                                        behaviorWithDetails = item,
+                                        isSelected = item.behavior.id in uiState.selectedBehaviorIds,
+                                        onClick = {
+                                            if (uiState.isMultiSelectMode) {
+                                                viewModel.toggleMultiSelect(item.behavior.id)
+                                            } else {
+                                                viewModel.startEditBehavior(item.behavior.id)
+                                            }
+                                        },
+                                        onLongClick = { viewModel.toggleMultiSelect(item.behavior.id) },
+                                        isEvenItem = displayItem.behaviorIndex % 2 == 0,
+                                    )
+                                }
+                            }
                         }
                     } else {
-                        itemsIndexed(
-                            items = uiState.behaviors,
-                            key = { _, item -> item.behavior.id },
-                        ) { index, item ->
-                            BehaviorTimelineItem(
-                                behaviorWithDetails = item,
-                                isLast = index == uiState.behaviors.lastIndex,
-                                onClick = {
-                                    if (uiState.isMultiSelectMode) {
-                                        viewModel.toggleMultiSelect(item.behavior.id)
-                                    } else {
-                                        viewModel.startEditBehavior(item.behavior.id)
-                                    }
-                                },
-                                onLongClick = { viewModel.toggleMultiSelect(item.behavior.id) },
-                            )
+                        items(
+                            items = displayItems,
+                            key = { it.key },
+                            contentType = { if (it is BehaviorManagementDisplayItem.DayDivider) "day" else "behavior" },
+                        ) { displayItem ->
+                            when (displayItem) {
+                                is BehaviorManagementDisplayItem.DayDivider -> DayDividerRow(displayItem.label)
+                                is BehaviorManagementDisplayItem.BehaviorRow -> {
+                                    val item = displayItem.behaviorWithDetails
+                                    BehaviorTimelineItem(
+                                        behaviorWithDetails = item,
+                                        isLast = displayItem.isLastInDay,
+                                        onClick = {
+                                            if (uiState.isMultiSelectMode) {
+                                                viewModel.toggleMultiSelect(item.behavior.id)
+                                            } else {
+                                                viewModel.startEditBehavior(item.behavior.id)
+                                            }
+                                        },
+                                        onLongClick = { viewModel.toggleMultiSelect(item.behavior.id) },
+                                    )
+                                }
+                            }
                         }
                     }
                 }
@@ -206,8 +229,8 @@ fun BehaviorManagementScreen(
     }
 
     editBehavior?.let { bwd ->
-        val initialStartTime = bwd.behavior.startTime.epochToLocalTime()
-        val initialEndTime = bwd.behavior.endTime?.epochToLocalTime()
+        val initialStartTime = bwd.behavior.startTime.epochToLocalDateTime()
+        val initialEndTime = bwd.behavior.endTime?.epochToLocalDateTime()
 
         AddBehaviorSheet(
             activities = activities,
@@ -224,7 +247,7 @@ fun BehaviorManagementScreen(
             tagLastUsedMap = tagLastUsedMap,
             tagCategoryOrder = tagCategoryOrder,
             onDismiss = viewModel::finishEditBehavior,
-            onConfirm = { activityId, tagIds, startTime, endTime, nature, note ->
+            onConfirm = { activityId, tagIds, startTime, endTime, nature, note, _ ->
                 viewModel.updateBehavior(
                     bwd.behavior.id, activityId, tagIds, startTime, endTime, nature, note,
                 )
@@ -245,6 +268,73 @@ fun BehaviorManagementScreen(
                 }
             },
             onDismiss = viewModel::dismissImportPreview,
+        )
+    }
+}
+
+private sealed interface BehaviorManagementDisplayItem {
+    val key: String
+
+    data class DayDivider(
+        val date: LocalDate,
+        val label: String,
+    ) : BehaviorManagementDisplayItem {
+        override val key: String = "day-$date"
+    }
+
+    data class BehaviorRow(
+        val behaviorWithDetails: BehaviorWithDetails,
+        val behaviorIndex: Int,
+        val isLastInDay: Boolean,
+    ) : BehaviorManagementDisplayItem {
+        override val key: String = "behavior-${behaviorWithDetails.behavior.id}"
+    }
+}
+
+private val dayDividerFormatter: DateTimeFormatter =
+    DateTimeFormatter.ofPattern("yyyy/M/d E", Locale.CHINA)
+
+private fun buildDisplayItems(
+    behaviors: List<BehaviorWithDetails>,
+): List<BehaviorManagementDisplayItem> {
+    val result = mutableListOf<BehaviorManagementDisplayItem>()
+    var currentDate: LocalDate? = null
+    behaviors.forEachIndexed { index, item ->
+        val date = item.behavior.startTime.epochToLocalDate()
+        if (date != currentDate) {
+            currentDate = date
+            result.add(
+                BehaviorManagementDisplayItem.DayDivider(
+                    date = date,
+                    label = date.format(dayDividerFormatter),
+                )
+            )
+        }
+        val nextDate = behaviors.getOrNull(index + 1)?.behavior?.startTime?.epochToLocalDate()
+        result.add(
+            BehaviorManagementDisplayItem.BehaviorRow(
+                behaviorWithDetails = item,
+                behaviorIndex = index,
+                isLastInDay = nextDate != date,
+            )
+        )
+    }
+    return result
+}
+
+@Composable
+private fun DayDividerRow(label: String) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surface)
+            .padding(vertical = 8.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }

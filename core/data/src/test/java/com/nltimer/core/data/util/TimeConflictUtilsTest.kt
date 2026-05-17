@@ -191,6 +191,16 @@ class TimeConflictUtilsTest {
     }
 
     @Test
+    fun `idle range inside adjacent millisecond boundaries does not conflict`() {
+        val existing = listOf(
+            createBehavior(1, 10_000, 15_000, BehaviorNature.COMPLETED),
+            createBehavior(2, 18_000, 20_000, BehaviorNature.COMPLETED),
+        )
+
+        assertFalse(hasTimeConflict(15_001, 18_000, BehaviorNature.COMPLETED, existing))
+    }
+
+    @Test
     fun `very large time range conflicts`() {
         val existing = listOf(createBehavior(1, Long.MAX_VALUE - 1000, null, BehaviorNature.ACTIVE))
         assertTrue(hasTimeConflict(Long.MAX_VALUE - 500, null, BehaviorNature.ACTIVE, existing, currentTime = Long.MAX_VALUE))

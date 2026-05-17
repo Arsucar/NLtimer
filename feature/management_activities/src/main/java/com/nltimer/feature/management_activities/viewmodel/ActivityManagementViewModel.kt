@@ -18,11 +18,13 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.Job
@@ -58,45 +60,59 @@ class ActivityManagementViewModel @Inject constructor(
     }
 
     private fun loadData() {
-        combine(
-            repository.getUncategorizedActivities(),
-            repository.getAllGroups(),
-        ) { uncategorized, groups ->
-            val groupsWithActivities = groups.map { group ->
-                GroupWithActivities(group, emptyList())
-            }
-            _uiState.update {
-                val groupIds = groups.map { group -> group.id }.toSet()
-                it.copy(
-                    isLoading = false,
-                    uncategorizedActivities = uncategorized,
-                    groups = groupsWithActivities,
-                    allGroups = groups,
-                    expandedGroupIds = if (it.groups.isEmpty() && it.expandedGroupIds.isEmpty()) {
-                        groupIds
-                    } else {
-                        it.expandedGroupIds + (groupIds - it.expandedGroupIds)
-                    },
-                )
-            }
-        }
+        repository.getUncategorizedActivities()
             .catch { _uiState.update { it.copy(isLoading = false) } }
+            .onEach { uncategorized ->
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        uncategorizedActivities = uncategorized,
+                    )
+                }
+            }
             .launchIn(viewModelScope)
 
-        viewModelScope.launch {
-            repository.getAllGroups().collect { groups ->
-                val currentGroupIds = groups.map { it.id }.toSet()
-                _uiState.update { state ->
-                    state.copy(groups = state.groups.filter { it.group.id in currentGroupIds })
+        val groupsFlow = repository.getAllGroups()
+            .catch { _uiState.update { it.copy(isLoading = false) } }
+            .shareIn(viewModelScope, SharingStarted.WhileSubscribed(5000), replay = 1)
+
+        groupsFlow
+            .onEach { groups ->
+                _uiState.update {
+                    val activitiesByGroupId = it.groups.associate { groupWithActivities ->
+                        groupWithActivities.group.id to groupWithActivities.activities
+                    }
+                    val groupsWithActivities = groups.map { group ->
+                        GroupWithActivities(group, activitiesByGroupId[group.id].orEmpty())
+                    }
+                    val groupIds = groups.map { group -> group.id }.toSet()
+                    it.copy(
+                        isLoading = false,
+                        groups = groupsWithActivities,
+                        allGroups = groups,
+                        expandedGroupIds = if (it.groups.isEmpty() && it.expandedGroupIds.isEmpty()) {
+                            groupIds
+                        } else {
+                            it.expandedGroupIds + (groupIds - it.expandedGroupIds)
+                        },
+                    )
                 }
+            }
+            .launchIn(viewModelScope)
+
+        groupsFlow
+            .map { groups -> groups.map { group -> group.id } }
+            .distinctUntilChanged()
+            .onEach { groupIds ->
                 groupActivityJobs.forEach { it.cancel() }
                 groupActivityJobs.clear()
-                groups.forEach { group ->
-                    val job = repository.getActivitiesByGroup(group.id)
+
+                groupIds.forEach { groupId ->
+                    val job = repository.getActivitiesByGroup(groupId)
                         .onEach { activities ->
                             _uiState.update { uiState ->
                                 val updatedGroups = uiState.groups.map { gwa ->
-                                    if (gwa.group.id == group.id) {
+                                    if (gwa.group.id == groupId) {
                                         gwa.copy(activities = activities)
                                     } else {
                                         gwa
@@ -109,7 +125,7 @@ class ActivityManagementViewModel @Inject constructor(
                     groupActivityJobs.add(job)
                 }
             }
-        }
+            .launchIn(viewModelScope)
     }
 
     private fun loadTags() {

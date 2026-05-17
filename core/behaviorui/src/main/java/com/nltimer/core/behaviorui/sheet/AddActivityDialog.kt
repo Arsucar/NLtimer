@@ -8,8 +8,6 @@ import androidx.compose.runtime.setValue
 import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
 import com.nltimer.core.data.model.Tag
-import com.nltimer.core.designsystem.component.MultiSelectPickerPopup
-import com.nltimer.core.designsystem.component.SingleSelectPickerPopup
 import com.nltimer.core.designsystem.component.tagCountLabel
 import com.nltimer.core.designsystem.form.ActivityFormSpecs
 import com.nltimer.core.designsystem.form.FormRow
@@ -70,22 +68,48 @@ fun AddActivityDialog(
         },
         overlay = {
             if (showGroupPicker) {
-                SingleSelectPickerPopup(
+                val groupItems = remember(allGroups) {
+                    val list = listOf(ActivityGroup(id = 0L, name = "未分类", sortOrder = -1)) + allGroups
+                    list.map { ActivityGroupCategorizable(it) }
+                }
+                val groupedGroups = remember(groupItems) {
+                    listOf(CategoryGroup(id = 0L, name = "所有分组", items = groupItems))
+                }
+                CategoryPickerDialog(
                     title = "选择所属分组",
                     items = groupItems,
-                    selectedId = selectedGroupId,
-                    onSelected = { selectedGroupId = it },
+                    categoryGroups = groupedGroups,
+                    selectedId = selectedGroupId ?: 0L,
+                    onItemSelected = { id ->
+                        selectedGroupId = if (id == 0L) null else id
+                        showGroupPicker = false
+                    },
                     onDismiss = { showGroupPicker = false },
+                    showHeader = false,
                 )
             }
             if (showTagPicker) {
-                MultiSelectPickerPopup(
+                val categorizableTags = remember(allTags) {
+                    allTags.map { TagCategorizable(it) }
+                }
+                val groupedTags = remember(allTags) {
+                    allTags.groupBy { it.category ?: "未分类" }
+                        .map { (category, items) ->
+                            CategoryGroup(
+                                id = category.hashCode().toLong(),
+                                name = category,
+                                items = items.map { TagCategorizable(it) }
+                            )
+                        }
+                        .sortedBy { if (it.name == "未分类") "" else it.name }
+                }
+                CategoryPickerDialog(
                     title = "关联标签",
-                    items = allTags,
-                    label = { it.name },
+                    items = categorizableTags,
+                    categoryGroups = groupedTags,
                     selectedIds = selectedTagIds,
-                    itemId = { it.id },
-                    onSelectionChanged = { selectedTagIds = it },
+                    multiSelect = true,
+                    onItemsSelected = { selectedTagIds = it },
                     onDismiss = { showTagPicker = false },
                 )
             }

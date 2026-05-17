@@ -49,6 +49,7 @@ interface BehaviorRepository {
     suspend fun getTagsForBehaviors(behaviorIds: List<Long>): Map<Long, List<Tag>>
 
     fun getBehaviorsWithDetailsByTimeRange(startTime: Long, endTime: Long): Flow<List<BehaviorWithDetails>>
+    fun getBehaviorsWithDetailsOverlappingTimeRange(startTime: Long, endTime: Long): Flow<List<BehaviorWithDetails>>
     suspend fun getBehaviorsWithDetailsByTimeRangeSync(startTime: Long, endTime: Long): List<BehaviorWithDetails>
     fun getTotalDurationAllBehaviors(): Flow<Long>
 

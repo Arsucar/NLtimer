@@ -33,6 +33,8 @@ import com.nltimer.feature.home.model.AddSheetMode
 import com.nltimer.feature.home.model.GridCellUiState
 import com.nltimer.feature.home.model.HomeUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -46,6 +48,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
 import javax.inject.Inject
 
@@ -184,10 +187,18 @@ class HomeViewModel @Inject constructor(
             }.collect { snapshot ->
                 val state = buildUiState(snapshot.behaviors)
                 val reached = snapshot.earliestRecord?.let { !snapshot.loadedEarliest.isAfter(it) } ?: false
-                _uiState.update {
+                _uiState.update { current ->
                     state.copy(
                         isLoadingMore = snapshot.isLoadingMore,
                         hasReachedEarliest = reached,
+                        addSheetMode = current.addSheetMode,
+                        idleStartTime = current.idleStartTime,
+                        idleEndTime = current.idleEndTime,
+                        editBehaviorId = current.editBehaviorId,
+                        editInitialActivityId = current.editInitialActivityId,
+                        editInitialTagIds = current.editInitialTagIds,
+                        editInitialNote = current.editInitialNote,
+                        errorMessage = current.errorMessage,
                     )
                 }
                 _isLoadingMore.value = false
@@ -234,7 +245,7 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun showAddSheet(mode: AddSheetMode = AddSheetMode.COMPLETED, idleStart: LocalTime? = null, idleEnd: LocalTime? = null) {
+    fun showAddSheet(mode: AddSheetMode = AddSheetMode.COMPLETED, idleStart: LocalDateTime? = null, idleEnd: LocalDateTime? = null) {
         _uiState.update { it.copy(addSheetMode = mode, idleStartTime = idleStart, idleEndTime = idleEnd) }
     }
 
@@ -250,7 +261,7 @@ class HomeViewModel @Inject constructor(
                 addSheetMode = mode,
                 editBehaviorId = cell.behaviorId,
                 editInitialActivityId = null,
-                editInitialTagIds = cell.tags.map { tag -> tag.id },
+                editInitialTagIds = cell.tags.map { tag -> tag.id }.toPersistentList(),
                 editInitialNote = cell.note,
                 idleStartTime = cell.startTime,
                 idleEndTime = cell.endTime,
@@ -274,7 +285,7 @@ class HomeViewModel @Inject constructor(
                 idleEndTime = null,
                 editBehaviorId = null,
                 editInitialActivityId = null,
-                editInitialTagIds = emptyList(),
+                editInitialTagIds = persistentListOf(),
                 editInitialNote = null,
             )
         }
@@ -292,6 +303,7 @@ class HomeViewModel @Inject constructor(
         endTime: Long?,
         status: BehaviorNature,
         note: String?,
+        estimatedDurationMs: Long? = null,
     ) {
         val editId = _uiState.value.editBehaviorId
         viewModelScope.launch {
@@ -303,6 +315,7 @@ class HomeViewModel @Inject constructor(
                 status = status,
                 note = note,
                 editBehaviorId = editId,
+                estimatedDurationMs = estimatedDurationMs,
             )) {
                 is AddBehaviorUseCase.Result.Success -> hideAddSheet()
                 is AddBehaviorUseCase.Result.Conflict ->

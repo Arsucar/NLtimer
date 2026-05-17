@@ -22,6 +22,7 @@ fun TagManagementSheetRouter(
                     initialCategory = dialog.category,
                     categories = uiState.categoryNames,
                     allActivities = uiState.allActivities,
+                    activityGroups = uiState.activityGroups,
                     onDismiss = { viewModel.dismissDialog() },
                     onConfirm = { name, color, icon, priority, category, keywords, activityId ->
                         viewModel.addTag(name, color, icon, priority, category, keywords, activityId)
@@ -33,6 +34,7 @@ fun TagManagementSheetRouter(
                     tag = dialog.tag,
                     categories = uiState.categoryNames,
                     allActivities = uiState.allActivities,
+                    activityGroups = uiState.activityGroups,
                     initialActivityId = dialog.activityId,
                     onDismiss = { viewModel.dismissDialog() },
                     onConfirm = { tag, activityId ->

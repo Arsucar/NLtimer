@@ -28,4 +28,6 @@ dependencies {
     implementation(libs.hilt.navigation.compose)
     implementation(libs.lifecycle.viewmodel.compose)
     implementation(libs.lifecycle.runtime.compose)
+
+    implementation(libs.room.ktx)
 }

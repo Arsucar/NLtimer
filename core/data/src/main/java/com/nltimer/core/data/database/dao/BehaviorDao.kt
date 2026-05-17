@@ -249,6 +249,22 @@ interface BehaviorDao {
         rangeEnd: Long,
     ): Flow<List<BehaviorEntity>>
 
+    /** 按时间重叠范围查询行为（流式，用于行为管理 UI 观察） */
+    @Query(
+        """
+        SELECT * FROM behaviors
+        WHERE startTime < :rangeEnd
+          AND (
+              endTime IS NULL
+              OR endTime > :rangeStart
+          )
+          AND status != 'pending'
+          AND startTime > 0
+        ORDER BY startTime ASC
+        """
+    )
+    fun getByOverlappingTimeRange(rangeStart: Long, rangeEnd: Long): Flow<List<BehaviorEntity>>
+
     @Query(
         """
         SELECT COUNT(*) as usageCount,

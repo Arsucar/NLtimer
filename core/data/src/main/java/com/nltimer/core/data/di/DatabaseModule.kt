@@ -12,6 +12,9 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import java.util.concurrent.Executors
+import java.util.concurrent.ThreadFactory
+import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Singleton
 
 @Module
@@ -28,7 +31,15 @@ object DatabaseModule {
         )
             .fallbackToDestructiveMigration(true)
             .addMigrations(*NLtimerDatabase.ALL_MIGRATIONS)
+            .setQueryExecutor(Executors.newFixedThreadPool(4, namedThreadFactory("room-query")))
             .build()
+
+    private fun namedThreadFactory(prefix: String): ThreadFactory {
+        val count = AtomicInteger(1)
+        return ThreadFactory { runnable ->
+            Thread(runnable, "$prefix-${count.getAndIncrement()}")
+        }
+    }
 
     @Provides
     fun provideActivityDao(database: NLtimerDatabase): ActivityDao =

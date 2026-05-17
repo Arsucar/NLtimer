@@ -50,9 +50,11 @@ class ActivityManagementViewModelTest {
     }
 
     @Test
-    fun `initial state is loading`() = runTest {
+    fun `empty data updates state after initial load`() = runTest {
+        advanceUntilIdle()
+
         val uiState = viewModel.uiState.value
-        assertTrue(uiState.isLoading)
+        assertFalse(uiState.isLoading)
         assertTrue(uiState.uncategorizedActivities.isEmpty())
         assertTrue(uiState.groups.isEmpty())
         assertNull(uiState.dialogState)
@@ -73,6 +75,24 @@ class ActivityManagementViewModelTest {
         assertEquals("活动A", uiState.uncategorizedActivities[0].name)
         assertEquals(1, uiState.groups.size)
         assertEquals("分组A", uiState.groups[0].group.name)
+    }
+
+    @Test
+    fun `uncategorized changes do not clear loaded group activities`() = runTest {
+        val groupActivity = Activity(id = 1L, name = "组内活动", groupId = 1L)
+        val uncategorized = Activity(id = 2L, name = "未分组")
+        val group = ActivityGroup(id = 1L, name = "分组A")
+
+        repository.emitGroups(listOf(group))
+        repository.emitActivitiesForGroup(1L, listOf(groupActivity))
+        advanceUntilIdle()
+
+        repository.emitUncategorized(listOf(uncategorized))
+        advanceUntilIdle()
+
+        val uiState = viewModel.uiState.value
+        assertEquals(listOf(groupActivity), uiState.groups.single().activities)
+        assertEquals(listOf(uncategorized), uiState.uncategorizedActivities)
     }
 
     @Test
@@ -246,6 +266,7 @@ class ActivityManagementViewModelTest {
     private class FakeActivityManagementRepository : ActivityManagementRepository {
         private val _uncategorized = MutableStateFlow<List<Activity>>(emptyList())
         private val _groups = MutableStateFlow<List<ActivityGroup>>(emptyList())
+        private val activitiesByGroupId = mutableMapOf<Long, MutableStateFlow<List<Activity>>>()
 
         var initializePresetsCalled = false
         val addedActivities = mutableListOf<Activity>()
@@ -264,10 +285,17 @@ class ActivityManagementViewModelTest {
             _groups.value = groups
         }
 
+        fun emitActivitiesForGroup(groupId: Long, activities: List<Activity>) {
+            activitiesFlowForGroup(groupId).value = activities
+        }
+
+        private fun activitiesFlowForGroup(groupId: Long): MutableStateFlow<List<Activity>> =
+            activitiesByGroupId.getOrPut(groupId) { MutableStateFlow(emptyList()) }
+
         override fun getAllActivities(): Flow<List<Activity>> = flowOf(emptyList())
         override fun getUncategorizedActivities(): Flow<List<Activity>> = _uncategorized
         override fun getAllGroups(): Flow<List<ActivityGroup>> = _groups
-        override fun getActivitiesByGroup(groupId: Long): Flow<List<Activity>> = flowOf(emptyList())
+        override fun getActivitiesByGroup(groupId: Long): Flow<List<Activity>> = activitiesFlowForGroup(groupId)
         override fun getActivityStats(activityId: Long): Flow<ActivityStats> = flowOf(ActivityStats())
         override suspend fun addActivity(activity: Activity): Long {
             addedActivities.add(activity)
