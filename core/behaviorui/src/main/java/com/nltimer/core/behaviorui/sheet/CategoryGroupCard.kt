@@ -211,7 +211,7 @@ fun <T : CategorizableItem> CategoryGroupCard(
                                 ItemChip(
                                     item = item,
                                     isSelected = isSelected,
-                                    showIcon = showItemIcon && item is ActivityCategorizable,
+                                    showIcon = showItemIcon,
                                     displayColorMode = displayColorMode,
                                     onClick = {
                                         if (multiSelect) {

@@ -51,7 +51,7 @@ class MainActivity : ComponentActivity() {
                             onFinish = { scope.launch { settingsPrefs.setHasSeenIntro(true) } },
                         )
                     } else {
-                        NLtimerApp()
+                        NLtimerApp(settingsPrefs = settingsPrefs)
                     }
                 }
             }

@@ -41,12 +41,9 @@ import com.nltimer.core.behaviorui.sheet.CategoryGroupCard
 import com.nltimer.core.behaviorui.sheet.CategorizableItem
 import com.nltimer.core.data.model.Tag
 import com.nltimer.core.designsystem.component.BottomBarDragFab
-import com.nltimer.core.designsystem.component.LocalNavBarWidth
 import com.nltimer.core.designsystem.component.LoadingScreen
 import com.nltimer.core.designsystem.component.rememberDragFabState
-import com.nltimer.core.designsystem.theme.BottomBarMode
 import com.nltimer.core.designsystem.theme.LocalImmersiveTopPadding
-import com.nltimer.core.designsystem.theme.LocalTheme
 import com.nltimer.feature.tag_management.model.CategoryWithTags
 import com.nltimer.feature.tag_management.viewmodel.TagManagementViewModel
 import kotlin.math.abs
@@ -102,13 +99,6 @@ fun TagManagementScreen(
     val shiftOffsets = remember { mutableStateMapOf<Int, Float>() }
     val allExpanded = uiState.categories.isNotEmpty() &&
         uiState.categories.all { it.categoryName in uiState.expandedCategoryNames }
-    val isCenterFab = LocalTheme.current.bottomBarMode == BottomBarMode.CENTER_FAB
-    val navBarWidth = LocalNavBarWidth.current.value
-    val expandFabStartPadding = if (isCenterFab && navBarWidth > 0.dp) {
-        navBarWidth + 92.dp
-    } else {
-        80.dp
-    }
 
     LaunchedEffect(uiState.categories) {
         if (draggedIndex == -1 && reorderedCategories.toList() != uiState.categories) {
@@ -147,6 +137,7 @@ fun TagManagementScreen(
                             collapsed = false,
                             showDragHandle = false,
                             emptyText = "暂无标签",
+                            displayColorMode = uiState.displayColorConfig.tagDisplayColorMode,
                             onItemSelected = { id ->
                                 uiState.uncategorizedTags
                                     .firstOrNull { it.id == id }
@@ -175,6 +166,7 @@ fun TagManagementScreen(
                             collapsed = category.categoryName !in uiState.expandedCategoryNames,
                             showDragHandle = true,
                             emptyText = "暂无标签",
+                            displayColorMode = uiState.displayColorConfig.tagDisplayColorMode,
                             isDragging = draggedIndex == index,
                             dragOffsetY = if (draggedIndex == index) dragOffsetY else 0f,
                             shiftOffset = shiftOffsets[index] ?: 0f,
@@ -264,7 +256,7 @@ fun TagManagementScreen(
             modifier = Modifier
                 .align(Alignment.BottomStart)
                 .navigationBarsPadding()
-                .padding(start = expandFabStartPadding, bottom = 8.dp)
+                .padding(start = 80.dp, bottom = 8.dp)
                 .size(56.dp),
         ) {
             Icon(

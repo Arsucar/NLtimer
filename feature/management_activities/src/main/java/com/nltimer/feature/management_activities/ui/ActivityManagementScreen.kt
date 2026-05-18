@@ -41,15 +41,11 @@ import com.nltimer.core.behaviorui.sheet.CategoryGroupCard
 import com.nltimer.core.behaviorui.sheet.CategorizableItem
 import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
-import com.nltimer.core.designsystem.theme.DisplayColorMode
 import com.nltimer.core.designsystem.component.BottomBarDragFab
 import com.nltimer.core.designsystem.component.EmptyStateView
-import com.nltimer.core.designsystem.component.LocalNavBarWidth
 import com.nltimer.core.designsystem.component.LoadingScreen
 import com.nltimer.core.designsystem.component.rememberDragFabState
-import com.nltimer.core.designsystem.theme.BottomBarMode
 import com.nltimer.core.designsystem.theme.LocalImmersiveTopPadding
-import com.nltimer.core.designsystem.theme.LocalTheme
 import com.nltimer.feature.management_activities.model.GroupWithActivities
 import com.nltimer.feature.management_activities.viewmodel.ActivityManagementViewModel
 import kotlin.math.abs
@@ -104,13 +100,6 @@ fun ActivityManagementScreen(
     val shiftOffsets = remember { mutableStateMapOf<Int, Float>() }
     val allExpanded = uiState.groups.isNotEmpty() &&
         uiState.groups.all { it.group.id in uiState.expandedGroupIds }
-    val isCenterFab = LocalTheme.current.bottomBarMode == BottomBarMode.CENTER_FAB
-    val navBarWidth = LocalNavBarWidth.current.value
-    val expandFabStartPadding = if (isCenterFab && navBarWidth > 0.dp) {
-        navBarWidth + 92.dp
-    } else {
-        80.dp
-    }
 
     LaunchedEffect(uiState.groups) {
         if (draggedIndex == -1 && reorderedGroups.toList() != uiState.groups) {
@@ -256,36 +245,15 @@ fun ActivityManagementScreen(
             }
         }
 
-        val activityColorMode = uiState.displayColorConfig.activityIconColorMode
-        val dragOptions = listOf(
-            "添加活动",
-            "添加分组",
-            when (activityColorMode) {
-                DisplayColorMode.BACKGROUND -> "✓ 图标：背景色模式"
-                else -> "图标：背景色模式"
-            },
-            when (activityColorMode) {
-                DisplayColorMode.TEXT -> "✓ 图标：文字色模式"
-                else -> "图标：文字色模式"
-            },
-            when (activityColorMode) {
-                DisplayColorMode.NORMAL -> "✓ 图标：正常模式"
-                else -> "图标：正常模式"
-            },
-        )
-
         BottomBarDragFab(
             state = dragFabState,
             icon = Icons.Default.Add,
-            dragOptions = dragOptions,
+            dragOptions = listOf("添加活动", "添加分组"),
             onClick = { viewModel.showAddActivityDialog() },
             onOptionSelected = { option ->
-                when {
-                    option.startsWith("添加活动") -> viewModel.showAddActivityDialog()
-                    option.startsWith("添加分组") -> viewModel.showAddGroupDialog()
-                    option.contains("背景色模式") -> viewModel.updateActivityIconColorMode(DisplayColorMode.BACKGROUND)
-                    option.contains("文字色模式") -> viewModel.updateActivityIconColorMode(DisplayColorMode.TEXT)
-                    option.contains("正常模式") -> viewModel.updateActivityIconColorMode(DisplayColorMode.NORMAL)
+                when (option) {
+                    "添加活动" -> viewModel.showAddActivityDialog()
+                    "添加分组" -> viewModel.showAddGroupDialog()
                 }
             },
         )
@@ -295,7 +263,7 @@ fun ActivityManagementScreen(
             modifier = Modifier
                 .align(Alignment.BottomStart)
                 .navigationBarsPadding()
-                .padding(start = expandFabStartPadding, bottom = 8.dp)
+                .padding(start = 80.dp, bottom = 8.dp)
                 .size(56.dp),
         ) {
             Icon(
