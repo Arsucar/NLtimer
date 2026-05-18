@@ -32,7 +32,10 @@ import androidx.compose.ui.unit.sp
 import com.nltimer.core.designsystem.R as DR
 import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.core.designsystem.theme.toDisplayString
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.percent
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.materials.HazeMaterials
@@ -83,93 +86,42 @@ fun AppTopAppBar(
 
     CenterAlignedTopAppBar(
         title = {
-            Row(verticalAlignment = Alignment.Bottom) {
-                Text(
-                    title,
-                    style = if (isDateTitle) {
-                        MaterialTheme.typography.titleLarge.copy(
-                            fontFamily = dateTitleFont,
-                            fontWeight = FontWeight.W800,
-                            fontSize = 14.sp,
-                        )
-                    } else {
-                        MaterialTheme.typography.titleLarge
-                    },
-                )
-                if (layoutLabel != null) {
-                    val subtitleFontSize = 10.sp
-                    Box {
-                        Text(
-                            text = " $layoutLabel",
-                            style = TextStyle(fontSize = subtitleFontSize),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = if (onLayoutChange != null) {
-                                Modifier.clickable { layoutMenuExpanded = true }
-                            } else Modifier,
-                        )
-                        if (onLayoutChange != null) {
-                            DropdownMenu(
-                                expanded = layoutMenuExpanded,
-                                onDismissRequest = { layoutMenuExpanded = false },
-                            ) {
-                                HomeLayout.entries.forEach { layout ->
-                                    DropdownMenuItem(
-                                        text = { Text(layout.toDisplayString()) },
-                                        onClick = {
-                                            onLayoutChange(layout)
-                                            layoutMenuExpanded = false
-                                        },
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-                if (momentFilterLabel != null) {
-                    val subtitleFontSize = 10.sp
-                    Box {
-                        Text(
-                            text = momentFilterLabel,
-                            style = TextStyle(fontSize = subtitleFontSize),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = if (onMomentFilterChange != null) {
-                                Modifier
-                                    .padding(start = 16.dp)
-                                    .clickable { momentMenuExpanded = true }
-                            } else Modifier.padding(start = 16.dp),
-                        )
-                        if (onMomentFilterChange != null) {
-                            DropdownMenu(
-                                expanded = momentMenuExpanded,
-                                onDismissRequest = { momentMenuExpanded = false },
-                            ) {
-                                momentFilterOptions.forEach { option ->
-                                    DropdownMenuItem(
-                                        text = {
-                                            Text(
-                                                option.label,
-                                                color = if (momentFilterKey == option.key) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
-                                            )
-                                        },
-                                        onClick = {
-                                            onMomentFilterChange(option.key)
-                                            momentMenuExpanded = false
-                                        },
-                                    )
-                                }
-                                if (momentSortOptions.isNotEmpty()) {
-                                    HorizontalDivider()
-                                    momentSortOptions.forEach { option ->
+            val titleContent = @Composable {
+                Row(verticalAlignment = Alignment.Bottom) {
+                    Text(
+                        title,
+                        style = if (isDateTitle) {
+                            MaterialTheme.typography.titleLarge.copy(
+                                fontFamily = dateTitleFont,
+                                fontWeight = FontWeight.W800,
+                                fontSize = 14.sp,
+                            )
+                        } else {
+                            MaterialTheme.typography.titleLarge
+                        },
+                    )
+                    if (layoutLabel != null) {
+                        val subtitleFontSize = 10.sp
+                        Box {
+                            Text(
+                                text = " $layoutLabel",
+                                style = TextStyle(fontSize = subtitleFontSize),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = if (onLayoutChange != null) {
+                                    Modifier.clickable { layoutMenuExpanded = true }
+                                } else Modifier,
+                            )
+                            if (onLayoutChange != null) {
+                                DropdownMenu(
+                                    expanded = layoutMenuExpanded,
+                                    onDismissRequest = { layoutMenuExpanded = false },
+                                ) {
+                                    HomeLayout.entries.forEach { layout ->
                                         DropdownMenuItem(
-                                            text = {
-                                                Text(
-                                                    option.label,
-                                                    color = if (momentSortKey == option.key) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
-                                                )
-                                            },
+                                            text = { Text(layout.toDisplayString()) },
                                             onClick = {
-                                                onMomentSortChange?.invoke(option.key)
-                                                momentMenuExpanded = false
+                                                onLayoutChange(layout)
+                                                layoutMenuExpanded = false
                                             },
                                         )
                                     }
@@ -177,7 +129,75 @@ fun AppTopAppBar(
                             }
                         }
                     }
+                    if (momentFilterLabel != null) {
+                        val subtitleFontSize = 10.sp
+                        Box {
+                            Text(
+                                text = momentFilterLabel,
+                                style = TextStyle(fontSize = subtitleFontSize),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = if (onMomentFilterChange != null) {
+                                    Modifier
+                                        .padding(start = 16.dp)
+                                        .clickable { momentMenuExpanded = true }
+                                } else Modifier.padding(start = 16.dp),
+                            )
+                            if (onMomentFilterChange != null) {
+                                DropdownMenu(
+                                    expanded = momentMenuExpanded,
+                                    onDismissRequest = { momentMenuExpanded = false },
+                                ) {
+                                    momentFilterOptions.forEach { option ->
+                                        DropdownMenuItem(
+                                            text = {
+                                                Text(
+                                                    option.label,
+                                                    color = if (momentFilterKey == option.key) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                                                )
+                                            },
+                                            onClick = {
+                                                onMomentFilterChange(option.key)
+                                                momentMenuExpanded = false
+                                            },
+                                        )
+                                    }
+                                    if (momentSortOptions.isNotEmpty()) {
+                                        HorizontalDivider()
+                                        momentSortOptions.forEach { option ->
+                                            DropdownMenuItem(
+                                                text = {
+                                                    Text(
+                                                        option.label,
+                                                        color = if (momentSortKey == option.key) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                                                    )
+                                                },
+                                                onClick = {
+                                                    onMomentSortChange?.invoke(option.key)
+                                                    momentMenuExpanded = false
+                                                },
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
+            }
+            if (hazeState != null) {
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(50.percent))
+                        .hazeEffect(
+                            state = hazeState,
+                            style = HazeMaterials.ultraThin(MaterialTheme.colorScheme.surfaceContainerLow),
+                        )
+                        .padding(horizontal = 12.dp, vertical = 4.dp)
+                ) {
+                    titleContent()
+                }
+            } else {
+                titleContent()
             }
         },
         navigationIcon = navigationIcon,
@@ -185,12 +205,7 @@ fun AppTopAppBar(
             containerColor = Color.Transparent,
             scrolledContainerColor = Color.Transparent,
         ),
-        modifier = modifier.then(
-            if (hazeState != null) Modifier.hazeEffect(
-                state = hazeState,
-                style = HazeMaterials.ultraThin(MaterialTheme.colorScheme.surfaceContainerLow),
-            ) else Modifier
-        ),
+        modifier = modifier,
     )
 }
 
@@ -231,97 +246,46 @@ fun AppCollapsedTopAppBar(
 
     TopAppBar(
         title = {
-            Row(verticalAlignment = Alignment.Bottom,modifier=Modifier.padding(bottom = 5.dp)) {
-                Text(
-                    title,
-                    style = if (isDateTitle) {
-                        MaterialTheme.typography.headlineMedium.copy(
-                            fontFamily = dateTitleFont,
-                            fontWeight = FontWeight.W800,
-                            fontSize = 21.sp,
-                            lineHeight = 21.sp,
-                        )
-                    } else {
-                        MaterialTheme.typography.headlineMedium.copy(
-                            fontSize = 32.sp,
-                            lineHeight = 32.sp,
-                        )
-                    },
-                )
-                if (layoutLabel != null) {
-                    val subtitleFontSize = 10.sp
-                    Box {
-                        Text(
-                            text = " $layoutLabel",
-                            style = TextStyle(fontSize = subtitleFontSize),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = if (onLayoutChange != null) {
-                                Modifier.clickable { layoutMenuExpanded = true }
-                            } else Modifier,
-                        )
-                        if (onLayoutChange != null) {
-                            DropdownMenu(
-                                expanded = layoutMenuExpanded,
-                                onDismissRequest = { layoutMenuExpanded = false },
-                            ) {
-                                HomeLayout.entries.forEach { layout ->
-                                    DropdownMenuItem(
-                                        text = { Text(layout.toDisplayString()) },
-                                        onClick = {
-                                            onLayoutChange(layout)
-                                            layoutMenuExpanded = false
-                                        },
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-                if (momentFilterLabel != null) {
-                    val subtitleFontSize = 10.sp
-                    Box {
-                        Text(
-                            text = momentFilterLabel,
-                            style = TextStyle(fontSize = subtitleFontSize),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = if (onMomentFilterChange != null) {
-                                Modifier
-                                    .padding(start = 16.dp)
-                                    .clickable { momentMenuExpanded = true }
-                            } else Modifier.padding(start = 16.dp),
-                        )
-                        if (onMomentFilterChange != null) {
-                            DropdownMenu(
-                                expanded = momentMenuExpanded,
-                                onDismissRequest = { momentMenuExpanded = false },
-                            ) {
-                                momentFilterOptions.forEach { option ->
-                                    DropdownMenuItem(
-                                        text = {
-                                            Text(
-                                                option.label,
-                                                color = if (momentFilterKey == option.key) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
-                                            )
-                                        },
-                                        onClick = {
-                                            onMomentFilterChange(option.key)
-                                            momentMenuExpanded = false
-                                        },
-                                    )
-                                }
-                                if (momentSortOptions.isNotEmpty()) {
-                                    HorizontalDivider()
-                                    momentSortOptions.forEach { option ->
+            val titleContent = @Composable {
+                Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.padding(bottom = 5.dp)) {
+                    Text(
+                        title,
+                        style = if (isDateTitle) {
+                            MaterialTheme.typography.headlineMedium.copy(
+                                fontFamily = dateTitleFont,
+                                fontWeight = FontWeight.W800,
+                                fontSize = 21.sp,
+                                lineHeight = 21.sp,
+                            )
+                        } else {
+                            MaterialTheme.typography.headlineMedium.copy(
+                                fontSize = 32.sp,
+                                lineHeight = 32.sp,
+                            )
+                        },
+                    )
+                    if (layoutLabel != null) {
+                        val subtitleFontSize = 10.sp
+                        Box {
+                            Text(
+                                text = " $layoutLabel",
+                                style = TextStyle(fontSize = subtitleFontSize),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = if (onLayoutChange != null) {
+                                    Modifier.clickable { layoutMenuExpanded = true }
+                                } else Modifier,
+                            )
+                            if (onLayoutChange != null) {
+                                DropdownMenu(
+                                    expanded = layoutMenuExpanded,
+                                    onDismissRequest = { layoutMenuExpanded = false },
+                                ) {
+                                    HomeLayout.entries.forEach { layout ->
                                         DropdownMenuItem(
-                                            text = {
-                                                Text(
-                                                    option.label,
-                                                    color = if (momentSortKey == option.key) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
-                                                )
-                                            },
+                                            text = { Text(layout.toDisplayString()) },
                                             onClick = {
-                                                onMomentSortChange?.invoke(option.key)
-                                                momentMenuExpanded = false
+                                                onLayoutChange(layout)
+                                                layoutMenuExpanded = false
                                             },
                                         )
                                     }
@@ -329,7 +293,75 @@ fun AppCollapsedTopAppBar(
                             }
                         }
                     }
+                    if (momentFilterLabel != null) {
+                        val subtitleFontSize = 10.sp
+                        Box {
+                            Text(
+                                text = momentFilterLabel,
+                                style = TextStyle(fontSize = subtitleFontSize),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = if (onMomentFilterChange != null) {
+                                    Modifier
+                                        .padding(start = 16.dp)
+                                        .clickable { momentMenuExpanded = true }
+                                } else Modifier.padding(start = 16.dp),
+                            )
+                            if (onMomentFilterChange != null) {
+                                DropdownMenu(
+                                    expanded = momentMenuExpanded,
+                                    onDismissRequest = { momentMenuExpanded = false },
+                                ) {
+                                    momentFilterOptions.forEach { option ->
+                                        DropdownMenuItem(
+                                            text = {
+                                                Text(
+                                                    option.label,
+                                                    color = if (momentFilterKey == option.key) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                                                )
+                                            },
+                                            onClick = {
+                                                onMomentFilterChange(option.key)
+                                                momentMenuExpanded = false
+                                            },
+                                        )
+                                    }
+                                    if (momentSortOptions.isNotEmpty()) {
+                                        HorizontalDivider()
+                                        momentSortOptions.forEach { option ->
+                                            DropdownMenuItem(
+                                                text = {
+                                                    Text(
+                                                        option.label,
+                                                        color = if (momentSortKey == option.key) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                                                    )
+                                                },
+                                                onClick = {
+                                                    onMomentSortChange?.invoke(option.key)
+                                                    momentMenuExpanded = false
+                                                },
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
+            }
+            if (hazeState != null) {
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(50.percent))
+                        .hazeEffect(
+                            state = hazeState,
+                            style = HazeMaterials.ultraThin(MaterialTheme.colorScheme.surfaceContainerLow),
+                        )
+                        .padding(horizontal = 12.dp, vertical = 4.dp)
+                ) {
+                    titleContent()
+                }
+            } else {
+                titleContent()
             }
         },
         navigationIcon = navigationIcon,
@@ -338,11 +370,6 @@ fun AppCollapsedTopAppBar(
             containerColor = Color.Transparent,
             scrolledContainerColor = Color.Transparent,
         ),
-        modifier = modifier.then(
-            if (hazeState != null) Modifier.hazeEffect(
-                state = hazeState,
-                style = HazeMaterials.ultraThin(MaterialTheme.colorScheme.surfaceContainerLow),
-            ) else Modifier
-        ),
+        modifier = modifier,
     )
 }
