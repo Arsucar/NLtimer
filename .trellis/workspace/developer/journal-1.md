@@ -137,3 +137,36 @@ ChatTopBar增加scrollBehavior支持折叠、进入自动新对话、移除多�
 ### Next Steps
 
 - None - task complete
+
+
+## Session 5: 顶部栏Haze毛玻璃模糊背景
+
+**Date**: 2026-05-18
+**Task**: 顶部栏Haze毛玻璃模糊背景
+**Branch**: `dev-v5`
+
+### Summary
+
+主页和AI对话顶部栏添加hazeEffect模糊效果，使用HazeMaterials.ultraThin风格，容器色改为透明
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `ac48d1f` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
