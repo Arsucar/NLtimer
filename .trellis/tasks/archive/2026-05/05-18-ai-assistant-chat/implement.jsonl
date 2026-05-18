@@ -1,0 +1,4 @@
+{"_example": "Fill with {\"file\": \"<path>\", \"reason\": \"<why>\"}. Put spec/research files only — no code paths. Run `python .trellis/scripts/get_context.py --mode packages` to list available specs. Delete this line once real entries are added."}
+{"file": "docs/superpowers/specs/2026-05-18-ai-assistant-chat-design.md", "reason": "完整设计规格：架构/数据模型/UI设计/Markdown管线/ViewModel/导出/错误处理"}
+{"file": "docs/superpowers/plans/2026-05-18-ai-assistant-chat-plan.md", "reason": "分阶段实现计划：16个任务的详细步骤、代码、commit message"}
+{"file": ".trellis/spec/backend/index.md", "reason": "项目后端编码规范与约定"}
