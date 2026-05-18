@@ -20,3 +20,21 @@
 | 架构 | MVVM, 单 Activity, 多模块 |
 | 静态分析 | Detekt 1.23.8 |
 | CI | GitHub Actions (tag-triggered release) |
+
+## Agent 构建注意事项
+
+> **Gradle Daemon 会阻塞 Agent / CI 进程退出**
+
+Gradle 默认启动后台守护进程（Daemon），构建完成后进程仍在运行。Agent 或 CI 中的 CLI 会等待所有子进程结束才返回，导致看似 "BUILD SUCCESSFUL" 后卡住不退出。
+
+**规则：Agent 执行 Gradle 构建命令时，必须加 `--no-daemon` 参数。**
+
+```bash
+# 正确
+./gradlew :app:compileDebugKotlin --no-daemon
+
+# 错误（会卡住）
+./gradlew :app:compileDebugKotlin
+```
+
+备选：构建完成后执行 `./gradlew --stop` 强制关闭残留 Daemon。
