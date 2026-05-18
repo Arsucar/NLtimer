@@ -10,6 +10,7 @@ import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.CloudQueue
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Science
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -29,6 +30,7 @@ fun AiInterRoute(
         onNavigateToCallLogs = { navController.navigate(NLtimerRoutes.AI_CALL_LOGS) },
         onNavigateToPromptConfig = { navController.navigate(NLtimerRoutes.AI_PROMPT_CONFIG) },
         onNavigateToTestChat = { navController.navigate(NLtimerRoutes.AI_TEST_CHAT) },
+        onNavigateToAssistantChat = { navController.navigate(NLtimerRoutes.AI_ASSISTANT_CHAT) },
     )
 }
 
@@ -39,6 +41,7 @@ fun AiInterScreen(
     onNavigateToCallLogs: () -> Unit,
     onNavigateToPromptConfig: () -> Unit,
     onNavigateToTestChat: () -> Unit,
+    onNavigateToAssistantChat: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Scaffold(modifier = modifier.fillMaxSize()) { padding ->
@@ -52,6 +55,15 @@ fun AiInterScreen(
             ),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
+            item {
+                SettingsEntryCard(
+                    icon = Icons.AutoMirrored.Filled.Chat,
+                    title = "AI 助手对话",
+                    subtitle = "正式对话界面：多会话 / Markdown / 导出",
+                    onClick = onNavigateToAssistantChat,
+                )
+            }
+
             item {
                 SettingsEntryCard(
                     icon = Icons.Default.CloudQueue,
@@ -90,9 +102,9 @@ fun AiInterScreen(
 
             item {
                 SettingsEntryCard(
-                    icon = Icons.AutoMirrored.Filled.Chat,
+                    icon = Icons.Default.Science,
                     title = "测试对话",
-                    subtitle = "在当前配置下测试 AI 响应与工具调用",
+                    subtitle = "开发调试视图：当轮流式 + 工具调用日志",
                     onClick = onNavigateToTestChat,
                 )
             }

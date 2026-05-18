@@ -25,6 +25,7 @@ import com.nltimer.app.experimental.ai_inter.AiCallLogsRoute
 import com.nltimer.app.experimental.ai_inter.AiPromptConfigRoute
 import com.nltimer.app.experimental.ai_inter.AiTestChatRoute
 import com.nltimer.app.experimental.ai_inter.AiLogDetailRoute
+import com.nltimer.app.experimental.ai_inter.chat.AiAssistantChatRoute
 import com.nltimer.feature.stats.ui.StatsRoute
 import com.nltimer.feature.behavior_management.ui.BehaviorManagementRoute
 import com.nltimer.feature.settings.ui.DataManagementRoute
@@ -62,6 +63,15 @@ fun NLtimerNavHost(
         }
         composable(NLtimerRoutes.AI_PROMPT_CONFIG) { AiPromptConfigRoute() }
         composable(NLtimerRoutes.AI_TEST_CHAT) { AiTestChatRoute() }
+        composable(
+            NLtimerRoutes.AI_ASSISTANT_CHAT,
+            enterTransition = { slideInHorizontally { it } },
+            exitTransition = { slideOutHorizontally { -it } },
+            popEnterTransition = { slideInHorizontally { -it } },
+            popExitTransition = { slideOutHorizontally { it } },
+        ) {
+            AiAssistantChatRoute(navController = navController)
+        }
         composable(
             route = NLtimerRoutes.AI_CALL_LOG_DETAIL_PATTERN,
             arguments = listOf(navArgument("logId") { type = NavType.LongType })

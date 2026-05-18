@@ -106,6 +106,13 @@ dependencies {
     implementation(libs.okhttp.sse)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.compose.markdown)
+    implementation(libs.haze)
+    implementation(libs.haze.materials)
+    implementation(libs.coil3.compose)
+    implementation(libs.coil3.network.okhttp)
+    implementation(libs.intellij.markdown)
+    implementation(libs.jsoup)
+    implementation(libs.quickjs.android)
     implementation(libs.profileinstaller)
     implementation(libs.splashscreen)
 
@@ -120,4 +127,5 @@ dependencies {
     androidTestImplementation(platform(libs.compose.bom))
     androidTestImplementation(libs.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.room.testing)
 }

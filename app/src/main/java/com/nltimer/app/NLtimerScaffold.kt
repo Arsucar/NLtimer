@@ -87,6 +87,7 @@ fun NLtimerScaffold(
     val scope = rememberCoroutineScope()
     val isSecondaryPage = currentRoute in NLtimerRoutes.SETTINGS_FULLSCREEN_ROUTES
     val isAiInter = currentRoute == NLtimerRoutes.AI_INTER
+    val isAiAssistantChat = currentRoute == NLtimerRoutes.AI_ASSISTANT_CHAT
     val visibleDateLabelState = remember { mutableStateOf<String?>(null) }
     val isHomePage = currentRoute !in NLtimerRoutes.SETTINGS_FULLSCREEN_ROUTES && currentRoute != NLtimerRoutes.SETTINGS && !isAiInter
     val isDateTitle = isHomePage && visibleDateLabelState.value != null
@@ -242,7 +243,7 @@ fun NLtimerScaffold(
                 ),
                 containerColor = Color.Transparent,
                 topBar = {
-                    if (isSecondaryPage && !isAiInter) {
+                    if (isSecondaryPage && !isAiInter && !isAiAssistantChat) {
                         TopAppBar(
                             title = { Text(topBarTitle) },
                             navigationIcon = {
@@ -254,7 +255,7 @@ fun NLtimerScaffold(
                                 }
                             },
                         )
-                    } else {
+                    } else if (!isAiAssistantChat) {
                         if (topBarScrollBehavior != null) {
                             AppCollapsedTopAppBar(
                                 title = topBarTitle,

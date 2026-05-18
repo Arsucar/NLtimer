@@ -21,6 +21,7 @@ object NLtimerRoutes {
     const val AI_CALL_LOGS = "ai_call_logs"
     const val AI_PROMPT_CONFIG = "ai_prompt_config"
     const val AI_TEST_CHAT = "ai_test_chat"
+    const val AI_ASSISTANT_CHAT = "ai_assistant_chat"
     const val AI_CALL_LOG_DETAIL = "ai_call_log_detail"
     const val AI_CALL_LOG_DETAIL_PATTERN = "ai_call_log_detail/{logId}"
 
@@ -31,7 +32,7 @@ object NLtimerRoutes {
         THEME_SETTINGS, DIALOG_CONFIG, BEHAVIOR_MANAGEMENT, DATA_MANAGEMENT,
         HOME_LAYOUT_CONFIG, COLOR_PALETTE, CATEGORIES, AI_INTER,
         AI_PROVIDER_CONFIG, AI_TOOLS_LIST, AI_CALL_LOGS, AI_PROMPT_CONFIG,
-        AI_TEST_CHAT, AI_CALL_LOG_DETAIL_PATTERN
+        AI_TEST_CHAT, AI_ASSISTANT_CHAT, AI_CALL_LOG_DETAIL_PATTERN
     )
 }
 

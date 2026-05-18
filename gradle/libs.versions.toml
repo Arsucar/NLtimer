@@ -35,6 +35,11 @@ kotlinx-collections-immutable = "0.3.7"
 compose_material3_expressive = "1.5.0-alpha12"
 kotlinx_serialization = "1.8.1"
 compose_markdown = "0.5.7"
+haze = "1.6.0"
+coil3 = "3.0.4"
+intellijMarkdown = "0.7.3"
+jsoup = "1.18.3"
+quickjs = "3.2.3"
 
 [libraries]
 junit = { module = "junit:junit", version.ref = "junit" }
@@ -87,6 +92,14 @@ animation = { group = "androidx.compose.animation", name = "animation", version.
 kotlinx-collections-immutable = { module = "org.jetbrains.kotlinx:kotlinx-collections-immutable", version.ref = "kotlinx-collections-immutable" }
 kotlinx_serialization_json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx_serialization" }
 compose-markdown = { module = "com.github.jeziellago:compose-markdown", version.ref = "compose_markdown" }
+haze                 = { module = "dev.chrisbanes.haze:haze",                version.ref = "haze" }
+haze-materials       = { module = "dev.chrisbanes.haze:haze-materials",      version.ref = "haze" }
+coil3-compose        = { module = "io.coil-kt.coil3:coil-compose",           version.ref = "coil3" }
+coil3-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp",    version.ref = "coil3" }
+intellij-markdown    = { module = "org.jetbrains:markdown",                  version.ref = "intellijMarkdown" }
+jsoup                = { module = "org.jsoup:jsoup",                         version.ref = "jsoup" }
+room-testing         = { module = "androidx.room:room-testing",              version.ref = "room" }
+quickjs-android      = { module = "wang.harlon.quickjs:wrapper-android",        version.ref = "quickjs" }
 
 [plugins]
 android_application = { id = "com.android.application", version.ref = "agp" }
