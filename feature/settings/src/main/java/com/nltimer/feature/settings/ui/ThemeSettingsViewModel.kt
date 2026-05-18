@@ -118,4 +118,6 @@ class ThemeSettingsViewModel @Inject constructor(
     }
 
     fun onImmersiveToggle(enabled: Boolean) = updateTheme { copy(isImmersive = enabled) }
+
+    fun onTopBarHazeToggle(enabled: Boolean) = updateTheme { copy(topBarHaze = enabled) }
 }

@@ -136,6 +136,7 @@ fun ThemeSettingsRoute(
         onTopBarModeChange = viewModel::onTopBarModeChange,
         onBottomBarModeChange = viewModel::onBottomBarModeChange,
         onImmersiveToggle = viewModel::onImmersiveToggle,
+        onTopBarHazeToggle = viewModel::onTopBarHazeToggle,
     )
 }
 
@@ -179,6 +180,7 @@ fun ThemeSettingsScreen(
     onTopBarModeChange: (TopBarMode) -> Unit,
     onBottomBarModeChange: (BottomBarMode) -> Unit,
     onImmersiveToggle: (Boolean) -> Unit,
+    onTopBarHazeToggle: (Boolean) -> Unit,
     containerColor: Color = MaterialTheme.colorScheme.background,
     modifier: Modifier = Modifier,
 ) {
@@ -220,6 +222,7 @@ fun ThemeSettingsScreen(
             onTopBarModeChange = onTopBarModeChange,
             onBottomBarModeChange = onBottomBarModeChange,
             onImmersiveToggle = onImmersiveToggle,
+            onTopBarHazeToggle = onTopBarHazeToggle,
             showColorPicker = showColorPicker,
             onShowColorPicker = { showColorPicker = it },
         )
@@ -250,6 +253,7 @@ private fun LazyListScope.ThemeSettingsContent(
     onTopBarModeChange: (TopBarMode) -> Unit,
     onBottomBarModeChange: (BottomBarMode) -> Unit,
     onImmersiveToggle: (Boolean) -> Unit,
+    onTopBarHazeToggle: (Boolean) -> Unit,
     showColorPicker: Boolean,
     onShowColorPicker: (Boolean) -> Unit,
 ) {
@@ -490,6 +494,19 @@ private fun LazyListScope.ThemeSettingsContent(
                             Switch(
                                 checked = theme.isImmersive,
                                 onCheckedChange = { onImmersiveToggle(it) },
+                            )
+                        },
+                        colors = listItemColors(),
+                        modifier = Modifier.clip(middleItemShape()),
+                    )
+
+                    ListItem(
+                        headlineContent = { Text(text = "顶栏模糊") },
+                        supportingContent = { Text(text = "顶部栏标题使用模糊玻璃效果") },
+                        trailingContent = {
+                            Switch(
+                                checked = theme.topBarHaze,
+                                onCheckedChange = { onTopBarHazeToggle(it) },
                             )
                         },
                         colors = listItemColors(),

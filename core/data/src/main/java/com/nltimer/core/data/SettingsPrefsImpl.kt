@@ -72,6 +72,7 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
                 if (mode == BottomBarMode.FLOATING) BottomBarMode.CENTER_FAB else mode
             } catch (_: IllegalArgumentException) { BottomBarMode.STANDARD },
             isImmersive = prefs[isImmersiveKey] == true,
+            topBarHaze = prefs[topBarHazeKey] != false,
             style = StyleConfig(
                 cornerPreset = try { CornerPreset.valueOf(prefs[cornerPresetKey] ?: CornerPreset.STANDARD.name) } catch (_: IllegalArgumentException) { CornerPreset.STANDARD },
                 borderPreset = try { BorderPreset.valueOf(prefs[borderPresetKey] ?: BorderPreset.STANDARD.name) } catch (_: IllegalArgumentException) { BorderPreset.STANDARD },
@@ -113,6 +114,7 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
             prefs[topBarModeKey] = theme.topBarMode.name
             prefs[bottomBarModeKey] = theme.bottomBarMode.name
             prefs[isImmersiveKey] = theme.isImmersive
+            prefs[topBarHazeKey] = theme.topBarHaze
         }
     }
 
@@ -327,6 +329,7 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
         private val topBarModeKey = stringPreferencesKey("top_bar_mode")
         private val bottomBarModeKey = stringPreferencesKey("bottom_bar_mode")
         private val isImmersiveKey = booleanPreferencesKey("is_immersive")
+        private val topBarHazeKey = booleanPreferencesKey("top_bar_haze")
 
         private val gridColumnsKey = intPreferencesKey("home_grid_columns")
         private val gridMinRowHeightKey = intPreferencesKey("home_grid_min_row_height")

@@ -33,7 +33,7 @@ fun ChatTopBar(
     onExport: () -> Unit,
     scrollBehavior: TopAppBarScrollBehavior? = null,
     isImmersive: Boolean = false,
-    hazeState: HazeState,
+    hazeState: HazeState? = null,
 ) {
     var menuOpen by remember { mutableStateOf(false) }
 
@@ -47,15 +47,7 @@ fun ChatTopBar(
             IconButton(onClick = onOpenDrawer) { Icon(Icons.Default.Menu, "会话列表") }
         },
         title = {
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(50.percent))
-                    .hazeEffect(
-                        state = hazeState,
-                        style = HazeMaterials.ultraThin(MaterialTheme.colorScheme.surfaceContainerLow),
-                    )
-                    .padding(horizontal = 12.dp, vertical = 4.dp)
-            ) {
+            val titleContent = @Composable {
                 Surface(onClick = onTitleClick, color = Color.Transparent) {
                     Column {
                         Text(
@@ -76,17 +68,24 @@ fun ChatTopBar(
                     }
                 }
             }
+            if (hazeState != null) {
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(50.percent))
+                        .hazeEffect(
+                            state = hazeState,
+                            style = HazeMaterials.ultraThin(MaterialTheme.colorScheme.surfaceContainerLow),
+                        )
+                        .padding(horizontal = 12.dp, vertical = 4.dp)
+                ) {
+                    titleContent()
+                }
+            } else {
+                titleContent()
+            }
         },
         actions = {
-            Row(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(50.percent))
-                    .hazeEffect(
-                        state = hazeState,
-                        style = HazeMaterials.ultraThin(MaterialTheme.colorScheme.surfaceContainerLow),
-                    )
-                    .padding(horizontal = 4.dp, vertical = 2.dp)
-            ) {
+            val actionsContent = @Composable {
                 IconButton(onClick = onExport) { Icon(Icons.Default.IosShare, "导出") }
                 IconButton(onClick = onNewConversation) { Icon(Icons.Default.Add, "新建对话") }
                 Box {
@@ -99,6 +98,21 @@ fun ChatTopBar(
                         )
                     }
                 }
+            }
+            if (hazeState != null) {
+                Row(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(50.percent))
+                        .hazeEffect(
+                            state = hazeState,
+                            style = HazeMaterials.ultraThin(MaterialTheme.colorScheme.surfaceContainerLow),
+                        )
+                        .padding(horizontal = 4.dp, vertical = 2.dp)
+                ) {
+                    actionsContent()
+                }
+            } else {
+                actionsContent()
             }
         },
     )

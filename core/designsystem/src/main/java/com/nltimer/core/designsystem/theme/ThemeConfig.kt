@@ -21,5 +21,6 @@ data class Theme(
     val topBarMode: TopBarMode = TopBarMode.PINNED,
     val bottomBarMode: BottomBarMode = BottomBarMode.STANDARD,
     val isImmersive: Boolean = false,
+    val topBarHaze: Boolean = true,
     val style: StyleConfig = StyleConfig(),
 )

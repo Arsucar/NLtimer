@@ -76,6 +76,7 @@ fun AiAssistantChatRoute(
 
     val topBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val isImmersive = LocalTheme.current.isImmersive
+    val topBarHaze = LocalTheme.current.topBarHaze
 
     BackHandler(enabled = drawerState.isOpen) {
         scope.launch { drawerState.close() }
@@ -124,7 +125,7 @@ fun AiAssistantChatRoute(
                         onExport = { showExport = true },
                         scrollBehavior = topBarScrollBehavior,
                         isImmersive = isImmersive,
-                        hazeState = hazeState,
+                        hazeState = if (topBarHaze) hazeState else null,
                     )
                 },
                 bottomBar = {

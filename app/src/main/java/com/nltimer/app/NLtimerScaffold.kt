@@ -265,7 +265,7 @@ fun NLtimerScaffold(
                                 isDateTitle = isDateTitle,
                                 isImmersive = isImmersive,
                                 scrollBehavior = topBarScrollBehavior,
-                                hazeState = topBarHazeState,
+                                hazeState = if (theme.topBarHaze) topBarHazeState else null,
                                 navigationIcon = if (isAiInter) {
                                     {
                                         IconButton(onClick = { navController.popBackStack() }) {
@@ -291,7 +291,7 @@ fun NLtimerScaffold(
                                 title = topBarTitle,
                                 isDateTitle = isDateTitle,
                                 isImmersive = isImmersive,
-                                hazeState = topBarHazeState,
+                                hazeState = if (theme.topBarHaze) topBarHazeState else null,
                                 navigationIcon = if (isAiInter) {
                                     {
                                         IconButton(onClick = { navController.popBackStack() }) {
@@ -323,7 +323,7 @@ fun NLtimerScaffold(
                         timeLabelSettingsRequestKey = timeLabelSettingsRequestKey,
                         onTimeLabelSettingsShown = { timeLabelSettingsRequestKey = 0 },
                         modifier = Modifier
-                            .hazeSource(state = topBarHazeState)
+                            .then(if (theme.topBarHaze) Modifier.hazeSource(state = topBarHazeState) else Modifier)
                             .fillMaxSize()
                             .padding(
                                 top = if (isImmersive) 0.dp else if (isAiAssistantChat) 0.dp else padding.calculateTopPadding(),
