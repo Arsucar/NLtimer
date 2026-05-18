@@ -122,7 +122,12 @@ NLtimer/
 │   └── debug/                   # Debug 专用功能模块
 ├── buildSrc/                    # 共享 Gradle 插件与 SDK 版本配置
 ├── gradle/                      # Version Catalog 与 Gradle Wrapper 配置
-└── docs/                        # 项目文档与参考资料
+└── docs/
+    ├── developer/               # 开发者文档（架构、模块、组件库等）
+    ├── user/                    # 用户文档（快速上手、功能说明等）
+    ├── agent/                   # Agent 文档（AI 上下文填充）
+    ├── reference/               # 参考资料与竞品分析
+    └── myNote/                  # 开发者个人笔记
 ```
 
 ## 主要模块说明
@@ -173,6 +178,14 @@ git push origin v0.1.5
 ```
 
 CI 会从标签中提取版本号，并更新构建时的 `APP_VERSION_NAME` 与 `APP_VERSION_CODE`。
+
+## 文档
+
+| 文档类型 | 目录 | 说明 |
+| --- | --- | --- |
+| [开发者文档](docs/developer/00-索引.md) | `docs/developer/` | 架构、模块详解、数据模型、组件库、代码约定 |
+| [用户文档](docs/user/00-索引.md) | `docs/user/` | 快速上手、活动/标签/行为管理、视图、设置 |
+| [Agent 文档](docs/agent/00-index.md) | `docs/agent/` | 项目概览、架构摘要、模块映射、模式速查 |
 
 ## 开发约定
 
