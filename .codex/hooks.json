@@ -1,13 +1,12 @@
 {
   "hooks": {
-    "Stop": [
+    "UserPromptSubmit": [
       {
         "hooks": [
           {
             "type": "command",
-            "command": "./gradlew installDebug",
-            "timeout": 8000,
-            "statusMessage": "Running gradlew.bat installDebug"
+            "command": "python -X utf8 .codex/hooks/inject-workflow-state.py",
+            "timeout": 15
           }
         ]
       }
