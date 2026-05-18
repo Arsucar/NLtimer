@@ -46,7 +46,10 @@ import com.nltimer.app.component.RouteSettingsPopup
 import com.nltimer.app.navigation.NLtimerNavHost
 import com.nltimer.app.navigation.NLtimerRoutes
 import com.nltimer.app.viewmodel.DrawerViewModel
+import com.nltimer.core.data.SettingsPrefs
+import com.nltimer.core.data.model.DisplayColorConfig
 import com.nltimer.core.designsystem.theme.BottomBarMode
+import com.nltimer.core.designsystem.theme.DisplayColorMode
 import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.core.designsystem.theme.LocalImmersiveTopPadding
 import com.nltimer.core.designsystem.theme.LocalTheme
@@ -76,6 +79,7 @@ private val MomentSortOptions = listOf(
 @Composable
 fun NLtimerScaffold(
     navController: NavHostController,
+    settingsPrefs: SettingsPrefs,
     drawerState: DrawerState = rememberDrawerState(initialValue = DrawerValue.Closed),
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -101,6 +105,8 @@ fun NLtimerScaffold(
     var momentFilterKey by remember { mutableStateOf("ALL") }
     var momentSortKey by remember { mutableStateOf("TIME_DESC") }
     val theme = LocalTheme.current
+    val displayColorConfig by settingsPrefs.getDisplayColorConfigFlow()
+        .collectAsStateWithLifecycle(initialValue = DisplayColorConfig())
     val themeViewModel: ThemeSettingsViewModel = hiltViewModel()
     val dialogConfigViewModel: DialogConfigViewModel = hiltViewModel()
     val homeLayoutConfig by dialogConfigViewModel.homeLayoutConfig.collectAsStateWithLifecycle()
@@ -134,7 +140,7 @@ fun NLtimerScaffold(
         HomeLayout.LOG -> "日志设置"
         HomeLayout.MOMENT -> "当前时刻设置"
     }
-    val settingsDragOptions = remember(currentRoute, theme.homeLayout, theme.showTimeSideBar, layoutConfigLabel) {
+    val settingsDragOptions = remember(currentRoute, theme.homeLayout, theme.showTimeSideBar, displayColorConfig, layoutConfigLabel) {
         buildList {
             if (currentRoute == NLtimerRoutes.HOME) {
                 add("更改布局")
@@ -143,6 +149,18 @@ fun NLtimerScaffold(
                     add(if (theme.showTimeSideBar) "关闭侧边时间轴" else "开启侧边时间轴")
                     add("时间标签设置")
                 }
+            }
+            if (currentRoute == NLtimerRoutes.MANAGEMENT_ACTIVITIES) {
+                val mode = displayColorConfig.activityIconColorMode
+                add(if (mode == DisplayColorMode.BACKGROUND) "✓ 图标：背景色" else "图标：背景色")
+                add(if (mode == DisplayColorMode.TEXT) "✓ 图标：文字色" else "图标：文字色")
+                add(if (mode == DisplayColorMode.NORMAL) "✓ 图标：正常" else "图标：正常")
+            }
+            if (currentRoute == NLtimerRoutes.TAG_MANAGEMENT) {
+                val mode = displayColorConfig.tagDisplayColorMode
+                add(if (mode == DisplayColorMode.BACKGROUND) "✓ 标签：背景色" else "标签：背景色")
+                add(if (mode == DisplayColorMode.TEXT) "✓ 标签：文字色" else "标签：文字色")
+                add(if (mode == DisplayColorMode.NORMAL) "✓ 标签：正常" else "标签：正常")
             }
         }
     }
@@ -160,6 +178,38 @@ fun NLtimerScaffold(
             "关闭侧边时间轴" -> themeViewModel.onShowTimeSideBarToggle(false)
             "时间标签设置" -> timeLabelSettingsRequestKey += 1
             layoutConfigLabel -> showLayoutConfigDialog = true
+        }
+        when {
+            option == "图标：背景色" || option == "✓ 图标：背景色" -> scope.launch {
+                settingsPrefs.updateDisplayColorConfig(
+                    displayColorConfig.copy(activityIconColorMode = DisplayColorMode.BACKGROUND)
+                )
+            }
+            option == "图标：文字色" || option == "✓ 图标：文字色" -> scope.launch {
+                settingsPrefs.updateDisplayColorConfig(
+                    displayColorConfig.copy(activityIconColorMode = DisplayColorMode.TEXT)
+                )
+            }
+            option == "图标：正常" || option == "✓ 图标：正常" -> scope.launch {
+                settingsPrefs.updateDisplayColorConfig(
+                    displayColorConfig.copy(activityIconColorMode = DisplayColorMode.NORMAL)
+                )
+            }
+            option == "标签：背景色" || option == "✓ 标签：背景色" -> scope.launch {
+                settingsPrefs.updateDisplayColorConfig(
+                    displayColorConfig.copy(tagDisplayColorMode = DisplayColorMode.BACKGROUND)
+                )
+            }
+            option == "标签：文字色" || option == "✓ 标签：文字色" -> scope.launch {
+                settingsPrefs.updateDisplayColorConfig(
+                    displayColorConfig.copy(tagDisplayColorMode = DisplayColorMode.TEXT)
+                )
+            }
+            option == "标签：正常" || option == "✓ 标签：正常" -> scope.launch {
+                settingsPrefs.updateDisplayColorConfig(
+                    displayColorConfig.copy(tagDisplayColorMode = DisplayColorMode.NORMAL)
+                )
+            }
         }
     }
 
@@ -265,6 +315,7 @@ fun NLtimerScaffold(
                     NLtimerNavHost(
                         navController = navController,
                         timeLabelSettingsRequestKey = timeLabelSettingsRequestKey,
+                        onTimeLabelSettingsShown = { timeLabelSettingsRequestKey = 0 },
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(

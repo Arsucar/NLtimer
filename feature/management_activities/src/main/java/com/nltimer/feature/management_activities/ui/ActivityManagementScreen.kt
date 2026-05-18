@@ -43,12 +43,9 @@ import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
 import com.nltimer.core.designsystem.component.BottomBarDragFab
 import com.nltimer.core.designsystem.component.EmptyStateView
-import com.nltimer.core.designsystem.component.LocalNavBarWidth
 import com.nltimer.core.designsystem.component.LoadingScreen
 import com.nltimer.core.designsystem.component.rememberDragFabState
-import com.nltimer.core.designsystem.theme.BottomBarMode
 import com.nltimer.core.designsystem.theme.LocalImmersiveTopPadding
-import com.nltimer.core.designsystem.theme.LocalTheme
 import com.nltimer.feature.management_activities.model.GroupWithActivities
 import com.nltimer.feature.management_activities.viewmodel.ActivityManagementViewModel
 import kotlin.math.abs
@@ -103,13 +100,6 @@ fun ActivityManagementScreen(
     val shiftOffsets = remember { mutableStateMapOf<Int, Float>() }
     val allExpanded = uiState.groups.isNotEmpty() &&
         uiState.groups.all { it.group.id in uiState.expandedGroupIds }
-    val isCenterFab = LocalTheme.current.bottomBarMode == BottomBarMode.CENTER_FAB
-    val navBarWidth = LocalNavBarWidth.current.value
-    val expandFabStartPadding = if (isCenterFab && navBarWidth > 0.dp) {
-        navBarWidth + 92.dp
-    } else {
-        80.dp
-    }
 
     LaunchedEffect(uiState.groups) {
         if (draggedIndex == -1 && reorderedGroups.toList() != uiState.groups) {
@@ -156,6 +146,7 @@ fun ActivityManagementScreen(
                             collapsed = false,
                             showDragHandle = false,
                             emptyText = "暂无未分类活动",
+                            displayColorMode = uiState.displayColorConfig.activityIconColorMode,
                             onItemSelected = { id ->
                                 uiState.uncategorizedActivities
                                     .firstOrNull { it.id == id }
@@ -184,6 +175,7 @@ fun ActivityManagementScreen(
                             collapsed = !uiState.expandedGroupIds.contains(groupWithActivities.group.id),
                             showDragHandle = true,
                             emptyText = "暂无活动",
+                            displayColorMode = uiState.displayColorConfig.activityIconColorMode,
                             isDragging = draggedIndex == index,
                             dragOffsetY = if (draggedIndex == index) dragOffsetY else 0f,
                             shiftOffset = shiftOffsets[index] ?: 0f,
@@ -271,7 +263,7 @@ fun ActivityManagementScreen(
             modifier = Modifier
                 .align(Alignment.BottomStart)
                 .navigationBarsPadding()
-                .padding(start = expandFabStartPadding, bottom = 8.dp)
+                .padding(start = 80.dp, bottom = 8.dp)
                 .size(56.dp),
         ) {
             Icon(

@@ -287,6 +287,20 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
         }
     }
 
+    override fun getDisplayColorConfigFlow(): Flow<com.nltimer.core.data.model.DisplayColorConfig> = dataStore.data.map { prefs ->
+        com.nltimer.core.data.model.DisplayColorConfig(
+            activityIconColorMode = try { com.nltimer.core.designsystem.theme.DisplayColorMode.valueOf(prefs[activityIconColorModeKey] ?: com.nltimer.core.designsystem.theme.DisplayColorMode.NORMAL.name) } catch (_: IllegalArgumentException) { com.nltimer.core.designsystem.theme.DisplayColorMode.NORMAL },
+            tagDisplayColorMode = try { com.nltimer.core.designsystem.theme.DisplayColorMode.valueOf(prefs[tagDisplayColorModeKey] ?: com.nltimer.core.designsystem.theme.DisplayColorMode.NORMAL.name) } catch (_: IllegalArgumentException) { com.nltimer.core.designsystem.theme.DisplayColorMode.NORMAL },
+        )
+    }
+
+    override suspend fun updateDisplayColorConfig(config: com.nltimer.core.data.model.DisplayColorConfig) {
+        dataStore.edit { prefs ->
+            prefs[activityIconColorModeKey] = config.activityIconColorMode.name
+            prefs[tagDisplayColorModeKey] = config.tagDisplayColorMode.name
+        }
+    }
+
     private fun serializeTimeLabelConfig(config: TimeLabelConfig): String {
         return "${config.visible}|${config.style.name}|${config.format.name}"
     }
@@ -363,5 +377,7 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
         private val logBadgePaddingVKey = intPreferencesKey("home_log_badge_padding_v")
         private val timelineItemSpacingKey = intPreferencesKey("home_timeline_item_spacing")
         private val momentCardPaddingKey = intPreferencesKey("home_moment_card_padding")
+        private val activityIconColorModeKey = stringPreferencesKey("activity_icon_color_mode")
+        private val tagDisplayColorModeKey = stringPreferencesKey("tag_display_color_mode")
     }
 }

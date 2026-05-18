@@ -1,11 +1,7 @@
 package com.nltimer.core.data.model
 
 import androidx.compose.runtime.Immutable
-
-enum class DisplayColorMode {
-    NORMAL,
-    COLOR,
-}
+import com.nltimer.core.designsystem.theme.DisplayColorMode
 
 @Immutable
 data class DisplayColorConfig(

@@ -8,6 +8,8 @@ import com.nltimer.core.data.model.ActivityStats
 import com.nltimer.core.data.repository.ActivityManagementRepository
 import com.nltimer.core.data.repository.TagRepository
 import com.nltimer.core.data.usecase.AddActivityUseCase
+import com.nltimer.core.designsystem.theme.DisplayColorMode
+import com.nltimer.core.data.SettingsPrefs
 import com.nltimer.feature.management_activities.model.ActivityManagementUiState
 import com.nltimer.feature.management_activities.model.DialogState
 import com.nltimer.feature.management_activities.model.GroupWithActivities
@@ -37,6 +39,7 @@ class ActivityManagementViewModel @Inject constructor(
     private val repository: ActivityManagementRepository,
     private val addActivityUseCase: AddActivityUseCase,
     private val tagRepository: TagRepository,
+    private val settingsPrefs: SettingsPrefs,
 ) : ViewModel() {
 
     private var groupActivityJobs = mutableListOf<Job>()
@@ -57,6 +60,11 @@ class ActivityManagementViewModel @Inject constructor(
         viewModelScope.launch {
             repository.initializePresets()
         }
+        settingsPrefs.getDisplayColorConfigFlow()
+            .onEach { config ->
+                _uiState.update { it.copy(displayColorConfig = config) }
+            }
+            .launchIn(viewModelScope)
     }
 
     private fun loadData() {
@@ -253,5 +261,14 @@ class ActivityManagementViewModel @Inject constructor(
     fun dismissDialog() {
         _selectedActivityId.value = null
         _uiState.update { it.copy(dialogState = null) }
+    }
+
+    fun updateActivityIconColorMode(mode: DisplayColorMode) {
+        viewModelScope.launch {
+            val currentConfig = _uiState.value.displayColorConfig
+            settingsPrefs.updateDisplayColorConfig(
+                currentConfig.copy(activityIconColorMode = mode)
+            )
+        }
     }
 }
