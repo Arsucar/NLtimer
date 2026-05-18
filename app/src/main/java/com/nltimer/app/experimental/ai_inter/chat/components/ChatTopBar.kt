@@ -23,11 +23,17 @@ fun ChatTopBar(
     onNewConversation: () -> Unit,
     onClearCurrent: () -> Unit,
     onExport: () -> Unit,
+    scrollBehavior: TopAppBarScrollBehavior? = null,
+    isImmersive: Boolean = false,
 ) {
     var menuOpen by remember { mutableStateOf(false) }
 
     TopAppBar(
-        colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
+        scrollBehavior = scrollBehavior,
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = Color.Transparent,
+            scrolledContainerColor = if (isImmersive) Color.Transparent else MaterialTheme.colorScheme.surfaceContainer,
+        ),
         navigationIcon = {
             IconButton(onClick = onOpenDrawer) { Icon(Icons.Default.Menu, "会话列表") }
         },

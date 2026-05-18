@@ -6,11 +6,9 @@ import android.content.Context
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.height
@@ -21,7 +19,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -33,6 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -44,6 +43,7 @@ import com.nltimer.app.experimental.ai_inter.chat.components.ChatTopBar
 import com.nltimer.app.experimental.ai_inter.chat.components.ExportSheet
 import com.nltimer.app.experimental.ai_inter.chat.export.ExportFormat
 import com.nltimer.app.experimental.ai_inter.chat.export.ExportOptions
+import com.nltimer.core.designsystem.theme.LocalTheme
 import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.launch
 
@@ -74,6 +74,9 @@ fun AiAssistantChatRoute(
     var showModelSheet by remember { mutableStateOf(false) }
     var showRename by remember { mutableStateOf(false) }
 
+    val topBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val isImmersive = LocalTheme.current.isImmersive
+
     BackHandler(enabled = drawerState.isOpen) {
         scope.launch { drawerState.close() }
     }
@@ -97,20 +100,19 @@ fun AiAssistantChatRoute(
             )
         },
     ) {
-        Surface(modifier = Modifier.fillMaxSize()) {
-            Box(
-                modifier = Modifier.fillMaxSize().background(
-                    Brush.verticalGradient(
-                        listOf(
-                            MaterialTheme.colorScheme.surface,
-                            MaterialTheme.colorScheme.surfaceContainerLow.copy(alpha = 0.5f),
+        Scaffold(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(
+                            listOf(
+                                MaterialTheme.colorScheme.surface,
+                                MaterialTheme.colorScheme.surfaceContainerLow.copy(alpha = 0.5f),
+                            ),
                         ),
-                    ),
-                ),
-            )
-            Scaffold(
+                    )
+                    .nestedScroll(topBarScrollBehavior.nestedScrollConnection),
                 containerColor = Color.Transparent,
-                contentWindowInsets = WindowInsets(0, 0, 0, 0),
                 topBar = {
                     ChatTopBar(
                         title = current?.title ?: "新对话",
@@ -120,6 +122,8 @@ fun AiAssistantChatRoute(
                         onNewConversation = { viewModel.newConversation() },
                         onClearCurrent = { viewModel.clearCurrent() },
                         onExport = { showExport = true },
+                        scrollBehavior = topBarScrollBehavior,
+                        isImmersive = isImmersive,
                     )
                 },
                 bottomBar = {
@@ -161,7 +165,6 @@ fun AiAssistantChatRoute(
                     onDismissError = { viewModel.clearChatError() },
                 )
             }
-        }
     }
 
     if (showRename && current != null) {

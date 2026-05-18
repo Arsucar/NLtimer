@@ -98,14 +98,7 @@ class AiAssistantChatViewModel @Inject constructor(
     private var streamJob: Job? = null
 
     init {
-        viewModelScope.launch {
-            val list = conversationDao.observeAll().first()
-            if (list.isNotEmpty()) {
-                _currentConversationId.value = list.first().id
-            } else {
-                newConversation()
-            }
-        }
+        newConversation()
     }
 
     fun selectConversation(id: String) {

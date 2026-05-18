@@ -320,7 +320,7 @@ fun NLtimerScaffold(
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(
-                                top = if (isImmersive) 0.dp else padding.calculateTopPadding(),
+                                top = if (isImmersive) 0.dp else if (isAiAssistantChat) 0.dp else padding.calculateTopPadding(),
                                 bottom = if (isAnyFloating) 0.dp else if (!isSecondaryPage) padding.calculateBottomPadding() else 0.dp,
                             ),
                     )
