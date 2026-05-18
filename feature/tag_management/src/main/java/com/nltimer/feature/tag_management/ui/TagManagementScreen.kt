@@ -39,7 +39,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nltimer.core.behaviorui.sheet.CategoryGroupCard
 import com.nltimer.core.behaviorui.sheet.CategorizableItem
-import com.nltimer.core.data.model.DisplayColorMode
 import com.nltimer.core.data.model.Tag
 import com.nltimer.core.designsystem.component.BottomBarDragFab
 import com.nltimer.core.designsystem.component.LoadingScreen
@@ -239,36 +238,15 @@ fun TagManagementScreen(
             }
         }
 
-        val tagColorMode = uiState.displayColorConfig.tagDisplayColorMode
-        val dragOptions = listOf(
-            "添加分类",
-            "添加标签",
-            when (tagColorMode) {
-                DisplayColorMode.BACKGROUND -> "✓ 标签：背景色模式"
-                else -> "标签：背景色模式"
-            },
-            when (tagColorMode) {
-                DisplayColorMode.TEXT -> "✓ 标签：文字色模式"
-                else -> "标签：文字色模式"
-            },
-            when (tagColorMode) {
-                DisplayColorMode.NORMAL -> "✓ 标签：正常模式"
-                else -> "标签：正常模式"
-            },
-        )
-
         BottomBarDragFab(
             state = dragFabState,
             icon = Icons.Default.Add,
-            dragOptions = dragOptions,
+            dragOptions = listOf("添加分类", "添加标签"),
             onClick = { viewModel.showAddCategoryDialog() },
             onOptionSelected = { option ->
-                when {
-                    option.startsWith("添加分类") -> viewModel.showAddCategoryDialog()
-                    option.startsWith("添加标签") -> viewModel.showAddTagDialog(null)
-                    option.contains("背景色模式") -> viewModel.updateTagDisplayColorMode(DisplayColorMode.BACKGROUND)
-                    option.contains("文字色模式") -> viewModel.updateTagDisplayColorMode(DisplayColorMode.TEXT)
-                    option.contains("正常模式") -> viewModel.updateTagDisplayColorMode(DisplayColorMode.NORMAL)
+                when (option) {
+                    "添加分类" -> viewModel.showAddCategoryDialog()
+                    "添加标签" -> viewModel.showAddTagDialog(null)
                 }
             },
         )

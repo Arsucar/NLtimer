@@ -273,7 +273,7 @@ private fun SheetMainContent(
                 layoutMode = dialogConfig.activityLayoutMode,
                 maxLinesPerColumn = dialogConfig.activityColumnLines,
                 maxLinesHorizontal = horizontalLinesForActivities,
-                useActivityColorForText = dialogConfig.displayColorConfig.activityUseColorForText,
+                useActivityColorForText = dialogConfig.activityUseColorForText,
                 functionChipLabel = "活动",
                 functionChipIcon = {
                     Icon(Icons.Default.Settings, contentDescription = "活动", modifier = Modifier.size(14.dp))
@@ -297,7 +297,7 @@ private fun SheetMainContent(
                 layoutMode = dialogConfig.tagLayoutMode,
                 maxLinesPerColumn = dialogConfig.tagColumnLines,
                 maxLinesHorizontal = horizontalLinesForTags,
-                useActivityColorForText = dialogConfig.displayColorConfig.tagUseColorForText,
+                useActivityColorForText = dialogConfig.tagUseColorForText,
                 functionChipLabel = "标签",
                 functionChipIcon = {
                     Icon(Icons.AutoMirrored.Filled.Label, contentDescription = "标签", modifier = Modifier.size(14.dp))

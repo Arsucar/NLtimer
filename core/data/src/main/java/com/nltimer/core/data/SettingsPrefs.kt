@@ -1,7 +1,6 @@
 package com.nltimer.core.data
 
 import com.nltimer.core.data.model.DialogGridConfig
-import com.nltimer.core.data.model.DisplayColorConfig
 import com.nltimer.core.data.model.HomeLayoutConfig
 import com.nltimer.core.designsystem.theme.Theme
 import com.nltimer.core.designsystem.theme.TimeLabelConfig
@@ -40,11 +39,6 @@ interface SettingsPrefs {
     fun getHomeLayoutConfigFlow(): Flow<HomeLayoutConfig>
     /** 更新主页布局样式配置并持久化 */
     suspend fun updateHomeLayoutConfig(config: HomeLayoutConfig)
-
-    /** 以 Flow 形式监听显示颜色配置 */
-    fun getDisplayColorConfigFlow(): Flow<DisplayColorConfig>
-    /** 更新显示颜色配置并持久化 */
-    suspend fun updateDisplayColorConfig(config: DisplayColorConfig)
 
     /** 以 Flow 形式监听是否已看过引导页 */
     fun getHasSeenIntroFlow(): Flow<Boolean>

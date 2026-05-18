@@ -96,8 +96,8 @@ fun DialogConfigScreen(
                 InlineToggleRow(
                     label = "配色",
                     options = listOf("强调色" to false, "活动色" to true),
-                    selected = config.displayColorConfig.activityUseColorForText,
-                    onSelect = { onUpdateConfig(config.copy(displayColorConfig = config.displayColorConfig.copy(activityUseColorForText = it))) },
+                    selected = config.activityUseColorForText,
+                    onSelect = { onUpdateConfig(config.copy(activityUseColorForText = it)) },
                 )
             }
         }
@@ -138,8 +138,8 @@ fun DialogConfigScreen(
                 InlineToggleRow(
                     label = "配色",
                     options = listOf("强调色" to false, "活动色" to true),
-                    selected = config.displayColorConfig.tagUseColorForText,
-                    onSelect = { onUpdateConfig(config.copy(displayColorConfig = config.displayColorConfig.copy(tagUseColorForText = it))) },
+                    selected = config.tagUseColorForText,
+                    onSelect = { onUpdateConfig(config.copy(tagUseColorForText = it)) },
                 )
             }
         }

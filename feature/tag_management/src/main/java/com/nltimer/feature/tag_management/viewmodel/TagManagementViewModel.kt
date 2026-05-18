@@ -3,7 +3,6 @@ package com.nltimer.feature.tag_management.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nltimer.core.data.SettingsPrefs
-import com.nltimer.core.data.model.DisplayColorMode
 import com.nltimer.core.data.model.Tag
 import com.nltimer.core.data.repository.ActivityManagementRepository
 import com.nltimer.core.data.repository.TagRepository
