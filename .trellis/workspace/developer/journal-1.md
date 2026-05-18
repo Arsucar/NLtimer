@@ -203,3 +203,36 @@ ChatTopBar增加scrollBehavior支持折叠、进入自动新对话、移除多�
 ### Next Steps
 
 - None - task complete
+
+
+## Session 7: 主题配置顶栏模糊开关
+
+**Date**: 2026-05-18
+**Task**: 主题配置顶栏模糊开关
+**Branch**: `dev-v5`
+
+### Summary
+
+Theme新增topBarHaze字段，SettingsPrefsImpl读写，ThemeSettingsViewModel和Screen添加开关UI，NLtimerScaffold和ChatTopBar条件传递hazeState
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `85fb746` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete

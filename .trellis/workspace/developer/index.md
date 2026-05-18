@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 6
+- **Total Sessions**: 7
 - **Last Active**: 2026-05-18
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~205 | Active |
+| `journal-1.md` | ~238 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 7 | 2026-05-18 | 主题配置顶栏模糊开关 | `85fb746` | `dev-v5` |
 | 6 | 2026-05-18 | 顶部栏pill圆角模糊容器 | `f62286b` | `dev-v5` |
 | 5 | 2026-05-18 | 顶部栏Haze毛玻璃模糊背景 | `ac48d1f` | `dev-v5` |
 | 4 | 2026-05-18 | AI对话顶部栏折叠与自动新对话 | `1a6a71d` | `dev-v5` |
