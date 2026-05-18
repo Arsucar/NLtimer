@@ -15,7 +15,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.percent
+
 import androidx.compose.ui.unit.sp
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeEffect
@@ -71,7 +71,7 @@ fun ChatTopBar(
             if (hazeState != null) {
                 Box(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(50.percent))
+                        .clip(RoundedCornerShape(50))
                         .hazeEffect(
                             state = hazeState,
                             style = HazeMaterials.ultraThin(MaterialTheme.colorScheme.surfaceContainerLow),
@@ -102,7 +102,7 @@ fun ChatTopBar(
             if (hazeState != null) {
                 Row(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(50.percent))
+                        .clip(RoundedCornerShape(50))
                         .hazeEffect(
                             state = hazeState,
                             style = HazeMaterials.ultraThin(MaterialTheme.colorScheme.surfaceContainerLow),

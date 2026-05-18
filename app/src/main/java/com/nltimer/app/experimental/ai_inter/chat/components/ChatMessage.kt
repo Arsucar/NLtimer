@@ -109,10 +109,12 @@ private fun MessageMetadata(msg: ConversationMessageEntity) {
     }
 }
 
+private val toolCallsJson = Json { ignoreUnknownKeys = true }
+
 private fun parseToolCalls(json: String): List<ToolCallRecord> {
     if (json.isBlank()) return emptyList()
     return runCatching {
-        val arr: JsonArray = Json { ignoreUnknownKeys = true }.parseToJsonElement(json).jsonArray
+        val arr: JsonArray = toolCallsJson.parseToJsonElement(json).jsonArray
         arr.map { el ->
             val o = el.jsonObject
             ToolCallRecord(

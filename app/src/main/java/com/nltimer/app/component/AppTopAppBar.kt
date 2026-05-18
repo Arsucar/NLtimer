@@ -35,7 +35,7 @@ import com.nltimer.core.designsystem.theme.toDisplayString
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.percent
+
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.materials.HazeMaterials
@@ -187,7 +187,7 @@ fun AppTopAppBar(
             if (hazeState != null) {
                 Box(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(50.percent))
+                        .clip(RoundedCornerShape(50))
                         .hazeEffect(
                             state = hazeState,
                             style = HazeMaterials.ultraThin(MaterialTheme.colorScheme.surfaceContainerLow),
@@ -351,7 +351,7 @@ fun AppCollapsedTopAppBar(
             if (hazeState != null) {
                 Box(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(50.percent))
+                        .clip(RoundedCornerShape(50))
                         .hazeEffect(
                             state = hazeState,
                             style = HazeMaterials.ultraThin(MaterialTheme.colorScheme.surfaceContainerLow),
