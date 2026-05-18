@@ -19,3 +19,17 @@ If you're using Codex or another agent-capable tool, additional project-scoped h
 Managed by Trellis. Edits outside this block are preserved; edits inside may be overwritten by a future `trellis update`.
 
 <!-- TRELLIS:END -->
+
+## 项目上下文文档
+
+Agent 快速上下文文档位于 `docs/agent/`，按需加载：
+
+1. `docs/agent/01-project-overview.md` — 项目基本信息（先读）
+2. `docs/agent/02-architecture-digest.md` — 架构与数据流
+3. `docs/agent/03-module-map.md` — 模块→关键类→文件路径映射（定位代码时读）
+4. `docs/agent/04-patterns.md` — 设计模式与代码约定（写代码时读）
+5. `docs/agent/05-data-model.md` — 数据模型速查（涉及数据层时读）
+
+入口索引：`docs/agent/00-index.md`
+
+文档与代码同步校验：`python scripts/check-docs-sync.py`
