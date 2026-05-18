@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 5
+- **Total Sessions**: 6
 - **Last Active**: 2026-05-18
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~172 | Active |
+| `journal-1.md` | ~205 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 6 | 2026-05-18 | 顶部栏pill圆角模糊容器 | `f62286b` | `dev-v5` |
 | 5 | 2026-05-18 | 顶部栏Haze毛玻璃模糊背景 | `ac48d1f` | `dev-v5` |
 | 4 | 2026-05-18 | AI对话顶部栏折叠与自动新对话 | `1a6a71d` | `dev-v5` |
 | 3 | 2026-05-18 | AI 助手对话页任务 - 跳过实现直接完成 | chore(task): archive 05-18-ai-assistant-chat | `dev-v5` |

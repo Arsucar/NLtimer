@@ -170,3 +170,36 @@ ChatTopBar增加scrollBehavior支持折叠、进入自动新对话、移除多�
 ### Next Steps
 
 - None - task complete
+
+
+## Session 6: 顶部栏pill圆角模糊容器
+
+**Date**: 2026-05-18
+**Task**: 顶部栏pill圆角模糊容器
+**Branch**: `dev-v5`
+
+### Summary
+
+将顶部栏全宽hazeEffect改为标题和按钮区域的pill圆角模糊容器，使用clip+RoundedCornerShape(50.percent)+hazeEffect
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `f62286b` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
