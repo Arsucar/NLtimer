@@ -12,6 +12,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.hazeEffect
+import dev.chrisbanes.haze.materials.HazeMaterials
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -25,6 +28,7 @@ fun ChatTopBar(
     onExport: () -> Unit,
     scrollBehavior: TopAppBarScrollBehavior? = null,
     isImmersive: Boolean = false,
+    hazeState: HazeState,
 ) {
     var menuOpen by remember { mutableStateOf(false) }
 
@@ -32,7 +36,11 @@ fun ChatTopBar(
         scrollBehavior = scrollBehavior,
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = Color.Transparent,
-            scrolledContainerColor = if (isImmersive) Color.Transparent else MaterialTheme.colorScheme.surfaceContainer,
+            scrolledContainerColor = Color.Transparent,
+        ),
+        modifier = Modifier.hazeEffect(
+            state = hazeState,
+            style = HazeMaterials.ultraThin(MaterialTheme.colorScheme.surfaceContainerLow),
         ),
         navigationIcon = {
             IconButton(onClick = onOpenDrawer) { Icon(Icons.Default.Menu, "会话列表") }

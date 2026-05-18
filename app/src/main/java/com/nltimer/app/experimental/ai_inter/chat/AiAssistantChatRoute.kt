@@ -124,6 +124,7 @@ fun AiAssistantChatRoute(
                         onExport = { showExport = true },
                         scrollBehavior = topBarScrollBehavior,
                         isImmersive = isImmersive,
+                        hazeState = hazeState,
                     )
                 },
                 bottomBar = {

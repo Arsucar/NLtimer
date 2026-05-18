@@ -33,6 +33,9 @@ import com.nltimer.core.designsystem.R as DR
 import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.core.designsystem.theme.toDisplayString
 import androidx.compose.ui.graphics.Color
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.hazeEffect
+import dev.chrisbanes.haze.materials.HazeMaterials
 
 data class MomentFilterOption(
     val label: String,
@@ -52,6 +55,7 @@ fun AppTopAppBar(
     navigationIcon: @Composable () -> Unit = {},
     isDateTitle: Boolean = false,
     isImmersive: Boolean = false,
+    hazeState: HazeState? = null,
     layoutLabel: String? = null,
     onLayoutChange: ((HomeLayout) -> Unit)? = null,
     momentFilterLabel: String? = null,
@@ -178,10 +182,15 @@ fun AppTopAppBar(
         },
         navigationIcon = navigationIcon,
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = if (isImmersive) Color.Transparent else MaterialTheme.colorScheme.background,
-            scrolledContainerColor = if (isImmersive) Color.Transparent else MaterialTheme.colorScheme.surfaceContainer,
+            containerColor = Color.Transparent,
+            scrolledContainerColor = Color.Transparent,
         ),
-        modifier = modifier,
+        modifier = modifier.then(
+            if (hazeState != null) Modifier.hazeEffect(
+                state = hazeState,
+                style = HazeMaterials.ultraThin(MaterialTheme.colorScheme.surfaceContainerLow),
+            ) else Modifier
+        ),
     )
 }
 
@@ -194,6 +203,7 @@ fun AppCollapsedTopAppBar(
     navigationIcon: @Composable () -> Unit = {},
     isDateTitle: Boolean = false,
     isImmersive: Boolean = false,
+    hazeState: HazeState? = null,
     layoutLabel: String? = null,
     onLayoutChange: ((HomeLayout) -> Unit)? = null,
     momentFilterLabel: String? = null,
@@ -325,9 +335,14 @@ fun AppCollapsedTopAppBar(
         navigationIcon = navigationIcon,
         scrollBehavior = scrollBehavior,
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = if (isImmersive) Color.Transparent else MaterialTheme.colorScheme.background,
-            scrolledContainerColor = if (isImmersive) Color.Transparent else MaterialTheme.colorScheme.surfaceContainer,
+            containerColor = Color.Transparent,
+            scrolledContainerColor = Color.Transparent,
         ),
-        modifier = modifier,
+        modifier = modifier.then(
+            if (hazeState != null) Modifier.hazeEffect(
+                state = hazeState,
+                style = HazeMaterials.ultraThin(MaterialTheme.colorScheme.surfaceContainerLow),
+            ) else Modifier
+        ),
     )
 }

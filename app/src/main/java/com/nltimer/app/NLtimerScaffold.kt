@@ -49,6 +49,8 @@ import com.nltimer.app.viewmodel.DrawerViewModel
 import com.nltimer.core.data.SettingsPrefs
 import com.nltimer.core.data.model.DisplayColorConfig
 import com.nltimer.core.designsystem.theme.BottomBarMode
+import dev.chrisbanes.haze.hazeSource
+import dev.chrisbanes.haze.rememberHazeState
 import com.nltimer.core.designsystem.theme.DisplayColorMode
 import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.core.designsystem.theme.LocalImmersiveTopPadding
@@ -113,6 +115,7 @@ fun NLtimerScaffold(
     val homeLayoutConfig by dialogConfigViewModel.homeLayoutConfig.collectAsStateWithLifecycle()
     val drawerViewModel: DrawerViewModel = hiltViewModel()
     val totalDurationMs by drawerViewModel.totalDurationMs.collectAsStateWithLifecycle()
+    val topBarHazeState = rememberHazeState()
     val momentFilterLabel = if (isHomePage && theme.homeLayout == HomeLayout.MOMENT) {
         val filterLabel = MomentFilterOptions.firstOrNull { it.key == momentFilterKey }?.label ?: ""
         val sortLabel = MomentSortOptions.firstOrNull { it.key == momentSortKey }?.label ?: ""
@@ -262,6 +265,7 @@ fun NLtimerScaffold(
                                 isDateTitle = isDateTitle,
                                 isImmersive = isImmersive,
                                 scrollBehavior = topBarScrollBehavior,
+                                hazeState = topBarHazeState,
                                 navigationIcon = if (isAiInter) {
                                     {
                                         IconButton(onClick = { navController.popBackStack() }) {
@@ -287,6 +291,7 @@ fun NLtimerScaffold(
                                 title = topBarTitle,
                                 isDateTitle = isDateTitle,
                                 isImmersive = isImmersive,
+                                hazeState = topBarHazeState,
                                 navigationIcon = if (isAiInter) {
                                     {
                                         IconButton(onClick = { navController.popBackStack() }) {
@@ -318,6 +323,7 @@ fun NLtimerScaffold(
                         timeLabelSettingsRequestKey = timeLabelSettingsRequestKey,
                         onTimeLabelSettingsShown = { timeLabelSettingsRequestKey = 0 },
                         modifier = Modifier
+                            .hazeSource(state = topBarHazeState)
                             .fillMaxSize()
                             .padding(
                                 top = if (isImmersive) 0.dp else if (isAiAssistantChat) 0.dp else padding.calculateTopPadding(),
