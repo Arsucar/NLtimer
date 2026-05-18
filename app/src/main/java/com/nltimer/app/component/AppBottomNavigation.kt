@@ -16,12 +16,16 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Dashboard
+import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Timelapse
+import androidx.compose.material.icons.filled.Timeline
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FloatingToolbarDefaults
@@ -416,5 +420,9 @@ private fun settingsDragOptionIcon(option: String): ImageVector =
         "更改布局" -> Icons.Default.Dashboard
         "时间标签设置" -> Icons.Default.Schedule
         "开启侧边时间轴", "关闭侧边时间轴" -> Icons.Default.Timelapse
+        "网格设置" -> Icons.Default.GridView
+        "时间轴设置" -> Icons.Default.Timeline
+        "日志设置" -> Icons.Default.List
+        "当前时刻设置" -> Icons.Default.AccessTime
         else -> Icons.Default.Settings
     }

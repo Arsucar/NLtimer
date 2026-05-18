@@ -52,9 +52,11 @@ import com.nltimer.core.designsystem.theme.LocalImmersiveTopPadding
 import com.nltimer.core.designsystem.theme.LocalTheme
 import com.nltimer.core.designsystem.theme.TopBarMode
 import com.nltimer.core.designsystem.theme.toDisplayString
+import com.nltimer.feature.home.ui.components.LayoutConfigDialog
 import com.nltimer.feature.home.ui.components.LocalMomentFilterState
 import com.nltimer.feature.home.ui.components.LocalVisibleDateLabel
 import com.nltimer.feature.home.ui.components.MomentFilterState
+import com.nltimer.feature.settings.ui.DialogConfigViewModel
 import com.nltimer.feature.settings.ui.ThemeSettingsViewModel
 import kotlinx.coroutines.launch
 
@@ -94,11 +96,14 @@ fun NLtimerScaffold(
         else -> visibleDateLabelState.value ?: "NLtimer"
     }
     var showLayoutPopup by remember { mutableStateOf(false) }
+    var showLayoutConfigDialog by remember { mutableStateOf(false) }
     var timeLabelSettingsRequestKey by remember { mutableStateOf(0) }
     var momentFilterKey by remember { mutableStateOf("ALL") }
     var momentSortKey by remember { mutableStateOf("TIME_DESC") }
     val theme = LocalTheme.current
     val themeViewModel: ThemeSettingsViewModel = hiltViewModel()
+    val dialogConfigViewModel: DialogConfigViewModel = hiltViewModel()
+    val homeLayoutConfig by dialogConfigViewModel.homeLayoutConfig.collectAsStateWithLifecycle()
     val drawerViewModel: DrawerViewModel = hiltViewModel()
     val totalDurationMs by drawerViewModel.totalDurationMs.collectAsStateWithLifecycle()
     val momentFilterLabel = if (isHomePage && theme.homeLayout == HomeLayout.MOMENT) {
@@ -123,10 +128,17 @@ fun NLtimerScaffold(
             onSortChange = { momentSortKey = it },
         )
     }
-    val settingsDragOptions = remember(currentRoute, theme.homeLayout, theme.showTimeSideBar) {
+    val layoutConfigLabel = when (theme.homeLayout) {
+        HomeLayout.GRID -> "网格设置"
+        HomeLayout.TIMELINE_REVERSE -> "时间轴设置"
+        HomeLayout.LOG -> "日志设置"
+        HomeLayout.MOMENT -> "当前时刻设置"
+    }
+    val settingsDragOptions = remember(currentRoute, theme.homeLayout, theme.showTimeSideBar, layoutConfigLabel) {
         buildList {
             if (currentRoute == NLtimerRoutes.HOME) {
                 add("更改布局")
+                add(layoutConfigLabel)
                 if (theme.homeLayout == HomeLayout.GRID) {
                     add(if (theme.showTimeSideBar) "关闭侧边时间轴" else "开启侧边时间轴")
                     add("时间标签设置")
@@ -147,6 +159,7 @@ fun NLtimerScaffold(
             "开启侧边时间轴" -> themeViewModel.onShowTimeSideBarToggle(true)
             "关闭侧边时间轴" -> themeViewModel.onShowTimeSideBarToggle(false)
             "时间标签设置" -> timeLabelSettingsRequestKey += 1
+            layoutConfigLabel -> showLayoutConfigDialog = true
         }
     }
 
@@ -299,6 +312,15 @@ fun NLtimerScaffold(
                     onShowTimeSideBarChange = { themeViewModel.onShowTimeSideBarToggle(it) },
                     popupOffsetY = if (isAnyFloating) -300 else -260,
                     initialShowLayoutOptions = showLayoutPopup,
+                )
+            }
+
+            if (showLayoutConfigDialog) {
+                LayoutConfigDialog(
+                    layout = theme.homeLayout,
+                    config = homeLayoutConfig,
+                    onConfigChange = { dialogConfigViewModel.updateHomeLayoutConfig(it) },
+                    onDismiss = { showLayoutConfigDialog = false },
                 )
             }
         }
