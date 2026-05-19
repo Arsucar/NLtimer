@@ -48,6 +48,7 @@ import com.nltimer.core.data.model.AddActivityCallback
 import com.nltimer.core.data.model.AddTagCallback
 import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.model.DialogGridConfig
+import com.nltimer.core.data.model.FocusCardConfig
 import com.nltimer.core.data.model.HomeLayoutConfig
 import com.nltimer.core.data.model.GridLayoutStyle
 import com.nltimer.core.data.model.LogLayoutStyle
@@ -93,6 +94,7 @@ fun HomeScreen(
     dialogConfig: DialogGridConfig = DialogGridConfig(),
     homeLayoutConfig: HomeLayoutConfig = HomeLayoutConfig(),
     tagDisplayConfig: com.nltimer.core.data.model.TagDisplayConfig = com.nltimer.core.data.model.TagDisplayConfig(),
+    focusCardConfig: FocusCardConfig = FocusCardConfig(),
     activityLastUsedMap: Map<Long, Long?> = emptyMap(),
     tagLastUsedMap: Map<Long, Long?> = emptyMap(),
     tagCategoryOrder: List<String> = emptyList(),
@@ -186,6 +188,7 @@ fun HomeScreen(
                         timeLabelConfig = timeLabelConfig,
                         homeLayoutConfig = homeLayoutConfig,
                         tagDisplayConfig = tagDisplayConfig,
+                        focusCardConfig = focusCardConfig,
                         onHomeLayoutChange = onHomeLayoutChange,
                         modifier = Modifier.weight(1f),
                     )
@@ -267,6 +270,7 @@ private fun HomeLayoutContent(
     timeLabelConfig: TimeLabelConfig,
     homeLayoutConfig: HomeLayoutConfig = HomeLayoutConfig(),
     tagDisplayConfig: com.nltimer.core.data.model.TagDisplayConfig = com.nltimer.core.data.model.TagDisplayConfig(),
+    focusCardConfig: FocusCardConfig = FocusCardConfig(),
     onHomeLayoutChange: (HomeLayout) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
@@ -348,6 +352,7 @@ private fun HomeLayoutContent(
                 onStartBehavior = onStartBehavior,
                 onEmptyCellClick = { onEmptyCellClick(null, null) },
                 momentStyle = homeLayoutConfig.moment,
+                focusCardConfig = focusCardConfig,
             )
         }
     }

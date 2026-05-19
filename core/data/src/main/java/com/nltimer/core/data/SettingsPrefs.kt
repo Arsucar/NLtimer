@@ -1,6 +1,7 @@
 package com.nltimer.core.data
 
 import com.nltimer.core.data.model.DialogGridConfig
+import com.nltimer.core.data.model.FocusCardConfig
 import com.nltimer.core.data.model.HomeLayoutConfig
 import com.nltimer.core.designsystem.theme.Theme
 import com.nltimer.core.designsystem.theme.TimeLabelConfig
@@ -54,4 +55,9 @@ interface SettingsPrefs {
     fun getTagDisplayConfigFlow(): Flow<com.nltimer.core.data.model.TagDisplayConfig>
     /** 更新标签显示配置并持久化 */
     suspend fun updateTagDisplayConfig(config: com.nltimer.core.data.model.TagDisplayConfig)
+
+    /** 以 Flow 形式监听专注卡片配置 */
+    fun getFocusCardConfigFlow(): Flow<FocusCardConfig>
+    /** 更新专注卡片配置并持久化 */
+    suspend fun updateFocusCardConfig(config: FocusCardConfig)
 }
