@@ -1,6 +1,7 @@
 package com.nltimer.app.experimental.ai_inter
 
 import androidx.compose.foundation.clickable
+import com.nltimer.app.experimental.ai_inter.viewmodel.AiChatToolHelper
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -70,6 +71,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.nltimer.app.experimental.ai_inter.viewmodel.AiInterViewModel
 import com.nltimer.app.experimental.ai_inter.viewmodel.ChatMessage
 import com.nltimer.app.experimental.ai_inter.viewmodel.ToolCallRecord
+import com.nltimer.core.tools.ToolCategory
 import com.nltimer.core.designsystem.component.GroupCard
 import com.nltimer.core.designsystem.component.PlaceholderScreen
 import com.nltimer.core.designsystem.component.SettingsEntryCard
@@ -411,6 +413,7 @@ fun AiPromptConfigRoute(
     var promptNotes by remember(config.promptNotes) { mutableStateOf(config.promptNotes) }
     var promptTaskGen by remember(config.promptTaskGen) { mutableStateOf(config.promptTaskGen) }
     var promptChat by remember(config.promptChat) { mutableStateOf(config.promptChat) }
+    var promptSystem by remember(config.promptSystem) { mutableStateOf(config.promptSystem.ifBlank { AiChatToolHelper.TOOLS_SYSTEM_PROMPT }) }
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -424,11 +427,21 @@ fun AiPromptConfigRoute(
     ) {
         item {
             PromptEditCard(
+                title = "系统提示词",
+                value = promptSystem,
+                onValueChange = {
+                    promptSystem = it
+                    viewModel.updatePrompts(promptNotes, promptTaskGen, promptChat, it)
+                }
+            )
+        }
+        item {
+            PromptEditCard(
                 title = "主页备注解析",
                 value = promptNotes,
                 onValueChange = { 
                     promptNotes = it
-                    viewModel.updatePrompts(it, promptTaskGen, promptChat)
+                    viewModel.updatePrompts(it, promptTaskGen, promptChat, promptSystem)
                 }
             )
         }
@@ -438,7 +451,7 @@ fun AiPromptConfigRoute(
                 value = promptTaskGen,
                 onValueChange = { 
                     promptTaskGen = it
-                    viewModel.updatePrompts(promptNotes, it, promptChat)
+                    viewModel.updatePrompts(promptNotes, it, promptChat, promptSystem)
                 }
             )
         }
@@ -448,7 +461,7 @@ fun AiPromptConfigRoute(
                 value = promptChat,
                 onValueChange = { 
                     promptChat = it
-                    viewModel.updatePrompts(promptNotes, promptTaskGen, it)
+                    viewModel.updatePrompts(promptNotes, promptTaskGen, it, promptSystem)
                 }
             )
         }
@@ -816,6 +829,7 @@ fun AiToolsListRoute(
     viewModel: AiInterViewModel = hiltViewModel()
 ) {
     val tools = remember { viewModel.getAllTools() }
+    val groupedTools = remember(tools) { tools.groupBy { it.category } }
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -840,48 +854,62 @@ fun AiToolsListRoute(
                 }
             }
         } else {
-            items(tools) { tool ->
-                GroupCard {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = tool.name,
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                            AssistChip(
-                                onClick = { },
-                                label = {
-                                    Text(
-                                        text = tool.category.name,
-                                        fontSize = 10.sp
-                                    )
-                                },
-                                modifier = Modifier.height(24.dp)
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = tool.description,
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                        if (tool.parameters.isNotEmpty()) {
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = "参数：",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            tool.parameters.forEach { param ->
+            ToolCategory.entries.forEach { category ->
+                val categoryTools = groupedTools[category] ?: return@forEach
+                item(key = "header_${category.name}") {
+                    Text(
+                        text = categoryDisplayName(category),
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
+                    )
+                }
+                items(
+                    items = categoryTools,
+                    key = { it.name }
+                ) { tool ->
+                    GroupCard {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
                                 Text(
-                                    text = "  · ${param.name}${if (param.required) "*" else ""}: ${param.description}",
-                                    style = MaterialTheme.typography.bodySmall,
+                                    text = tool.name,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                                AssistChip(
+                                    onClick = { },
+                                    label = {
+                                        Text(
+                                            text = tool.category.name,
+                                            fontSize = 10.sp
+                                        )
+                                    },
+                                    modifier = Modifier.height(24.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = tool.description,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                            if (tool.parameters.isNotEmpty()) {
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = "参数：",
+                                    style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
+                                tool.parameters.forEach { param ->
+                                    Text(
+                                        text = "  · ${param.name}${if (param.required) "*" else ""}: ${param.description}",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
                             }
                         }
                     }
@@ -889,4 +917,13 @@ fun AiToolsListRoute(
             }
         }
     }
+}
+
+private fun categoryDisplayName(category: ToolCategory): String = when (category) {
+    ToolCategory.TIMING -> "计时控制"
+    ToolCategory.STATISTICS -> "统计分析"
+    ToolCategory.GOALS -> "目标管理"
+    ToolCategory.ACTIVITIES -> "活动记录"
+    ToolCategory.REMINDERS -> "提醒通知"
+    ToolCategory.SETTINGS -> "设置"
 }

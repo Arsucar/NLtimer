@@ -123,13 +123,14 @@ class AiInterViewModel @Inject constructor(
         }
     }
 
-    fun updatePrompts(notes: String, taskGen: String, chat: String) {
+    fun updatePrompts(notes: String, taskGen: String, chat: String, system: String) {
         viewModelScope.launch {
             repository.updateConfig {
                 it.copy(
                     promptNotes = notes,
                     promptTaskGen = taskGen,
-                    promptChat = chat
+                    promptChat = chat,
+                    promptSystem = system
                 )
             }
         }
@@ -199,7 +200,11 @@ class AiInterViewModel @Inject constructor(
             append("当前时间: ")
             append(nowIso)
             append("\n\n")
-            append(AiChatToolHelper.TOOLS_SYSTEM_PROMPT)
+            if (cfg.promptSystem.isNotBlank()) {
+                append(cfg.promptSystem)
+            } else {
+                append(AiChatToolHelper.TOOLS_SYSTEM_PROMPT)
+            }
             if (cfg.promptChat.isNotBlank()) {
                 append("\n\n# 附加指引\n")
                 append(cfg.promptChat)

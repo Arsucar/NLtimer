@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.CloudQueue
 import androidx.compose.material.icons.filled.Description
@@ -28,7 +27,6 @@ fun AiInterRoute(
         onNavigateToCallLogs = { navController.navigate(NLtimerRoutes.AI_CALL_LOGS) },
         onNavigateToPromptConfig = { navController.navigate(NLtimerRoutes.AI_PROMPT_CONFIG) },
         onNavigateToTestChat = { navController.navigate(NLtimerRoutes.AI_TEST_CHAT) },
-        onNavigateToAssistantChat = { navController.navigate(NLtimerRoutes.AI_ASSISTANT_CHAT) },
     )
 }
 
@@ -39,7 +37,6 @@ fun AiInterScreen(
     onNavigateToCallLogs: () -> Unit,
     onNavigateToPromptConfig: () -> Unit,
     onNavigateToTestChat: () -> Unit,
-    onNavigateToAssistantChat: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(
@@ -52,15 +49,6 @@ fun AiInterScreen(
         ),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        item {
-            SettingsEntryCard(
-                icon = Icons.AutoMirrored.Filled.Chat,
-                title = "AI 助手对话",
-                subtitle = "正式对话界面：多会话 / Markdown / 导出",
-                onClick = onNavigateToAssistantChat,
-            )
-        }
-
         item {
             SettingsEntryCard(
                 icon = Icons.Default.CloudQueue,

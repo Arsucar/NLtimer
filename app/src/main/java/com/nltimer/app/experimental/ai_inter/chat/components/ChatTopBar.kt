@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.IosShare
 import androidx.compose.material.icons.filled.Menu
@@ -31,6 +32,7 @@ fun ChatTopBar(
     onNewConversation: () -> Unit,
     onClearCurrent: () -> Unit,
     onExport: () -> Unit,
+    onNavigateToAiInter: () -> Unit,
     scrollBehavior: TopAppBarScrollBehavior? = null,
     isImmersive: Boolean = false,
     hazeState: HazeState? = null,
@@ -86,6 +88,7 @@ fun ChatTopBar(
         },
         actions = {
             val actionsContent = @Composable {
+                IconButton(onClick = onNavigateToAiInter) { Icon(Icons.Default.AutoAwesome, "AI Inter") }
                 IconButton(onClick = onExport) { Icon(Icons.Default.IosShare, "导出") }
                 IconButton(onClick = onNewConversation) { Icon(Icons.Default.Add, "新建对话") }
                 Box {

@@ -26,6 +26,7 @@ class AiInterRepository @Inject constructor(
     private val PROMPT_NOTES = stringPreferencesKey("prompt_notes")
     private val PROMPT_TASK_GEN = stringPreferencesKey("prompt_task_gen")
     private val PROMPT_CHAT = stringPreferencesKey("prompt_chat")
+    private val PROMPT_SYSTEM = stringPreferencesKey("prompt_system")
 
     val config: Flow<AiInterConfig> = context.dataStore.data.map { preferences ->
         AiInterConfig(
@@ -35,7 +36,8 @@ class AiInterRepository @Inject constructor(
             modelName = preferences[MODEL_NAME] ?: "openai/gpt-oss-120b",
             promptNotes = preferences[PROMPT_NOTES] ?: "",
             promptTaskGen = preferences[PROMPT_TASK_GEN] ?: "",
-            promptChat = preferences[PROMPT_CHAT] ?: ""
+            promptChat = preferences[PROMPT_CHAT] ?: "",
+            promptSystem = preferences[PROMPT_SYSTEM] ?: ""
         )
     }
 
@@ -48,7 +50,8 @@ class AiInterRepository @Inject constructor(
                 modelName = preferences[MODEL_NAME] ?: "openai/gpt-oss-120b",
                 promptNotes = preferences[PROMPT_NOTES] ?: "",
                 promptTaskGen = preferences[PROMPT_TASK_GEN] ?: "",
-                promptChat = preferences[PROMPT_CHAT] ?: ""
+                promptChat = preferences[PROMPT_CHAT] ?: "",
+                promptSystem = preferences[PROMPT_SYSTEM] ?: ""
             )
             val updated = update(current)
             preferences[API_ADDRESS] = updated.apiAddress
@@ -58,6 +61,7 @@ class AiInterRepository @Inject constructor(
             preferences[PROMPT_NOTES] = updated.promptNotes
             preferences[PROMPT_TASK_GEN] = updated.promptTaskGen
             preferences[PROMPT_CHAT] = updated.promptChat
+            preferences[PROMPT_SYSTEM] = updated.promptSystem
         }
     }
 

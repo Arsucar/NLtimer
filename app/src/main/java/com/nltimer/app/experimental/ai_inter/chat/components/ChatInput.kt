@@ -8,16 +8,21 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.materials.HazeMaterials
-
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.runtime.getValue // 如果你用了 by 关键字，这个也必须导
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatInput(
@@ -30,10 +35,20 @@ fun ChatInput(
     hazeState: HazeState,
     modifier: Modifier = Modifier,
 ) {
+    val focusRequester = remember { FocusRequester() }
+
+    val density = LocalDensity.current
+    val isImeVisible = WindowInsets.ime.getBottom(density) > 0
+val animatedBottomPadding by animateDpAsState(
+    targetValue = if (isImeVisible) 0.dp else 70.dp,
+    label = "IME Padding Animation"
+)
     Surface(
         modifier = modifier
             .fillMaxWidth()
+            // .padding(bottom = if (isImeVisible) 0.dp else 70.dp)
             .navigationBarsPadding()
+            .padding(bottom = animatedBottomPadding)
             .imePadding()
             .padding(horizontal = 8.dp, vertical = 8.dp)
             .clip(MaterialTheme.shapes.extraLarge)
@@ -52,7 +67,7 @@ fun ChatInput(
                 value = text,
                 onValueChange = onTextChange,
                 placeholder = { Text("输入消息…") },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.focusRequester(focusRequester).fillMaxWidth(),
                 colors = TextFieldDefaults.colors(
                     unfocusedIndicatorColor = Color.Transparent,
                     focusedIndicatorColor = Color.Transparent,
@@ -60,7 +75,7 @@ fun ChatInput(
                     unfocusedContainerColor = Color.Transparent,
                 ),
                 maxLines = 5,
-                keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(imeAction = ImeAction.Default),
+                keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(imeAction = ImeAction.Send),
                 enabled = !isSending,
             )
             Row(
