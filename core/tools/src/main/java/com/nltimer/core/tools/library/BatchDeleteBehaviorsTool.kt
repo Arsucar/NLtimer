@@ -6,6 +6,7 @@ import com.nltimer.core.tools.AccessLevel
 import com.nltimer.core.tools.ErrorExample
 import com.nltimer.core.tools.ParameterType
 import com.nltimer.core.tools.ToolCategory
+import com.nltimer.core.tools.ToolConfig
 import com.nltimer.core.tools.ToolDefinition
 import com.nltimer.core.tools.ToolDocumentation
 import com.nltimer.core.tools.ToolError
@@ -21,11 +22,12 @@ import org.json.JSONObject
 class BatchDeleteBehaviorsTool @Inject constructor(
     private val behaviorRepository: BehaviorRepository,
     private val behaviorDao: BehaviorDao,
+    private val toolConfig: ToolConfig,
 ) : ToolDefinition {
 
     override val name: String = "batchDeleteBehaviors"
     override val description: String = "批量删除行为记录，同时清理标签关联，返回已删除和未找到的 ID 列表"
-    override val category: ToolCategory = ToolCategory.ACTIVITIES
+    override val category: ToolCategory = ToolCategory.BEHAVIOR
     override val accessLevel: AccessLevel = AccessLevel.FULL
 
     override val parameters: List<ToolParameter> = listOf(
@@ -48,10 +50,10 @@ class BatchDeleteBehaviorsTool @Inject constructor(
                 ToolError.ValidationError("ids 不能为空"),
             )
         }
-        if (rawIds.size > MAX_BATCH_SIZE) {
+        if (rawIds.size > toolConfig.maxBatchSize) {
             return ToolResult.Error(
                 name,
-                ToolError.ValidationError("单次最多 $MAX_BATCH_SIZE 条，当前 ${rawIds.size} 条"),
+                ToolError.ValidationError("单次最多 ${toolConfig.maxBatchSize} 条，当前 ${rawIds.size} 条"),
             )
         }
 

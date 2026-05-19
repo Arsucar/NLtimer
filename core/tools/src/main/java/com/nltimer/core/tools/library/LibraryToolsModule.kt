@@ -60,4 +60,20 @@ abstract class LibraryToolsModule {
     @Binds
     @IntoSet
     abstract fun bindImportDataTool(impl: ImportDataTool): ToolDefinition
+
+    @Binds
+    @IntoSet
+    abstract fun bindBatchCreateTagsTool(impl: BatchCreateTagsTool): ToolDefinition
+
+    @Binds
+    @IntoSet
+    abstract fun bindBatchDeleteActivitiesTool(impl: BatchDeleteActivitiesTool): ToolDefinition
+
+    @Binds
+    @IntoSet
+    abstract fun bindBatchCreateActivityCategoriesTool(impl: BatchCreateActivityCategoriesTool): ToolDefinition
+
+    @Binds
+    @IntoSet
+    abstract fun bindBatchCreateTagCategoriesTool(impl: BatchCreateTagCategoriesTool): ToolDefinition
 }

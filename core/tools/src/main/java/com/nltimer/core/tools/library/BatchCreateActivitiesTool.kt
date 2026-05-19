@@ -7,6 +7,7 @@ import com.nltimer.core.tools.AccessLevel
 import com.nltimer.core.tools.ErrorExample
 import com.nltimer.core.tools.ParameterType
 import com.nltimer.core.tools.ToolCategory
+import com.nltimer.core.tools.ToolConfig
 import com.nltimer.core.tools.ToolDefinition
 import com.nltimer.core.tools.ToolDocumentation
 import com.nltimer.core.tools.ToolError
@@ -29,12 +30,13 @@ import org.json.JSONObject
 class BatchCreateActivitiesTool @Inject constructor(
     private val activityRepository: ActivityRepository,
     private val categoryRepository: CategoryRepository,
+    private val toolConfig: ToolConfig,
 ) : ToolDefinition {
 
     override val name: String = "batchCreateActivities"
     override val description: String =
         "批量创建活动；传入活动列表，自动去重并创建不存在的活动，返回 created/skipped 结果"
-    override val category: ToolCategory = ToolCategory.ACTIVITIES
+    override val category: ToolCategory = ToolCategory.ACTIVITY
     override val accessLevel: AccessLevel = AccessLevel.WRITE
 
     override val parameters: List<ToolParameter> = listOf(
@@ -57,10 +59,10 @@ class BatchCreateActivitiesTool @Inject constructor(
                 ToolError.ValidationError("activities 不能为空"),
             )
         }
-        if (rawList.size > MAX_BATCH_SIZE) {
+        if (rawList.size > toolConfig.maxBatchSize) {
             return ToolResult.Error(
                 this.name,
-                ToolError.ValidationError("单次最多 $MAX_BATCH_SIZE 条，当前 ${rawList.size} 条"),
+                ToolError.ValidationError("单次最多 ${toolConfig.maxBatchSize} 条，当前 ${rawList.size} 条"),
             )
         }
 
