@@ -44,6 +44,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -195,6 +196,69 @@ fun AiProviderConfigRoute(
                             Spacer(modifier = Modifier.width(8.dp))
                             Text("获取模型列表")
                         }
+                    }
+                }
+            }
+
+            item {
+                Text(
+                    text = "高级配置",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(horizontal = 4.dp)
+                )
+            }
+
+            item {
+                GroupCard {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = "工具调用轮数上限",
+                            style = MaterialTheme.typography.titleSmall,
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "AI 单次对话中最多执行 ${config.maxToolRounds} 轮工具调用（1–15）",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Slider(
+                            value = config.maxToolRounds.toFloat(),
+                            onValueChange = {
+                                viewModel.updateMaxToolRounds(it.toInt())
+                            },
+                            valueRange = 1f..15f,
+                            steps = 13,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
+            }
+
+            item {
+                GroupCard {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = "批量操作上限",
+                            style = MaterialTheme.typography.titleSmall,
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "批量工具单次最多处理 ${config.maxBatchSize} 条数据（1–200）",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Slider(
+                            value = config.maxBatchSize.toFloat(),
+                            onValueChange = {
+                                viewModel.updateMaxBatchSize(it.toInt())
+                            },
+                            valueRange = 1f..200f,
+                            steps = 198,
+                            modifier = Modifier.fillMaxWidth()
+                        )
                     }
                 }
             }
@@ -920,10 +984,11 @@ fun AiToolsListRoute(
 }
 
 private fun categoryDisplayName(category: ToolCategory): String = when (category) {
-    ToolCategory.TIMING -> "计时控制"
-    ToolCategory.STATISTICS -> "统计分析"
-    ToolCategory.GOALS -> "目标管理"
-    ToolCategory.ACTIVITIES -> "活动记录"
-    ToolCategory.REMINDERS -> "提醒通知"
-    ToolCategory.SETTINGS -> "设置"
+    ToolCategory.TIMING -> "计时"
+    ToolCategory.BEHAVIOR -> "行为"
+    ToolCategory.ACTIVITY -> "活动"
+    ToolCategory.TAG -> "标签"
+    ToolCategory.CATEGORY -> "分类"
+    ToolCategory.DATA -> "数据"
+    ToolCategory.SEARCH -> "搜索"
 }

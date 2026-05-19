@@ -230,7 +230,7 @@ class AiAssistantChatViewModel @Inject constructor(
 
             try {
                 var round = 0
-                while (round < AiChatToolHelper.MAX_TOOL_ROUNDS) {
+                while (round < cfg.maxToolRounds) {
                     val roundReasoning = StringBuilder()
                     val roundContent = StringBuilder()
                     val toolBuffers = mutableMapOf<Int, ToolCallBuffer>()

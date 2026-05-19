@@ -4,13 +4,14 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "ai_inter_settings")
 
@@ -27,6 +28,8 @@ class AiInterRepository @Inject constructor(
     private val PROMPT_TASK_GEN = stringPreferencesKey("prompt_task_gen")
     private val PROMPT_CHAT = stringPreferencesKey("prompt_chat")
     private val PROMPT_SYSTEM = stringPreferencesKey("prompt_system")
+    private val MAX_TOOL_ROUNDS = intPreferencesKey("max_tool_rounds")
+    private val MAX_BATCH_SIZE = intPreferencesKey("max_batch_size")
 
     val config: Flow<AiInterConfig> = context.dataStore.data.map { preferences ->
         AiInterConfig(
@@ -37,7 +40,9 @@ class AiInterRepository @Inject constructor(
             promptNotes = preferences[PROMPT_NOTES] ?: "",
             promptTaskGen = preferences[PROMPT_TASK_GEN] ?: "",
             promptChat = preferences[PROMPT_CHAT] ?: "",
-            promptSystem = preferences[PROMPT_SYSTEM] ?: ""
+            promptSystem = preferences[PROMPT_SYSTEM] ?: "",
+            maxToolRounds = preferences[MAX_TOOL_ROUNDS] ?: 5,
+            maxBatchSize = preferences[MAX_BATCH_SIZE] ?: 50,
         )
     }
 
@@ -51,7 +56,9 @@ class AiInterRepository @Inject constructor(
                 promptNotes = preferences[PROMPT_NOTES] ?: "",
                 promptTaskGen = preferences[PROMPT_TASK_GEN] ?: "",
                 promptChat = preferences[PROMPT_CHAT] ?: "",
-                promptSystem = preferences[PROMPT_SYSTEM] ?: ""
+                promptSystem = preferences[PROMPT_SYSTEM] ?: "",
+                maxToolRounds = preferences[MAX_TOOL_ROUNDS] ?: 5,
+                maxBatchSize = preferences[MAX_BATCH_SIZE] ?: 20,
             )
             val updated = update(current)
             preferences[API_ADDRESS] = updated.apiAddress
@@ -62,6 +69,8 @@ class AiInterRepository @Inject constructor(
             preferences[PROMPT_TASK_GEN] = updated.promptTaskGen
             preferences[PROMPT_CHAT] = updated.promptChat
             preferences[PROMPT_SYSTEM] = updated.promptSystem
+            preferences[MAX_TOOL_ROUNDS] = updated.maxToolRounds
+            preferences[MAX_BATCH_SIZE] = updated.maxBatchSize
         }
     }
 

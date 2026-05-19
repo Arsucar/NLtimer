@@ -8,6 +8,7 @@ import com.nltimer.app.experimental.ai_inter.data.AiInterRepository
 import com.nltimer.app.experimental.ai_inter.network.AiInterApiClient
 import com.nltimer.app.experimental.ai_inter.network.StreamEvent
 import com.nltimer.app.experimental.ai_inter.network.toOpenAiFunctionJson
+import com.nltimer.core.tools.ToolConfig
 import com.nltimer.core.tools.ToolDefinition
 import com.nltimer.core.tools.ToolRegistry
 import com.nltimer.core.tools.ToolResult
@@ -67,6 +68,7 @@ class AiInterViewModel @Inject constructor(
     private val repository: AiInterRepository,
     private val apiClient: AiInterApiClient,
     private val toolRegistry: ToolRegistry,
+    private val toolConfig: ToolConfig,
 ) : ViewModel() {
 
     private val json = Json { ignoreUnknownKeys = true }
@@ -75,7 +77,11 @@ class AiInterViewModel @Inject constructor(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = AiInterConfig()
-    )
+    ).also { flow ->
+        viewModelScope.launch {
+            flow.collect { cfg -> toolConfig.maxBatchSize = cfg.maxBatchSize }
+        }
+    }
 
     val logs: StateFlow<List<AiCallLogEntity>> = repository.allLogs.stateIn(
         scope = viewModelScope,
@@ -133,6 +139,21 @@ class AiInterViewModel @Inject constructor(
                     promptSystem = system
                 )
             }
+        }
+    }
+
+    fun updateMaxToolRounds(rounds: Int) {
+        val clamped = rounds.coerceIn(1, 15)
+        viewModelScope.launch {
+            repository.updateConfig { it.copy(maxToolRounds = clamped) }
+        }
+    }
+
+    fun updateMaxBatchSize(size: Int) {
+        val clamped = size.coerceIn(1, 200)
+        viewModelScope.launch {
+            repository.updateConfig { it.copy(maxBatchSize = clamped) }
+            toolConfig.maxBatchSize = clamped
         }
     }
 
@@ -233,7 +254,7 @@ class AiInterViewModel @Inject constructor(
 
             try {
                 var round = 0
-                while (round < AiChatToolHelper.MAX_TOOL_ROUNDS) {
+                while (round < cfg.maxToolRounds) {
                     val roundReasoning = StringBuilder()
                     val roundContent = StringBuilder()
                     val toolBuffers: MutableMap<Int, ToolCallBuffer> = mutableMapOf()

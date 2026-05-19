@@ -35,5 +35,7 @@ data class AiInterConfig(
     val promptNotes: String = "",
     val promptTaskGen: String = "",
     val promptChat: String = "",
-    val promptSystem: String = ""
+    val promptSystem: String = "",
+    val maxToolRounds: Int = 5,
+    val maxBatchSize: Int = 20,
 )
