@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.nltimer.core.data.SettingsPrefs
 import com.nltimer.core.data.model.DialogGridConfig
 import com.nltimer.core.data.model.HomeLayoutConfig
+import com.nltimer.core.data.model.TagDisplayConfig
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -23,6 +24,9 @@ class DialogConfigViewModel @Inject constructor(
     val homeLayoutConfig: StateFlow<HomeLayoutConfig> = settingsPrefs.getHomeLayoutConfigFlow()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HomeLayoutConfig())
 
+    val tagDisplayConfig: StateFlow<TagDisplayConfig> = settingsPrefs.getTagDisplayConfigFlow()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), TagDisplayConfig())
+
     fun updateConfig(config: DialogGridConfig) {
         viewModelScope.launch {
             settingsPrefs.updateDialogConfig(config)
@@ -32,6 +36,12 @@ class DialogConfigViewModel @Inject constructor(
     fun updateHomeLayoutConfig(config: HomeLayoutConfig) {
         viewModelScope.launch {
             settingsPrefs.updateHomeLayoutConfig(config)
+        }
+    }
+
+    fun updateTagDisplayConfig(config: TagDisplayConfig) {
+        viewModelScope.launch {
+            settingsPrefs.updateTagDisplayConfig(config)
         }
     }
 }

@@ -33,6 +33,7 @@ internal fun MomentBehaviorItem(
     onClick: () -> Unit,
     onLongClick: () -> Unit,
     logStyle: LogLayoutStyle = LogLayoutStyle(),
+    tagDisplayConfig: com.nltimer.core.data.model.TagDisplayConfig = com.nltimer.core.data.model.TagDisplayConfig(),
 ) {
     val isActive = behavior.isCurrent && behavior.status == BehaviorNature.ACTIVE
     val isPending = behavior.status == BehaviorNature.PENDING
@@ -116,7 +117,7 @@ internal fun MomentBehaviorItem(
                 verticalArrangement = Arrangement.spacedBy(2.dp),
             ) {
                 behavior.tags.forEach { tag ->
-                    TagChip(tag = tag)
+                    TagChip(tag = tag, tagDisplayConfig = tagDisplayConfig)
                 }
                 if (!behavior.note.isNullOrBlank()) {
                     Text(

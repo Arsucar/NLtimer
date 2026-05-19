@@ -113,6 +113,9 @@ class HomeViewModel @Inject constructor(
     val homeLayoutConfig: StateFlow<HomeLayoutConfig> = settingsPrefs.getHomeLayoutConfigFlow()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(HomeUiStateBuilder.STATE_TIMEOUT_MS), HomeLayoutConfig())
 
+    val tagDisplayConfig: StateFlow<com.nltimer.core.data.model.TagDisplayConfig> = settingsPrefs.getTagDisplayConfigFlow()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(HomeUiStateBuilder.STATE_TIMEOUT_MS), com.nltimer.core.data.model.TagDisplayConfig())
+
     private val today = LocalDate.now()
 
     private val _loadedEarliest = MutableStateFlow(today)

@@ -115,6 +115,7 @@ fun MomentView(
     isLoadingMore: Boolean = false,
     hasReachedEarliest: Boolean = false,
     momentStyle: MomentLayoutStyle = MomentLayoutStyle(),
+    tagDisplayConfig: com.nltimer.core.data.model.TagDisplayConfig = com.nltimer.core.data.model.TagDisplayConfig(),
     modifier: Modifier = Modifier,
     header: @Composable (LazyItemScope.() -> Unit)? = null,
 ) {
@@ -268,6 +269,7 @@ fun MomentView(
                     onClick = { detailCell = item.cell },
                     onLongClick = { onCellLongClick(item.cell) },
                     logStyle = LogLayoutStyle(cardPadding = momentStyle.cardPadding),
+                    tagDisplayConfig = tagDisplayConfig,
                 )
             }
         }

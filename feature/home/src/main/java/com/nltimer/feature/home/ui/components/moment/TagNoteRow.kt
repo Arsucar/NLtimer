@@ -21,6 +21,7 @@ import com.nltimer.feature.home.ui.components.TagChip
 internal fun TagNoteRow(
     tags: List<TagUiState>,
     note: String?,
+    tagDisplayConfig: com.nltimer.core.data.model.TagDisplayConfig = com.nltimer.core.data.model.TagDisplayConfig(),
 ) {
     if (tags.isEmpty() && note.isNullOrBlank()) return
     Spacer(Modifier.height(4.dp))
@@ -29,7 +30,7 @@ internal fun TagNoteRow(
         verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
         tags.forEach { tag ->
-            TagChip(tag = tag)
+            TagChip(tag = tag, tagDisplayConfig = tagDisplayConfig)
         }
         if (!note.isNullOrBlank()) {
             Text(

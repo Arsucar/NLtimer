@@ -92,6 +92,7 @@ fun HomeScreen(
     allTags: List<Tag>,
     dialogConfig: DialogGridConfig = DialogGridConfig(),
     homeLayoutConfig: HomeLayoutConfig = HomeLayoutConfig(),
+    tagDisplayConfig: com.nltimer.core.data.model.TagDisplayConfig = com.nltimer.core.data.model.TagDisplayConfig(),
     activityLastUsedMap: Map<Long, Long?> = emptyMap(),
     tagLastUsedMap: Map<Long, Long?> = emptyMap(),
     tagCategoryOrder: List<String> = emptyList(),
@@ -184,6 +185,7 @@ fun HomeScreen(
                         onLoadMore = onLoadMore,
                         timeLabelConfig = timeLabelConfig,
                         homeLayoutConfig = homeLayoutConfig,
+                        tagDisplayConfig = tagDisplayConfig,
                         onHomeLayoutChange = onHomeLayoutChange,
                         modifier = Modifier.weight(1f),
                     )
@@ -264,6 +266,7 @@ private fun HomeLayoutContent(
     onLoadMore: () -> Unit,
     timeLabelConfig: TimeLabelConfig,
     homeLayoutConfig: HomeLayoutConfig = HomeLayoutConfig(),
+    tagDisplayConfig: com.nltimer.core.data.model.TagDisplayConfig = com.nltimer.core.data.model.TagDisplayConfig(),
     onHomeLayoutChange: (HomeLayout) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
@@ -382,6 +385,7 @@ private fun HomeLayoutContent(
                 onLoadMore = onLoadMore,
                 timeLabelConfig = timeLabelConfig,
                 gridStyle = homeLayoutConfig.grid,
+                tagDisplayConfig = tagDisplayConfig,
                 header = focusCard,
                 modifier = Modifier.fillMaxSize(),
             )
@@ -391,6 +395,7 @@ private fun HomeLayoutContent(
                 onCellLongClick = onCellLongClick,
                 onLoadMore = onLoadMore,
                 timelineStyle = homeLayoutConfig.timeline,
+                tagDisplayConfig = tagDisplayConfig,
                 header = focusCard,
                 modifier = Modifier.fillMaxSize(),
             )
@@ -399,6 +404,7 @@ private fun HomeLayoutContent(
                 onCellLongClick = onCellLongClick,
                 onLoadMore = onLoadMore,
                 logStyle = homeLayoutConfig.log,
+                tagDisplayConfig = tagDisplayConfig,
                 header = focusCard,
                 modifier = Modifier.fillMaxSize(),
             )
@@ -415,6 +421,7 @@ private fun HomeLayoutContent(
                 isLoadingMore = uiState.isLoadingMore,
                 hasReachedEarliest = uiState.hasReachedEarliest,
                 momentStyle = homeLayoutConfig.moment,
+                tagDisplayConfig = tagDisplayConfig,
                 header = focusCard,
                 modifier = Modifier.fillMaxSize(),
             )
@@ -431,6 +438,7 @@ private fun GridContent(
     onLoadMore: () -> Unit,
     timeLabelConfig: TimeLabelConfig,
     gridStyle: GridLayoutStyle = GridLayoutStyle(),
+    tagDisplayConfig: com.nltimer.core.data.model.TagDisplayConfig = com.nltimer.core.data.model.TagDisplayConfig(),
     header: @Composable (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
@@ -447,6 +455,7 @@ private fun GridContent(
             showTimeSideBar = showSideBar,
             timeLabelConfig = timeLabelConfig,
             gridStyle = gridStyle,
+            tagDisplayConfig = tagDisplayConfig,
             header = header?.let { { it() } },
             modifier = Modifier.weight(1f),
         )
@@ -475,6 +484,7 @@ private fun TimelineReverseContent(
     onCellLongClick: (GridCellUiState) -> Unit,
     onLoadMore: () -> Unit,
     timelineStyle: TimelineLayoutStyle = TimelineLayoutStyle(),
+    tagDisplayConfig: com.nltimer.core.data.model.TagDisplayConfig = com.nltimer.core.data.model.TagDisplayConfig(),
     header: @Composable (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
@@ -486,6 +496,7 @@ private fun TimelineReverseContent(
         isLoadingMore = uiState.isLoadingMore,
         hasReachedEarliest = uiState.hasReachedEarliest,
         timelineStyle = timelineStyle,
+        tagDisplayConfig = tagDisplayConfig,
         header = header?.let { { it() } },
         modifier = modifier,
     )
@@ -497,6 +508,7 @@ private fun LogContent(
     onCellLongClick: (GridCellUiState) -> Unit,
     onLoadMore: () -> Unit,
     logStyle: LogLayoutStyle = LogLayoutStyle(),
+    tagDisplayConfig: com.nltimer.core.data.model.TagDisplayConfig = com.nltimer.core.data.model.TagDisplayConfig(),
     header: @Composable (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
@@ -507,6 +519,7 @@ private fun LogContent(
         isLoadingMore = uiState.isLoadingMore,
         hasReachedEarliest = uiState.hasReachedEarliest,
         logStyle = logStyle,
+        tagDisplayConfig = tagDisplayConfig,
         header = header?.let { { it() } },
         modifier = modifier,
     )
@@ -526,6 +539,7 @@ private fun MomentContent(
     isLoadingMore: Boolean = false,
     hasReachedEarliest: Boolean = false,
     momentStyle: MomentLayoutStyle = MomentLayoutStyle(),
+    tagDisplayConfig: com.nltimer.core.data.model.TagDisplayConfig = com.nltimer.core.data.model.TagDisplayConfig(),
     header: @Composable (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
@@ -542,6 +556,7 @@ private fun MomentContent(
         isLoadingMore = isLoadingMore,
         hasReachedEarliest = hasReachedEarliest,
         momentStyle = momentStyle,
+        tagDisplayConfig = tagDisplayConfig,
         header = header?.let { { it() } },
         modifier = modifier,
     )

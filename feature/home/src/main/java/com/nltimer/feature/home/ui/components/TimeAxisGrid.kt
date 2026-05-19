@@ -52,6 +52,7 @@ fun TimeAxisGrid(
     showTimeSideBar: Boolean = false,
     timeLabelConfig: TimeLabelConfig = TimeLabelConfig(),
     gridStyle: GridLayoutStyle = GridLayoutStyle(),
+    tagDisplayConfig: com.nltimer.core.data.model.TagDisplayConfig = com.nltimer.core.data.model.TagDisplayConfig(),
     header: @Composable (LazyItemScope.() -> Unit)? = null,
 ) {
     val listState = rememberLazyListState()
@@ -135,6 +136,7 @@ fun TimeAxisGrid(
                     onCellLongClick = onCellLongClick,
                     timeLabelConfig = timeLabelConfig,
                     gridStyle = gridStyle,
+                    tagDisplayConfig = tagDisplayConfig,
                 )
             }
         }

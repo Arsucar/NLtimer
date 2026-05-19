@@ -38,6 +38,7 @@ internal fun PendingCard(
     cell: GridCellUiState,
     onStart: () -> Unit,
     momentStyle: MomentLayoutStyle = MomentLayoutStyle(),
+    tagDisplayConfig: com.nltimer.core.data.model.TagDisplayConfig = com.nltimer.core.data.model.TagDisplayConfig(),
     modifier: Modifier = Modifier,
 ) {
     val estimatedText = cell.estimatedDuration?.let { "预计 ${formatDuration(it)}" } ?: ""
@@ -85,7 +86,7 @@ internal fun PendingCard(
                 activatedIcon = Icons.Filled.Check,
             )
 
-            TagNoteRow(tags = cell.tags, note = cell.note)
+            TagNoteRow(tags = cell.tags, note = cell.note, tagDisplayConfig = tagDisplayConfig)
 
             Spacer(Modifier.height(8.dp))
 

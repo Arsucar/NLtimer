@@ -49,6 +49,7 @@ internal fun ActiveCard(
     cell: GridCellUiState,
     onComplete: () -> Unit,
     momentStyle: MomentLayoutStyle = MomentLayoutStyle(),
+    tagDisplayConfig: com.nltimer.core.data.model.TagDisplayConfig = com.nltimer.core.data.model.TagDisplayConfig(),
     modifier: Modifier = Modifier,
 ) {
     val startMs = cell.startEpochMs ?: System.currentTimeMillis()
@@ -121,7 +122,7 @@ internal fun ActiveCard(
                 activatedIcon = Icons.Filled.Check,
             )
 
-            TagNoteRow(tags = cell.tags, note = cell.note)
+            TagNoteRow(tags = cell.tags, note = cell.note, tagDisplayConfig = tagDisplayConfig)
 
             Spacer(Modifier.height(8.dp))
 

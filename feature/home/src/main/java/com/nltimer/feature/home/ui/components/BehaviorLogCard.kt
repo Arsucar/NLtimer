@@ -40,6 +40,7 @@ internal fun BehaviorLogCard(
     onClick: () -> Unit,
     onLongClick: () -> Unit,
     logStyle: LogLayoutStyle = LogLayoutStyle(),
+    tagDisplayConfig: com.nltimer.core.data.model.TagDisplayConfig = com.nltimer.core.data.model.TagDisplayConfig(),
 ) {
     val cardBackground = if (behavior.isCurrent) {
         MaterialTheme.colorScheme.primaryContainer.copy(alpha = styledAlpha(0.15f))
@@ -137,7 +138,7 @@ internal fun BehaviorLogCard(
             }
         }
 
-        BehaviorTagRow(behavior.tags, logStyle = logStyle)
+        BehaviorTagRow(behavior.tags, logStyle = logStyle, tagDisplayConfig = tagDisplayConfig)
 
         behavior.note?.let { note ->
             if (note.isNotBlank()) {
