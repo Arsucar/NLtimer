@@ -64,7 +64,11 @@ fun IconPickerSheet(
     onDismiss: () -> Unit,
     defaultEmoji: String = "📖",
 ) {
-    val initialTab = if (currentIconKey?.startsWith("mi:") == true) 0 else 0
+    val initialTab = when {
+        currentIconKey?.startsWith("hi:") == true -> 0
+        currentIconKey?.startsWith("mi:") == true -> 1
+        else -> 0
+    }
     var selectedTab by rememberSaveable { mutableIntStateOf(initialTab) }
     var showSearch by rememberSaveable { mutableStateOf(false) }
     var showManualInput by rememberSaveable { mutableStateOf(false) }
@@ -217,6 +221,7 @@ fun IconPickerSheet(
                     }
                 }
                 val tabs = listOf(
+                    stringResource(R.string.icon_picker_tab_hugeicons),
                     stringResource(R.string.icon_picker_tab_icons),
                     stringResource(R.string.icon_picker_tab_emoji),
                 )
@@ -231,14 +236,22 @@ fun IconPickerSheet(
                 }
 
                 when (selectedTab) {
-                    0 -> MaterialIconTab(
+                    0 -> HugeIconTab(
+                        currentIconKey = currentIconKey,
                         searchQuery = searchQuery,
                         onIconSelected = {
                             onIconSelected(it)
                             onDismiss()
                         },
                     )
-                    1 -> EmojiTab(
+                    1 -> MaterialIconTab(
+                        searchQuery = searchQuery,
+                        onIconSelected = {
+                            onIconSelected(it)
+                            onDismiss()
+                        },
+                    )
+                    2 -> EmojiTab(
                         currentIconKey = currentIconKey,
                         defaultEmoji = defaultEmoji,
                         searchQuery = searchQuery,
@@ -307,6 +320,66 @@ private fun EmojiTab(
         }
     }
 }
+@Composable
+private fun HugeIconTab(
+    currentIconKey: String?,
+    searchQuery: String,
+    onIconSelected: (String?) -> Unit,
+) {
+    var selectedCategory by rememberSaveable { mutableStateOf(HugeIconCategory.entries.first()) }
+
+    val filteredIcons = remember(searchQuery, selectedCategory) {
+        val byCategory = HugeIconCatalog.icons.filter { it.category == selectedCategory }
+        if (searchQuery.isBlank()) byCategory else {
+            val q = searchQuery.lowercase()
+            byCategory.filter { it.name.contains(q, ignoreCase = true) || it.keywords.any { it.contains(q, ignoreCase = true) } }
+        }
+    }
+
+    Column(modifier = Modifier.fillMaxSize()) {
+        CategoryScrollRow(
+            categories = HugeIconCategory.entries,
+            selectedCategory = selectedCategory,
+            categoryLabel = { hugeIconCategoryLabel(it) },
+            onCategorySelected = { cat ->
+                selectedCategory = cat
+            },
+        )
+
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(5),
+            modifier = Modifier
+                .weight(1f)
+                .padding(horizontal = 16.dp, vertical = 4.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            items(filteredIcons, key = { it.name }) { entry ->
+                val isCurrent = currentIconKey == "hi:${entry.name}"
+                Surface(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clickable { onIconSelected("hi:${entry.name}") },
+                    shape = RoundedCornerShape(8.dp),
+                    color = if (isCurrent) MaterialTheme.colorScheme.primaryContainer
+                    else MaterialTheme.colorScheme.surfaceContainerHigh,
+                    tonalElevation = 1.dp,
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = entry.imageVectorProvider(),
+                            contentDescription = entry.name,
+                            modifier = Modifier.size(24.dp),
+                            tint = if (isCurrent) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.onSurface,
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
 @Composable
 private fun MaterialIconTab(
     searchQuery: String,
@@ -436,6 +509,24 @@ private fun iconCategoryLabel(category: IconCategory): String = when (category) 
     IconCategory.AV -> stringResource(R.string.icon_category_av)
     IconCategory.PLACES -> stringResource(R.string.icon_category_places)
     IconCategory.HARDWARE -> stringResource(R.string.icon_category_hardware)
+}
+
+@Composable
+private fun hugeIconCategoryLabel(category: HugeIconCategory): String = when (category) {
+    HugeIconCategory.GENERAL -> stringResource(R.string.hi_category_general)
+    HugeIconCategory.ARROWS -> stringResource(R.string.hi_category_arrows)
+    HugeIconCategory.COMMUNICATION -> stringResource(R.string.hi_category_communication)
+    HugeIconCategory.MEDIA -> stringResource(R.string.hi_category_media)
+    HugeIconCategory.FILES -> stringResource(R.string.hi_category_files)
+    HugeIconCategory.BUSINESS -> stringResource(R.string.hi_category_business)
+    HugeIconCategory.USERS -> stringResource(R.string.hi_category_users)
+    HugeIconCategory.DATETIME -> stringResource(R.string.hi_category_datetime)
+    HugeIconCategory.DEVICES -> stringResource(R.string.hi_category_devices)
+    HugeIconCategory.MAPS -> stringResource(R.string.hi_category_maps)
+    HugeIconCategory.WEATHER -> stringResource(R.string.hi_category_weather)
+    HugeIconCategory.EDUCATION -> stringResource(R.string.hi_category_education)
+    HugeIconCategory.HEALTH -> stringResource(R.string.hi_category_health)
+    HugeIconCategory.OTHER -> stringResource(R.string.hi_category_other)
 }
 
 private fun truncateToCodePoints(text: String, maxCodePoints: Int): String {

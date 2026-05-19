@@ -34,6 +34,24 @@ fun IconRenderer(
                 modifier = modifier,
             )
         }
+        IconKeyResolver.isHugeIcon(iconKey) -> {
+            val imageVector = IconKeyResolver.resolveImageVector(iconKey)
+            if (imageVector != null) {
+                Icon(
+                    imageVector = imageVector,
+                    contentDescription = IconKeyResolver.iconKeyToDisplayText(iconKey),
+                    tint = tint,
+                    modifier = modifier,
+                )
+            } else {
+                android.util.Log.w("IconRenderer", "Failed to resolve: $iconKey")
+                Text(
+                    text = defaultEmoji,
+                    fontSize = resolvedFontSize,
+                    modifier = modifier,
+                )
+            }
+        }
         IconKeyResolver.isMaterialIcon(iconKey) -> {
             val imageVector = IconKeyResolver.resolveImageVector(iconKey)
             if (imageVector != null) {

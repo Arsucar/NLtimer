@@ -23,6 +23,23 @@
     <string name="icon_category_places">地点</string>
     <string name="icon_category_hardware">硬件</string>
 
+    <string name="icon_picker_tab_hugeicons">HugeIcons</string>
+
+    <string name="hi_category_general">通用</string>
+    <string name="hi_category_arrows">导航</string>
+    <string name="hi_category_communication">通讯</string>
+    <string name="hi_category_media">媒体</string>
+    <string name="hi_category_files">文件</string>
+    <string name="hi_category_business">办公</string>
+    <string name="hi_category_users">用户</string>
+    <string name="hi_category_datetime">时间</string>
+    <string name="hi_category_devices">设备</string>
+    <string name="hi_category_maps">地图</string>
+    <string name="hi_category_weather">天气</string>
+    <string name="hi_category_education">教育</string>
+    <string name="hi_category_health">健康</string>
+    <string name="hi_category_other">其他</string>
+
     <string name="emoji_category_frequent">常用</string>
     <string name="emoji_category_expressions">表情</string>
     <string name="emoji_category_gestures">手势</string>
