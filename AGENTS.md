@@ -37,3 +37,6 @@ Agent 快速上下文文档位于 `docs/agent/`，按需加载：
 ## 用户自主添加规则
 
 1. 如果用户要求创建工作树，默认创建在 `.worktrees` 中，避免创建在工作区外因为工作区不一致导致需要频繁申请读写权限。
+2. 必须加载 `docs\agent\00-index.md` 和`docs\agent\01-project-overview.md` 。
+3. gradlew的构建命令必须添加参数 `--no-daemon` 。
+4. 严格遵守 `docs\agent\00-index.md` 的 维护说明。

@@ -9,6 +9,7 @@
 3. **[03-module-map.md](03-module-map.md)** — 需要定位代码时读（查找表）
 4. **[04-patterns.md](04-patterns.md)** — 需要写代码时读（约定与模式）
 5. **[05-data-model.md](05-data-model.md)** — 涉及数据层时读（速查表）
+6. **[06-common-bug.md](06-common-bug.md)** — 常见 Bug 与规避方式（踩坑记录）
 
 ## 设计原则
 
@@ -23,5 +24,6 @@
 - 新增或删除模块
 - Room Entity 字段变更
 - 架构调整（新增层级、更换库等）
+- 发现新的常见 Bug 模式 → 更新 `06-common-bug.md`
 
 运行 `python scripts/check-docs-sync.py` 检查文档与代码的同步状态。

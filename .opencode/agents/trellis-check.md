@@ -84,6 +84,9 @@ Run project's lint and typecheck commands to verify changes.
 
 If failed, fix issues and re-run.
 
+For android build: 
+**rule：Agent implement Gradle 构建命令时，must plus `--no-daemon` 参数。**
+
 ---
 
 ## Report Format
