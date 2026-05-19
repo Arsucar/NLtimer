@@ -27,7 +27,7 @@ class SetBehaviorTagTool @Inject constructor(
     override val name: String = "setBehaviorTag"
     override val description: String =
         "管理行为记录的标签关联；支持追加(add)、移除(remove)、替换(replace)三种模式，返回操作后的完整标签列表"
-    override val category: ToolCategory = ToolCategory.ACTIVITIES
+    override val category: ToolCategory = ToolCategory.BEHAVIOR
     override val accessLevel: AccessLevel = AccessLevel.FULL
 
     override val parameters: List<ToolParameter> = listOf(

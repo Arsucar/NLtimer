@@ -27,7 +27,7 @@ class ListTagsTool @Inject constructor(
 
     override val name: String = "listTags"
     override val description: String = "列出标签；默认仅未归档，可选包含归档"
-    override val category: ToolCategory = ToolCategory.ACTIVITIES
+    override val category: ToolCategory = ToolCategory.TAG
     override val accessLevel: AccessLevel = AccessLevel.READ
 
     override val parameters: List<ToolParameter> = listOf(

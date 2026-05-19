@@ -44,7 +44,7 @@ class SearchActivitiesAndTagsTool @Inject constructor(
     override val name: String = "searchActivitiesAndTags"
     override val description: String =
         "搜索（substring 子串）：输入「天」会同时命中今天 / 明天 / 后天；适合搜索框，不适合候选选择"
-    override val category: ToolCategory = ToolCategory.ACTIVITIES
+    override val category: ToolCategory = ToolCategory.SEARCH
     override val accessLevel: AccessLevel = AccessLevel.READ
     override val returnType: KClass<*> = Map::class
 

@@ -27,7 +27,7 @@ class CreateActivityCategoryTool @Inject constructor(
 
     override val name: String = "createActivityCategory"
     override val description: String = "创建活动分类（写入 ActivityGroup 表，sortOrder 自增）"
-    override val category: ToolCategory = ToolCategory.ACTIVITIES
+    override val category: ToolCategory = ToolCategory.CATEGORY
     override val accessLevel: AccessLevel = AccessLevel.WRITE
 
     override val parameters: List<ToolParameter> = listOf(

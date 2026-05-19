@@ -45,7 +45,7 @@ class SelectActivitiesAndTagsTool @Inject constructor(
     override val name: String = "selectActivitiesAndTags"
     override val description: String =
         "选择（token 精确相等）：输入「计划」只命中名为计划的活动与 keywords 含计划的标签；不会被今天/明天误中"
-    override val category: ToolCategory = ToolCategory.ACTIVITIES
+    override val category: ToolCategory = ToolCategory.SEARCH
     override val accessLevel: AccessLevel = AccessLevel.READ
     override val returnType: KClass<*> = Map::class
 

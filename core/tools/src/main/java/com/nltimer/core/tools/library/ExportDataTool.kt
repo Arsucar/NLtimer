@@ -23,7 +23,7 @@ class ExportDataTool @Inject constructor(
 
     override val name: String = "exportData"
     override val description: String = "按日期范围导出行为、活动、标签数据为 JSON 格式"
-    override val category: ToolCategory = ToolCategory.ACTIVITIES
+    override val category: ToolCategory = ToolCategory.DATA
     override val accessLevel: AccessLevel = AccessLevel.READ
 
     override val parameters: List<ToolParameter> = listOf(

@@ -32,7 +32,7 @@ class CreateTagCategoryTool @Inject constructor(
 
     override val name: String = "createTagCategory"
     override val description: String = "声明标签分类名（占位语义，未写物理表；待首个标签写入后通过 distinct 体现）"
-    override val category: ToolCategory = ToolCategory.ACTIVITIES
+    override val category: ToolCategory = ToolCategory.CATEGORY
     override val accessLevel: AccessLevel = AccessLevel.WRITE
 
     override val parameters: List<ToolParameter> = listOf(

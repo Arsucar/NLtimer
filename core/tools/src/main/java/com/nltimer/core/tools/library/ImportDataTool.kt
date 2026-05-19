@@ -27,7 +27,7 @@ class ImportDataTool @Inject constructor(
 
     override val name: String = "importData"
     override val description: String = "导入 JSON 格式数据，支持 SMART（合并）和 OVERWRITE（覆盖）两种模式"
-    override val category: ToolCategory = ToolCategory.ACTIVITIES
+    override val category: ToolCategory = ToolCategory.DATA
     override val accessLevel: AccessLevel = AccessLevel.WRITE
 
     override val parameters: List<ToolParameter> = listOf(

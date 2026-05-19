@@ -30,7 +30,7 @@ class ListActivitiesTool @Inject constructor(
 
     override val name: String = "listActivities"
     override val description: String = "列出当前所有未归档的活动，供开始计时时挑选"
-    override val category: ToolCategory = ToolCategory.ACTIVITIES
+    override val category: ToolCategory = ToolCategory.ACTIVITY
     override val accessLevel: AccessLevel = AccessLevel.READ
     override val parameters: List<ToolParameter> = emptyList()
     override val returnType: KClass<*> = List::class

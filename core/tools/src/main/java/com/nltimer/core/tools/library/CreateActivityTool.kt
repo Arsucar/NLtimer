@@ -35,7 +35,7 @@ class CreateActivityTool @Inject constructor(
     override val name: String = "createActivity"
     override val description: String =
         "创建活动；可指定分组名（默认'预制菜'）、图标 key（emoji 或 mi:style:name 前缀）、颜色（缺省自动生成莫奈色）"
-    override val category: ToolCategory = ToolCategory.ACTIVITIES
+    override val category: ToolCategory = ToolCategory.ACTIVITY
     override val accessLevel: AccessLevel = AccessLevel.WRITE
 
     override val parameters: List<ToolParameter> = listOf(

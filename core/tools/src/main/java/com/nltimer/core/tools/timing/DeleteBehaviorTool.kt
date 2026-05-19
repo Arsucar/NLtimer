@@ -30,7 +30,7 @@ class DeleteBehaviorTool @Inject constructor(
 
     override val name: String = "deleteBehavior"
     override val description: String = "按 id 删除行为记录；常用于冲突覆盖前先删旧记录"
-    override val category: ToolCategory = ToolCategory.TIMING
+    override val category: ToolCategory = ToolCategory.BEHAVIOR
     override val accessLevel: AccessLevel = AccessLevel.FULL
 
     override val parameters: List<ToolParameter> = listOf(

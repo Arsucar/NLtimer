@@ -32,7 +32,7 @@ class CreateTagTool @Inject constructor(
     override val name: String = "createTag"
     override val description: String =
         "创建标签；可指定分类名（默认'预制菜'）、图标 key（默认'#'）、颜色（缺省自动生成莫奈色）"
-    override val category: ToolCategory = ToolCategory.ACTIVITIES
+    override val category: ToolCategory = ToolCategory.TAG
     override val accessLevel: AccessLevel = AccessLevel.WRITE
 
     override val parameters: List<ToolParameter> = listOf(
