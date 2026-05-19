@@ -13,34 +13,51 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.reflect.KClass
 import kotlinx.coroutines.flow.first
+import org.json.JSONArray
+import org.json.JSONObject
 
-/**
- * 工具：查询当前正在进行（ACTIVE）的行为记录
- *
- * 业务场景：
- * - 主屏顶部"我现在在做什么"
- * - AI Agent 决策前的状态快照
- *
- * 返回 Behavior?；没有正在进行的行为时返回 null（仍是 Success，data = null）
- */
 @Singleton
 class QueryCurrentBehaviorTool @Inject constructor(
     private val behaviorRepository: BehaviorRepository,
 ) : ToolDefinition {
 
     override val name: String = "queryCurrentBehavior"
-    override val description: String = "查询当前正在进行的行为记录；没有则返回 null"
+    override val description: String = "查询当前正在进行的行为记录，含活动名/标签/已持续时间；没有则返回 null"
     override val category: ToolCategory = ToolCategory.TIMING
     override val accessLevel: AccessLevel = AccessLevel.READ
     override val parameters: List<ToolParameter> = emptyList()
-
-    // KClass 不直接表达可空类型，这里返回 Any::class，由文档说明真实类型为 Behavior?
-    override val returnType: KClass<*> = Any::class
+    override val returnType: KClass<*> = String::class
 
     override suspend fun execute(args: Map<String, Any?>): ToolResult {
         return runCatching {
             val current = behaviorRepository.getCurrentBehavior().first()
-            ToolResult.Success(name, current)
+            if (current == null) {
+                ToolResult.Success(name, null)
+            } else {
+                val details = behaviorRepository.getBehaviorWithDetails(current.id)
+                if (details == null) {
+                    ToolResult.Success(name, null)
+                } else {
+                    val b = details.behavior
+                    val a = details.activity
+                    val now = System.currentTimeMillis()
+                    val durationMinutes = ((now - b.startTime) / 60_000).toInt().coerceAtLeast(0)
+                    val tagsArr = JSONArray()
+                    details.tags.forEach { tag -> tagsArr.put(tag.name) }
+                    val obj = JSONObject().apply {
+                        put("id", b.id)
+                        put("activityId", a.id)
+                        put("activityName", a.name)
+                        put("iconKey", a.iconKey ?: JSONObject.NULL)
+                        put("startTime", TimeUtils.formatIso(b.startTime))
+                        put("durationMinutes", durationMinutes)
+                        put("status", b.status.name)
+                        put("note", b.note ?: JSONObject.NULL)
+                        put("tags", tagsArr)
+                    }
+                    ToolResult.Success(name, obj.toString())
+                }
+            }
         }.getOrElse { e ->
             ToolResult.Error(
                 name = name,
@@ -58,10 +75,14 @@ class QueryCurrentBehaviorTool @Inject constructor(
         returnExample = """
             {
               "id": 42,
-              "activityId": 1,
-              "startTime": 1714896000000,
-              "endTime": null,
-              "status": "ACTIVE"
+              "activityId": 7,
+              "activityName": "本职工作",
+              "iconKey": "💼",
+              "startTime": "2026-05-19T14:00:00+08:00",
+              "durationMinutes": 30,
+              "status": "ACTIVE",
+              "note": "需求评审",
+              "tags": ["后端", "重点"]
             }
             // 或 null（无正在进行的行为）
         """.trimIndent(),
@@ -73,7 +94,7 @@ class QueryCurrentBehaviorTool @Inject constructor(
             ),
         ),
         usageExamples = listOf(
-            "queryCurrentBehavior()  // 无参",
+            "queryCurrentBehavior()",
         ),
     )
 }

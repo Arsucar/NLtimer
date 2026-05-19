@@ -18,3 +18,18 @@
 1. 移除内层 `Scaffold`，将其 `content` lambda 内容直接提升一级。
 2. `LazyColumn` 的 `contentPadding.top` 改为固定值（如 `12.dp`），不再叠加 `padding.calculateTopPadding()` 和 `LocalImmersiveTopPadding`。
 3. 删除不再需要的 `Scaffold` 和 `LocalImmersiveTopPadding` import。
+
+## 2. 工具返回值必须是 JSON 字符串
+
+**出现时机**：新工具实现 `execute()` 时直接返回领域模型对象。
+
+**现象**：AI 拿到的是 `Behavior@abc123` 或 `Activity@def456` 这样的 toString()，无法理解内容，导致回复无意义或反复追问。
+
+**避免方式**：
+- 所有工具的 `execute()` 返回值必须是 `String` 类型（`ToolResult.Success(name, jsonString)`）。
+- 使用 `org.json.JSONObject` / `JSONArray` 构建结构化 JSON。
+- 复杂查询结果应包含关联信息（活动名、标签列表、计算后的时长等），不要只返回 ID。
+
+**已有案例**：
+- `QueryCurrentBehaviorTool` 曾直接返回 `Behavior?` 对象，已重构为返回含 activityName/tags/durationMinutes 的 JSON。
+- `ListActivitiesTool` 曾返回 `List<Activity>` 原始列表，已重构为含 groupName/tags 的 JSON 数组。

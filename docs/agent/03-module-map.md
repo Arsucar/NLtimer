@@ -61,8 +61,24 @@
 |--------|------|------|
 | ToolRegistry | `core/tools/.../ToolRegistry.kt` | 工具注册中心 |
 | ToolDefinition | `core/tools/.../ToolDefinition.kt` | 工具定义接口 |
-| StartBehaviorTool | `core/tools/.../` | 开始行为工具 |
-| NoteMatcher | `core/tools/.../` | 备注匹配工具 |
+| StartBehaviorTool | `core/tools/.../timing/` | 开始行为工具 |
+| EndBehaviorTool | `core/tools/.../timing/` | 结束行为工具 |
+| RecordBehaviorTool | `core/tools/.../timing/` | 补录行为工具 |
+| QueryCurrentBehaviorTool | `core/tools/.../timing/` | 查询当前行为（含活动名/标签/时长） |
+| ListBehaviorsTool | `core/tools/.../timing/` | 按时间范围查行为列表 |
+| ListActivitiesTool | `core/tools/.../timing/` | 列出活动（含分组名/标签） |
+| GetDailySummaryTool | `core/tools/.../timing/` | 日统计汇总 |
+| GetWeeklySummaryTool | `core/tools/.../timing/` | 周统计汇总 |
+| GetTimeRangeSummaryTool | `core/tools/.../timing/` | 自定义区间统计 |
+| GetBehaviorDetailTool | `core/tools/.../timing/` | 单条行为详情 |
+| CreateGoalTool | `core/tools/.../timing/` | 创建 PENDING 目标 |
+| ListGoalsTool | `core/tools/.../timing/` | 列出待办目标 |
+| ActivateGoalTool | `core/tools/.../timing/` | 激活目标开始计时 |
+| DeleteGoalTool | `core/tools/.../timing/` | 取消目标 |
+| ReorderGoalsTool | `core/tools/.../timing/` | 重排目标顺序 |
+| UpdateBehaviorTool | `core/tools/.../timing/` | 修改已有行为 |
+| DeleteBehaviorTool | `core/tools/.../timing/` | 删除行为 |
+| NoteMatcher | `core/tools/.../match/` | 备注匹配工具 |
 
 ## feature:home
 

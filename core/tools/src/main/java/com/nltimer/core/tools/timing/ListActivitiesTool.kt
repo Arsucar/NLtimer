@@ -1,6 +1,7 @@
 package com.nltimer.core.tools.timing
 
 import com.nltimer.core.data.repository.ActivityRepository
+import com.nltimer.core.data.repository.TagRepository
 import com.nltimer.core.tools.AccessLevel
 import com.nltimer.core.tools.ErrorExample
 import com.nltimer.core.tools.ToolCategory
@@ -13,32 +14,49 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.reflect.KClass
 import kotlinx.coroutines.flow.first
+import org.json.JSONArray
+import org.json.JSONObject
 
-/**
- * 工具：列出当前所有未归档（active）的活动
- *
- * 业务场景：
- * - UI 弹出"开始计时"选择器前，先拉一份可选活动列表
- * - AI Agent："我想开始记录某项活动"前，需要知道有哪些可选项
- *
- * 返回 List<Activity>，由调用方按需序列化或绑定到 UI
- */
 @Singleton
 class ListActivitiesTool @Inject constructor(
     private val activityRepository: ActivityRepository,
+    private val tagRepository: TagRepository,
 ) : ToolDefinition {
 
     override val name: String = "listActivities"
-    override val description: String = "列出当前所有未归档的活动，供开始计时时挑选"
+    override val description: String = "列出所有未归档活动，含分组名和关联标签，供选择计时目标"
     override val category: ToolCategory = ToolCategory.ACTIVITY
     override val accessLevel: AccessLevel = AccessLevel.READ
     override val parameters: List<ToolParameter> = emptyList()
-    override val returnType: KClass<*> = List::class
+    override val returnType: KClass<*> = String::class
 
     override suspend fun execute(args: Map<String, Any?>): ToolResult {
         return runCatching {
-            val list = activityRepository.getAllActive().first()
-            ToolResult.Success(name, list)
+            val activities = activityRepository.getAllActive().first()
+            val groups = activityRepository.getAllGroups().first()
+            val groupMap = groups.associateBy { it.id }
+            val arr = JSONArray()
+            for (a in activities) {
+                val tags = tagRepository.getByActivityId(a.id).first()
+                val tagsArr = JSONArray()
+                tags.forEach { t ->
+                    tagsArr.put(JSONObject().apply {
+                        put("id", t.id)
+                        put("name", t.name)
+                    })
+                }
+                val groupName = a.groupId?.let { groupMap[it]?.name }
+                arr.put(JSONObject().apply {
+                    put("id", a.id)
+                    put("name", a.name)
+                    put("iconKey", a.iconKey ?: JSONObject.NULL)
+                    put("keywords", a.keywords ?: JSONObject.NULL)
+                    put("groupName", groupName ?: JSONObject.NULL)
+                    put("usageCount", a.usageCount)
+                    put("tags", tagsArr)
+                })
+            }
+            ToolResult.Success(name, arr.toString())
         }.getOrElse { e ->
             ToolResult.Error(
                 name = name,
@@ -55,8 +73,15 @@ class ListActivitiesTool @Inject constructor(
         parameters = parameters,
         returnExample = """
             [
-              { "id": 1, "name": "编程", "iconKey": "code", "keywords": "编程,coding", "usageCount": 12, "isArchived": false },
-              { "id": 2, "name": "阅读", "iconKey": "book", "keywords": null, "usageCount": 5, "isArchived": false }
+              {
+                "id": 1, "name": "编程", "iconKey": "code", "keywords": "编程,coding",
+                "groupName": "工作", "usageCount": 12,
+                "tags": [{"id": 3, "name": "后端"}, {"id": 5, "name": "重点"}]
+              },
+              {
+                "id": 2, "name": "阅读", "iconKey": "book", "keywords": null,
+                "groupName": null, "usageCount": 5, "tags": []
+              }
             ]
         """.trimIndent(),
         errorExamples = listOf(
@@ -67,7 +92,7 @@ class ListActivitiesTool @Inject constructor(
             ),
         ),
         usageExamples = listOf(
-            "listActivities()  // 无参",
+            "listActivities()",
         ),
     )
 }

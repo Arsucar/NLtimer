@@ -7,15 +7,6 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import dagger.multibindings.IntoSet
 
-/**
- * Timing 类工具 Hilt 多绑定模块
- *
- * 通过 @IntoSet 把每个 ToolDefinition 实现贡献到全局 Set<ToolDefinition>，
- * 由 [com.nltimer.core.tools.ToolRegistry] 构造函数自动消费。
- *
- * 后续新增 timing 工具时，在此模块追加一个 @Binds @IntoSet 方法即可，
- * 无需修改 ToolRegistry 或 ToolsModule。
- */
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class TimingToolsModule {
@@ -55,4 +46,40 @@ abstract class TimingToolsModule {
     @Binds
     @IntoSet
     abstract fun bindGetDailySummaryTool(impl: GetDailySummaryTool): ToolDefinition
+
+    @Binds
+    @IntoSet
+    abstract fun bindGetWeeklySummaryTool(impl: GetWeeklySummaryTool): ToolDefinition
+
+    @Binds
+    @IntoSet
+    abstract fun bindUpdateBehaviorTool(impl: UpdateBehaviorTool): ToolDefinition
+
+    @Binds
+    @IntoSet
+    abstract fun bindListGoalsTool(impl: ListGoalsTool): ToolDefinition
+
+    @Binds
+    @IntoSet
+    abstract fun bindActivateGoalTool(impl: ActivateGoalTool): ToolDefinition
+
+    @Binds
+    @IntoSet
+    abstract fun bindDeleteGoalTool(impl: DeleteGoalTool): ToolDefinition
+
+    @Binds
+    @IntoSet
+    abstract fun bindReorderGoalsTool(impl: ReorderGoalsTool): ToolDefinition
+
+    @Binds
+    @IntoSet
+    abstract fun bindGetBehaviorDetailTool(impl: GetBehaviorDetailTool): ToolDefinition
+
+    @Binds
+    @IntoSet
+    abstract fun bindGetTimeRangeSummaryTool(impl: GetTimeRangeSummaryTool): ToolDefinition
+
+    @Binds
+    @IntoSet
+    abstract fun bindSearchIconsTool(impl: SearchIconsTool): ToolDefinition
 }

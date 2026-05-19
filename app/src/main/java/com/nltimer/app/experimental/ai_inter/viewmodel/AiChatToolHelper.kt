@@ -56,6 +56,34 @@ object AiChatToolHelper {
 ## 5. "查看所有标签"
 - 默认 listTags() 返回未归档标签
 - 用户明确说"包括归档"时才传 includeArchived=true
+
+## 6. 统计与总结场景
+- 用户问"今天/昨天做了什么" → getDailySummary()，不要用 listBehaviors
+- 用户问"这周总结/周报" → getWeeklySummary()
+- 用户问"最近 N 天/本月/某段时间" → getTimeRangeSummary(startTime, endTime)
+- 用户问某个行为详情 → getBehaviorDetail(id)
+
+## 7. 目标管理
+- 用户说"看看待办/目标列表" → listGoals()
+- 用户说"开始第 X 个任务" → activateGoal(id)（id 来自 listGoals 返回值）
+- 用户说"取消某个目标" → deleteGoal(id)
+- 用户说"调换顺序" → reorderGoals(orderedIds)
+- 激活目标会自动结束当前 ACTIVE 行为，无需先调 endBehavior
+
+## 8. 修改已有记录
+- 用户说"改备注/改时间/加标签" → updateBehavior(id, ...)
+- 注意：tagIds 是整体替换，不是追加；如需保留原有标签，先通过 listBehaviors 或 getBehaviorDetail 查出原有 tagIds 再合并
+
+## 9. 查询决策优先级
+- 状态查询：queryCurrentBehavior → listGoals
+- 记录查询：listBehaviors（列表） / getBehaviorDetail（单条详情）
+- 统计查询：getDailySummary（单日） / getWeeklySummary（周） / getTimeRangeSummary（自定义区间）
+
+## 10. 图标选择
+- 创建/更新活动或标签需要 iconKey 时，先调 searchIcons(query="关键词") 搜索可用图标
+- iconKey 格式：hi:xxx（HugeIcons 推荐） / mi:filled:xxx（Material Icons） / emoji 原始字符
+- 不要瞎猜 iconKey，必须通过 searchIcons 搜索确认后再使用
+- 示例：用户说"睡觉图标" → searchIcons(query="睡觉") → 从结果中选合适的 iconKey
 """
 
     fun buildAssistantToolMessage(
