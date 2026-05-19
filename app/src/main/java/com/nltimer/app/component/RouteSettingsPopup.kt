@@ -114,6 +114,7 @@ fun RouteSettingsPopup(
                                     HomeLayout.TIMELINE_REVERSE -> "时间轴(反)"
                                     HomeLayout.LOG -> "行为日志"
                                     HomeLayout.MOMENT -> "瞬间"
+                                    HomeLayout.TEXT_LIST -> "纯文字列表"
                                 },
                                 onClick = {
                                     onHomeLayoutChange(layout)

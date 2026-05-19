@@ -13,20 +13,34 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDownward
+import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuAnchorType
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
@@ -39,6 +53,11 @@ import com.nltimer.core.data.model.GridLayoutStyle
 import com.nltimer.core.data.model.HomeLayoutConfig
 import com.nltimer.core.data.model.LogLayoutStyle
 import com.nltimer.core.data.model.MomentLayoutStyle
+import com.nltimer.core.data.model.TextListColumnMode
+import com.nltimer.core.data.model.TextListFieldColorMode
+import com.nltimer.core.data.model.TextListFieldConfig
+import com.nltimer.core.data.model.TextListFieldType
+import com.nltimer.core.data.model.TextListLayoutStyle
 import com.nltimer.core.data.model.TimelineLayoutStyle
 import com.nltimer.core.designsystem.component.ConfigStepper
 import com.nltimer.core.designsystem.component.LayoutResetButton
@@ -126,6 +145,10 @@ fun LayoutConfigDialog(
                                 moment = config.moment,
                                 onChange = { onConfigChange(config.copy(moment = it)) },
                             )
+                            HomeLayout.TEXT_LIST -> TextListConfigSection(
+                                textList = config.textList,
+                                onChange = { onConfigChange(config.copy(textList = it)) },
+                            )
                         }
                     }
 
@@ -144,6 +167,7 @@ private fun HomeLayout.toConfigTitle(): String = when (this) {
     HomeLayout.LOG -> "日志布局设置"
     HomeLayout.TIMELINE_REVERSE -> "时间轴布局设置"
     HomeLayout.MOMENT -> "当前时刻布局设置"
+    HomeLayout.TEXT_LIST -> "纯文字列表设置"
 }
 
 @Composable
@@ -191,4 +215,183 @@ private fun TimelineConfigSection(timeline: TimelineLayoutStyle, onChange: (Time
 private fun MomentConfigSection(moment: MomentLayoutStyle, onChange: (MomentLayoutStyle) -> Unit) {
     ConfigStepper(label = "卡片内边距", value = moment.cardPadding, suffix = "dp", min = 0, max = 200,
         onValueChange = { onChange(moment.copy(cardPadding = it)) })
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TextListConfigSection(textList: TextListLayoutStyle, onChange: (TextListLayoutStyle) -> Unit) {
+    ConfigStepper(label = "行间距", value = textList.rowSpacing, suffix = "dp", min = 0, max = 100,
+        onValueChange = { onChange(textList.copy(rowSpacing = it)) })
+    ConfigStepper(label = "字段间距", value = textList.fieldSpacing, suffix = "dp", min = 0, max = 100,
+        onValueChange = { onChange(textList.copy(fieldSpacing = it)) })
+    ConfigStepper(label = "水平内边距", value = textList.paddingH, suffix = "dp", min = 0, max = 200,
+        onValueChange = { onChange(textList.copy(paddingH = it)) })
+    ConfigStepper(label = "垂直内边距", value = textList.paddingV, suffix = "dp", min = 0, max = 100,
+        onValueChange = { onChange(textList.copy(paddingV = it)) })
+    ConfigStepper(label = "全局字体缩放", value = (textList.globalFontScale * 100).toInt(), suffix = "%",
+        min = 50, max = 200, step = 5,
+        onValueChange = { onChange(textList.copy(globalFontScale = it / 100f)) })
+
+    Spacer(Modifier.height(4.dp))
+    var separatorText by remember(textList.separator) { mutableStateOf(textList.separator) }
+    OutlinedTextField(
+        value = separatorText,
+        onValueChange = { separatorText = it; onChange(textList.copy(separator = it)) },
+        label = { Text("分隔符") },
+        singleLine = true,
+        modifier = Modifier.fillMaxWidth(),
+    )
+
+    Spacer(Modifier.height(4.dp))
+    var colModeExpanded by remember { mutableStateOf(false) }
+    ExposedDropdownMenuBox(
+        expanded = colModeExpanded,
+        onExpandedChange = { colModeExpanded = !colModeExpanded },
+    ) {
+        OutlinedTextField(
+            value = when (textList.columnMode) {
+                TextListColumnMode.FLOW -> "流式布局"
+                TextListColumnMode.TABLE -> "表格对齐"
+            },
+            onValueChange = {},
+            readOnly = true,
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = colModeExpanded) },
+            label = { Text("列模式") },
+            modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable),
+        )
+        ExposedDropdownMenu(expanded = colModeExpanded, onDismissRequest = { colModeExpanded = false }) {
+            DropdownMenuItem(text = { Text("流式布局") }, onClick = { onChange(textList.copy(columnMode = TextListColumnMode.FLOW)); colModeExpanded = false })
+            DropdownMenuItem(text = { Text("表格对齐") }, onClick = { onChange(textList.copy(columnMode = TextListColumnMode.TABLE)); colModeExpanded = false })
+        }
+    }
+
+    Spacer(Modifier.height(8.dp))
+    Text("字段配置", style = MaterialTheme.typography.titleSmall)
+
+    textList.fieldConfigs.forEachIndexed { index, fieldConfig ->
+        TextListDialogFieldRow(
+            fieldConfig = fieldConfig,
+            canMoveUp = index > 0,
+            canMoveDown = index < textList.fieldConfigs.lastIndex,
+            onToggleVisible = {
+                val newConfigs = textList.fieldConfigs.toMutableList()
+                newConfigs[index] = fieldConfig.copy(visible = !fieldConfig.visible)
+                onChange(textList.copy(fieldConfigs = newConfigs))
+            },
+            onToggleBold = {
+                val newConfigs = textList.fieldConfigs.toMutableList()
+                newConfigs[index] = fieldConfig.copy(bold = !fieldConfig.bold)
+                onChange(textList.copy(fieldConfigs = newConfigs))
+            },
+            onToggleItalic = {
+                val newConfigs = textList.fieldConfigs.toMutableList()
+                newConfigs[index] = fieldConfig.copy(italic = !fieldConfig.italic)
+                onChange(textList.copy(fieldConfigs = newConfigs))
+            },
+            onFontScaleChange = { newScale ->
+                val newConfigs = textList.fieldConfigs.toMutableList()
+                newConfigs[index] = fieldConfig.copy(fontScale = newScale)
+                onChange(textList.copy(fieldConfigs = newConfigs))
+            },
+            onColorChange = { newColor ->
+                val newConfigs = textList.fieldConfigs.toMutableList()
+                newConfigs[index] = fieldConfig.copy(colorMode = newColor)
+                onChange(textList.copy(fieldConfigs = newConfigs))
+            },
+            onMoveUp = {
+                val newConfigs = textList.fieldConfigs.toMutableList()
+                val item = newConfigs.removeAt(index)
+                newConfigs.add(index - 1, item)
+                onChange(textList.copy(fieldConfigs = newConfigs))
+            },
+            onMoveDown = {
+                val newConfigs = textList.fieldConfigs.toMutableList()
+                val item = newConfigs.removeAt(index)
+                newConfigs.add(index + 1, item)
+                onChange(textList.copy(fieldConfigs = newConfigs))
+            },
+        )
+    }
+}
+
+private fun TextListFieldType.displayName(): String = when (this) {
+    TextListFieldType.NAME -> "名称"
+    TextListFieldType.TIME_RANGE -> "时间"
+    TextListFieldType.DURATION -> "用时"
+    TextListFieldType.TAGS -> "标签"
+    TextListFieldType.STATUS -> "状态"
+    TextListFieldType.NOTE -> "备注"
+    TextListFieldType.POMODORO -> "番茄钟"
+    TextListFieldType.ESTIMATED -> "预估"
+    TextListFieldType.ACHIEVEMENT -> "完成度"
+    TextListFieldType.PLANNED -> "计划内"
+}
+
+private fun TextListFieldColorMode.displayName(): String = when (this) {
+    TextListFieldColorMode.DEFAULT -> "默认"
+    TextListFieldColorMode.PRIMARY -> "主色"
+    TextListFieldColorMode.SECONDARY -> "次色"
+    TextListFieldColorMode.TERTIARY -> "三色"
+    TextListFieldColorMode.ERROR -> "错误"
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TextListDialogFieldRow(
+    fieldConfig: TextListFieldConfig,
+    canMoveUp: Boolean,
+    canMoveDown: Boolean,
+    onToggleVisible: () -> Unit,
+    onToggleBold: () -> Unit,
+    onToggleItalic: () -> Unit,
+    onFontScaleChange: (Float) -> Unit,
+    onColorChange: (TextListFieldColorMode) -> Unit,
+    onMoveUp: () -> Unit,
+    onMoveDown: () -> Unit,
+) {
+    Column(modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+            Switch(checked = fieldConfig.visible, onCheckedChange = { onToggleVisible() })
+            Spacer(Modifier.width(4.dp))
+            Text(text = fieldConfig.field.displayName(), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+            if (canMoveUp) {
+                IconButton(onClick = onMoveUp, modifier = Modifier.size(28.dp)) {
+                    Icon(Icons.Default.ArrowUpward, contentDescription = "上移", modifier = Modifier.size(14.dp))
+                }
+            }
+            if (canMoveDown) {
+                IconButton(onClick = onMoveDown, modifier = Modifier.size(28.dp)) {
+                    Icon(Icons.Default.ArrowDownward, contentDescription = "下移", modifier = Modifier.size(14.dp))
+                }
+            }
+        }
+        if (fieldConfig.visible) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("B", style = MaterialTheme.typography.labelSmall)
+                Checkbox(checked = fieldConfig.bold, onCheckedChange = { onToggleBold() })
+                Text("I", style = MaterialTheme.typography.labelSmall)
+                Checkbox(checked = fieldConfig.italic, onCheckedChange = { onToggleItalic() })
+                Spacer(Modifier.width(8.dp))
+                var colorExpanded by remember { mutableStateOf(false) }
+                ExposedDropdownMenuBox(expanded = colorExpanded, onExpandedChange = { colorExpanded = !colorExpanded }) {
+                    OutlinedTextField(
+                        value = fieldConfig.colorMode.displayName(),
+                        onValueChange = {},
+                        readOnly = true,
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = colorExpanded) },
+                        modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable).height(40.dp),
+                        textStyle = MaterialTheme.typography.labelSmall,
+                    )
+                    ExposedDropdownMenu(expanded = colorExpanded, onDismissRequest = { colorExpanded = false }) {
+                        TextListFieldColorMode.entries.forEach { mode ->
+                            DropdownMenuItem(text = { Text(mode.displayName()) }, onClick = { onColorChange(mode); colorExpanded = false })
+                        }
+                    }
+                }
+            }
+            ConfigStepper(label = "字号", value = (fieldConfig.fontScale * 100).toInt(), suffix = "%",
+                min = 50, max = 200, step = 5,
+                onValueChange = { onFontScaleChange(it / 100f) })
+        }
+    }
 }

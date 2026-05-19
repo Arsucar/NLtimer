@@ -52,6 +52,7 @@ import com.nltimer.core.data.model.HomeLayoutConfig
 import com.nltimer.core.data.model.GridLayoutStyle
 import com.nltimer.core.data.model.LogLayoutStyle
 import com.nltimer.core.data.model.MomentLayoutStyle
+import com.nltimer.core.data.model.TextListLayoutStyle
 import com.nltimer.core.data.model.TimelineLayoutStyle
 import com.nltimer.core.data.model.Tag
 import com.nltimer.core.designsystem.component.BottomBarDragFab
@@ -74,6 +75,7 @@ import com.nltimer.feature.home.ui.components.BehaviorLogView
 import com.nltimer.feature.home.ui.components.MomentFocusCard
 import com.nltimer.feature.home.ui.components.MomentView
 import com.nltimer.feature.home.ui.components.TimeAxisGrid
+import com.nltimer.feature.home.ui.components.TextListView
 import com.nltimer.feature.home.ui.components.TimeLabelSettingsDialog
 import com.nltimer.feature.home.ui.components.TimeSideBar
 import com.nltimer.feature.home.ui.components.TimelineReverseView
@@ -283,11 +285,13 @@ private fun HomeLayoutContent(
                 HomeLayout.GRID -> HomeLayout.TIMELINE_REVERSE
                 HomeLayout.TIMELINE_REVERSE -> HomeLayout.LOG
                 HomeLayout.LOG -> HomeLayout.MOMENT
-                HomeLayout.MOMENT -> HomeLayout.GRID
+                HomeLayout.MOMENT -> HomeLayout.TEXT_LIST
+                HomeLayout.TEXT_LIST -> HomeLayout.GRID
             }
         } else {
             when (layout) {
-                HomeLayout.GRID -> HomeLayout.MOMENT
+                HomeLayout.GRID -> HomeLayout.TEXT_LIST
+                HomeLayout.TEXT_LIST -> HomeLayout.MOMENT
                 HomeLayout.MOMENT -> HomeLayout.LOG
                 HomeLayout.LOG -> HomeLayout.TIMELINE_REVERSE
                 HomeLayout.TIMELINE_REVERSE -> HomeLayout.GRID
@@ -425,6 +429,15 @@ private fun HomeLayoutContent(
                 header = focusCard,
                 modifier = Modifier.fillMaxSize(),
             )
+            HomeLayout.TEXT_LIST -> TextListContent(
+                uiState = uiState,
+                onCellLongClick = onCellLongClick,
+                onLoadMore = onLoadMore,
+                textListStyle = homeLayoutConfig.textList,
+                tagDisplayConfig = tagDisplayConfig,
+                header = focusCard,
+                modifier = Modifier.fillMaxSize(),
+            )
         }
     }
 }
@@ -556,6 +569,29 @@ private fun MomentContent(
         isLoadingMore = isLoadingMore,
         hasReachedEarliest = hasReachedEarliest,
         momentStyle = momentStyle,
+        tagDisplayConfig = tagDisplayConfig,
+        header = header?.let { { it() } },
+        modifier = modifier,
+    )
+}
+
+@Composable
+private fun TextListContent(
+    uiState: HomeUiState,
+    onCellLongClick: (GridCellUiState) -> Unit,
+    onLoadMore: () -> Unit,
+    textListStyle: TextListLayoutStyle = TextListLayoutStyle(),
+    tagDisplayConfig: com.nltimer.core.data.model.TagDisplayConfig = com.nltimer.core.data.model.TagDisplayConfig(),
+    header: @Composable (() -> Unit)? = null,
+    modifier: Modifier = Modifier,
+) {
+    TextListView(
+        items = uiState.items,
+        onCellLongClick = onCellLongClick,
+        onLoadMore = onLoadMore,
+        isLoadingMore = uiState.isLoadingMore,
+        hasReachedEarliest = uiState.hasReachedEarliest,
+        textListStyle = textListStyle,
         tagDisplayConfig = tagDisplayConfig,
         header = header?.let { { it() } },
         modifier = modifier,

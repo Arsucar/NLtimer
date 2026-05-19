@@ -55,6 +55,7 @@ fun HomeLayout.toDisplayString(): String = when (this) {
     HomeLayout.TIMELINE_REVERSE -> "时间轴(反)"
     HomeLayout.LOG -> "行为日志"
     HomeLayout.MOMENT -> "当前时刻"
+    HomeLayout.TEXT_LIST -> "纯文字列表"
 }
 
 fun CornerPreset.toDisplayString(): String = when (this) {
