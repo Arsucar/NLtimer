@@ -48,6 +48,7 @@ import com.nltimer.app.navigation.NLtimerRoutes
 import com.nltimer.app.viewmodel.DrawerViewModel
 import com.nltimer.core.data.SettingsPrefs
 import com.nltimer.core.data.model.DisplayColorConfig
+import com.nltimer.core.data.model.FocusCardConfig
 import com.nltimer.core.data.model.TagDisplayConfig
 import com.nltimer.core.designsystem.theme.BottomBarMode
 import com.nltimer.core.designsystem.theme.ChipDisplayMode
@@ -60,6 +61,7 @@ import com.nltimer.core.designsystem.theme.LocalTheme
 import com.nltimer.core.designsystem.theme.TopBarMode
 import com.nltimer.core.designsystem.theme.toDisplayString
 import com.nltimer.feature.home.ui.components.LayoutConfigDialog
+import com.nltimer.feature.home.ui.components.FocusCardConfigDialog
 import com.nltimer.feature.home.ui.components.TagDisplayConfigDialog
 import com.nltimer.feature.home.ui.components.LocalMomentFilterState
 import com.nltimer.feature.home.ui.components.LocalVisibleDateLabel
@@ -108,6 +110,7 @@ fun NLtimerScaffold(
     var showLayoutPopup by remember { mutableStateOf(false) }
     var showLayoutConfigDialog by remember { mutableStateOf(false) }
     var showTagDisplayConfigDialog by remember { mutableStateOf(false) }
+    var showFocusCardConfigDialog by remember { mutableStateOf(false) }
     var timeLabelSettingsRequestKey by remember { mutableStateOf(0) }
     var momentFilterKey by remember { mutableStateOf("ALL") }
     var momentSortKey by remember { mutableStateOf("TIME_DESC") }
@@ -116,6 +119,8 @@ fun NLtimerScaffold(
         .collectAsStateWithLifecycle(initialValue = DisplayColorConfig())
     val tagDisplayConfig by settingsPrefs.getTagDisplayConfigFlow()
         .collectAsStateWithLifecycle(initialValue = TagDisplayConfig())
+    val focusCardConfig by settingsPrefs.getFocusCardConfigFlow()
+        .collectAsStateWithLifecycle(initialValue = FocusCardConfig())
     val themeViewModel: ThemeSettingsViewModel = hiltViewModel()
     val dialogConfigViewModel: DialogConfigViewModel = hiltViewModel()
     val homeLayoutConfig by dialogConfigViewModel.homeLayoutConfig.collectAsStateWithLifecycle()
@@ -160,6 +165,7 @@ fun NLtimerScaffold(
                     add("时间标签设置")
                 }
                 add("标签配置")
+                add("专注卡片配置")
             }
             if (currentRoute == NLtimerRoutes.MANAGEMENT_ACTIVITIES) {
                 val mode = displayColorConfig.activityIconColorMode
@@ -222,6 +228,7 @@ fun NLtimerScaffold(
                 )
             }
             option == "标签配置" -> showTagDisplayConfigDialog = true
+            option == "专注卡片配置" -> showFocusCardConfigDialog = true
         }
     }
 
@@ -395,6 +402,14 @@ fun NLtimerScaffold(
                     config = tagDisplayConfig,
                     onConfigChange = { scope.launch { settingsPrefs.updateTagDisplayConfig(it) } },
                     onDismiss = { showTagDisplayConfigDialog = false },
+                )
+            }
+
+            if (showFocusCardConfigDialog) {
+                FocusCardConfigDialog(
+                    config = focusCardConfig,
+                    onConfigChange = { scope.launch { settingsPrefs.updateFocusCardConfig(it) } },
+                    onDismiss = { showFocusCardConfigDialog = false },
                 )
             }
         }

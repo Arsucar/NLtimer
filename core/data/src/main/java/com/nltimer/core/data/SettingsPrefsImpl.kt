@@ -8,8 +8,12 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.nltimer.core.data.model.DialogGridConfig
+import com.nltimer.core.data.model.FocusCardConfig
+import com.nltimer.core.data.model.FocusCardCornerStyle
+import com.nltimer.core.data.model.FocusCardShadowStyle
 import com.nltimer.core.data.model.HomeLayoutConfig
 import com.nltimer.core.data.model.GridLayoutStyle
 import com.nltimer.core.data.model.LogLayoutStyle
@@ -325,6 +329,31 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
         }
     }
 
+    override fun getFocusCardConfigFlow(): Flow<FocusCardConfig> = dataStore.data.map { prefs ->
+        val themeColor = prefs[focusCardThemeColorKey]
+        FocusCardConfig(
+            cardHeight = prefs[focusCardHeightKey] ?: 260,
+            cardPadding = prefs[focusCardPaddingKey] ?: 16,
+            enableCardStyle = prefs[focusCardEnableCardStyleKey] != false,
+            themeColor = themeColor,
+            cornerStyle = safeValueOf(prefs[focusCardCornerStyleKey] ?: FocusCardCornerStyle.LARGE.name, FocusCardCornerStyle.LARGE),
+            customCornerSize = prefs[focusCardCustomCornerKey] ?: 32,
+            shadowStyle = safeValueOf(prefs[focusCardShadowStyleKey] ?: FocusCardShadowStyle.STANDARD.name, FocusCardShadowStyle.STANDARD),
+        )
+    }
+
+    override suspend fun updateFocusCardConfig(config: FocusCardConfig) {
+        dataStore.edit { prefs ->
+            prefs[focusCardHeightKey] = config.cardHeight
+            prefs[focusCardPaddingKey] = config.cardPadding
+            prefs[focusCardEnableCardStyleKey] = config.enableCardStyle
+            if (config.themeColor != null) prefs[focusCardThemeColorKey] = config.themeColor else prefs.remove(focusCardThemeColorKey)
+            prefs[focusCardCornerStyleKey] = config.cornerStyle.name
+            prefs[focusCardCustomCornerKey] = config.customCornerSize
+            prefs[focusCardShadowStyleKey] = config.shadowStyle.name
+        }
+    }
+
     private fun serializeTimeLabelConfig(config: TimeLabelConfig): String {
         return "${config.visible}|${config.style.name}|${config.format.name}"
     }
@@ -410,5 +439,13 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
         private val globalTagHorizontalLinesKey = intPreferencesKey("global_tag_horizontal_lines")
         private val globalTagUseColorForTextKey = booleanPreferencesKey("global_tag_use_color_for_text")
         private val useGlobalTagConfigKey = booleanPreferencesKey("use_global_tag_config")
+
+        private val focusCardHeightKey = intPreferencesKey("focus_card_height")
+        private val focusCardPaddingKey = intPreferencesKey("focus_card_padding")
+        private val focusCardEnableCardStyleKey = booleanPreferencesKey("focus_card_enable_card_style")
+        private val focusCardThemeColorKey = longPreferencesKey("focus_card_theme_color")
+        private val focusCardCornerStyleKey = stringPreferencesKey("focus_card_corner_style")
+        private val focusCardCustomCornerKey = intPreferencesKey("focus_card_custom_corner")
+        private val focusCardShadowStyleKey = stringPreferencesKey("focus_card_shadow_style")
     }
 }

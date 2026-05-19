@@ -8,6 +8,7 @@ import com.nltimer.core.data.model.Behavior
 import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.model.BehaviorWithDetails
 import com.nltimer.core.data.model.DialogGridConfig
+import com.nltimer.core.data.model.FocusCardConfig
 import com.nltimer.core.data.model.HomeLayoutConfig
 import com.nltimer.core.data.model.Tag
 import com.nltimer.core.data.repository.ActivityManagementRepository
@@ -115,6 +116,9 @@ class HomeViewModel @Inject constructor(
 
     val tagDisplayConfig: StateFlow<com.nltimer.core.data.model.TagDisplayConfig> = settingsPrefs.getTagDisplayConfigFlow()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(HomeUiStateBuilder.STATE_TIMEOUT_MS), com.nltimer.core.data.model.TagDisplayConfig())
+
+    val focusCardConfig: StateFlow<FocusCardConfig> = settingsPrefs.getFocusCardConfigFlow()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(HomeUiStateBuilder.STATE_TIMEOUT_MS), FocusCardConfig())
 
     private val today = LocalDate.now()
 

@@ -2,6 +2,7 @@ package com.nltimer.feature.home.ui.components
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import com.nltimer.core.data.model.FocusCardConfig
 import com.nltimer.core.data.model.MomentLayoutStyle
 import com.nltimer.feature.home.model.GridCellUiState
 import com.nltimer.feature.home.ui.components.moment.ActiveCard
@@ -17,6 +18,7 @@ fun MomentFocusCard(
     onStartBehavior: (Long) -> Unit,
     onEmptyCellClick: () -> Unit,
     momentStyle: MomentLayoutStyle = MomentLayoutStyle(),
+    focusCardConfig: FocusCardConfig = FocusCardConfig(),
     modifier: Modifier = Modifier,
 ) {
     when {
@@ -24,17 +26,20 @@ fun MomentFocusCard(
             cell = activeCell,
             onComplete = { activeCell.behaviorId?.let(onCompleteBehavior) },
             momentStyle = momentStyle,
+            focusCardConfig = focusCardConfig,
             modifier = modifier,
         )
         nextPendingCell != null -> PendingCard(
             cell = nextPendingCell,
             onStart = { nextPendingCell.behaviorId?.let(onStartBehavior) },
             momentStyle = momentStyle,
+            focusCardConfig = focusCardConfig,
             modifier = modifier,
         )
         else -> EmptyCard(
             onClick = onEmptyCellClick,
             momentStyle = momentStyle,
+            focusCardConfig = focusCardConfig,
             modifier = modifier,
         )
     }
