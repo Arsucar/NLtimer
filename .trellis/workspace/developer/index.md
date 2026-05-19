@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 8
+- **Total Sessions**: 9
 - **Last Active**: 2026-05-19
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~271 | Active |
+| `journal-1.md` | ~304 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 9 | 2026-05-19 | API工具优化：新增listBehaviors/getDailySummary/batchCreateActivities | `77c5ac0` | `dev-v5` |
 | 8 | 2026-05-19 | 全项目彻夜无人值守优化 | `8fd1b12` | `dev-v5` |
 | 7 | 2026-05-18 | 主题配置顶栏模糊开关 | `85fb746` | `dev-v5` |
 | 6 | 2026-05-18 | 顶部栏pill圆角模糊容器 | `f62286b` | `dev-v5` |

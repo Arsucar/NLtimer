@@ -269,3 +269,36 @@ Theme新增topBarHaze字段，SettingsPrefsImpl读写，ThemeSettingsViewModel�
 ### Next Steps
 
 - None - task complete
+
+
+## Session 9: API工具优化：新增listBehaviors/getDailySummary/batchCreateActivities
+
+**Date**: 2026-05-19
+**Task**: API工具优化：新增listBehaviors/getDailySummary/batchCreateActivities
+**Branch**: `dev-v5`
+
+### Summary
+
+基于AI Agent使用痛点，新增3个ToolDefinition工具（listBehaviors按时间查行为、getDailySummary日结统计、batchCreateActivities批量创建），提取TimeUtils共享时间解析，修改RecordBehaviorTool复用TimeUtils。7 files +639/-30行，编译通过。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `77c5ac0` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
