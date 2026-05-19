@@ -144,6 +144,27 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
     }
 
     override fun getDialogConfigFlow(): Flow<DialogGridConfig> = dataStore.data.map { prefs ->
+        val useGlobalTagConfig = prefs[useGlobalTagConfigKey] ?: false
+        val tagDisplayConfig = if (useGlobalTagConfig) {
+            // 从全局配置读取
+            com.nltimer.core.data.model.TagDisplayConfig(
+                displayMode = safeValueOf(prefs[globalTagDisplayModeKey] ?: ChipDisplayMode.Filled.name, ChipDisplayMode.Filled),
+                layoutMode = safeValueOf(prefs[globalTagLayoutModeKey] ?: GridLayoutMode.Horizontal.name, GridLayoutMode.Horizontal),
+                columnLines = prefs[globalTagColumnLinesKey] ?: 2,
+                horizontalLines = prefs[globalTagHorizontalLinesKey] ?: 2,
+                useColorForText = prefs[globalTagUseColorForTextKey] ?: true,
+            )
+        } else {
+            // 从弹窗配置读取
+            com.nltimer.core.data.model.TagDisplayConfig(
+                displayMode = safeValueOf(prefs[tagDisplayModeKey] ?: ChipDisplayMode.Filled.name, ChipDisplayMode.Filled),
+                layoutMode = safeValueOf(prefs[tagLayoutModeKey] ?: GridLayoutMode.Horizontal.name, GridLayoutMode.Horizontal),
+                columnLines = prefs[tagColumnLinesKey] ?: 2,
+                horizontalLines = prefs[tagHorizontalLinesKey] ?: 2,
+                useColorForText = prefs[tagUseColorKey] ?: true,
+            )
+        }
+
         DialogGridConfig(
             activityDisplayMode = safeValueOf(prefs[actDisplayModeKey] ?: ChipDisplayMode.Filled.name, ChipDisplayMode.Filled),
             activityLayoutMode = safeValueOf(prefs[actLayoutModeKey] ?: GridLayoutMode.Horizontal.name, GridLayoutMode.Horizontal),
@@ -159,7 +180,8 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
             pathDrawMode = safeValueOf(prefs[pathDrawModeKey] ?: PathDrawMode.StartToEnd.name, PathDrawMode.StartToEnd),
             secondsStrategy = safeValueOf(prefs[secondsStrategyKey] ?: SecondsStrategy.OPEN_TIME.name, SecondsStrategy.OPEN_TIME),
             autoMatchNote = prefs[autoMatchNoteKey] ?: false,
-
+            useGlobalTagConfig = useGlobalTagConfig,
+            tagDisplayConfig = tagDisplayConfig,
         )
     }
 
@@ -179,7 +201,16 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
             prefs[pathDrawModeKey] = config.pathDrawMode.name
             prefs[secondsStrategyKey] = config.secondsStrategy.name
             prefs[autoMatchNoteKey] = config.autoMatchNote
+            prefs[useGlobalTagConfigKey] = config.useGlobalTagConfig
 
+            // 如果使用全局配置，更新全局配置
+            if (config.useGlobalTagConfig) {
+                prefs[globalTagDisplayModeKey] = config.tagDisplayConfig.displayMode.name
+                prefs[globalTagLayoutModeKey] = config.tagDisplayConfig.layoutMode.name
+                prefs[globalTagColumnLinesKey] = config.tagDisplayConfig.columnLines
+                prefs[globalTagHorizontalLinesKey] = config.tagDisplayConfig.horizontalLines
+                prefs[globalTagUseColorForTextKey] = config.tagDisplayConfig.useColorForText
+            }
         }
     }
 
@@ -274,6 +305,26 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
         }
     }
 
+    override fun getTagDisplayConfigFlow(): Flow<com.nltimer.core.data.model.TagDisplayConfig> = dataStore.data.map { prefs ->
+        com.nltimer.core.data.model.TagDisplayConfig(
+            displayMode = safeValueOf(prefs[globalTagDisplayModeKey] ?: ChipDisplayMode.Filled.name, ChipDisplayMode.Filled),
+            layoutMode = safeValueOf(prefs[globalTagLayoutModeKey] ?: GridLayoutMode.Horizontal.name, GridLayoutMode.Horizontal),
+            columnLines = prefs[globalTagColumnLinesKey] ?: 2,
+            horizontalLines = prefs[globalTagHorizontalLinesKey] ?: 2,
+            useColorForText = prefs[globalTagUseColorForTextKey] ?: true,
+        )
+    }
+
+    override suspend fun updateTagDisplayConfig(config: com.nltimer.core.data.model.TagDisplayConfig) {
+        dataStore.edit { prefs ->
+            prefs[globalTagDisplayModeKey] = config.displayMode.name
+            prefs[globalTagLayoutModeKey] = config.layoutMode.name
+            prefs[globalTagColumnLinesKey] = config.columnLines
+            prefs[globalTagHorizontalLinesKey] = config.horizontalLines
+            prefs[globalTagUseColorForTextKey] = config.useColorForText
+        }
+    }
+
     private fun serializeTimeLabelConfig(config: TimeLabelConfig): String {
         return "${config.visible}|${config.style.name}|${config.format.name}"
     }
@@ -353,5 +404,11 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
         private val momentCardPaddingKey = intPreferencesKey("home_moment_card_padding")
         private val activityIconColorModeKey = stringPreferencesKey("activity_icon_color_mode")
         private val tagDisplayColorModeKey = stringPreferencesKey("tag_display_color_mode")
+        private val globalTagDisplayModeKey = stringPreferencesKey("global_tag_display_mode")
+        private val globalTagLayoutModeKey = stringPreferencesKey("global_tag_layout_mode")
+        private val globalTagColumnLinesKey = intPreferencesKey("global_tag_column_lines")
+        private val globalTagHorizontalLinesKey = intPreferencesKey("global_tag_horizontal_lines")
+        private val globalTagUseColorForTextKey = booleanPreferencesKey("global_tag_use_color_for_text")
+        private val useGlobalTagConfigKey = booleanPreferencesKey("use_global_tag_config")
     }
 }

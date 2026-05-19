@@ -26,6 +26,7 @@ fun HomeRoute(
     val dialogConfig by viewModel.dialogConfig.collectAsStateWithLifecycle()
     val timeLabelConfig by viewModel.timeLabelConfig.collectAsStateWithLifecycle()
     val homeLayoutConfig by viewModel.homeLayoutConfig.collectAsStateWithLifecycle()
+    val tagDisplayConfig by viewModel.tagDisplayConfig.collectAsStateWithLifecycle()
 
     val onEmptyCellClick = remember(viewModel) {
         { idleStart: LocalDateTime?, idleEnd: LocalDateTime? ->
@@ -97,6 +98,7 @@ fun HomeRoute(
         allTags = allTags,
         dialogConfig = dialogConfig,
         homeLayoutConfig = homeLayoutConfig,
+        tagDisplayConfig = tagDisplayConfig,
         activityLastUsedMap = activityLastUsedMap,
         tagLastUsedMap = tagLastUsedMap,
         tagCategoryOrder = tagCategoryOrder,

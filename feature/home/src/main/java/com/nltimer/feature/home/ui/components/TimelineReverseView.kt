@@ -78,6 +78,7 @@ fun TimelineReverseView(
     isLoadingMore: Boolean = false,
     hasReachedEarliest: Boolean = false,
     timelineStyle: TimelineLayoutStyle = TimelineLayoutStyle(),
+    tagDisplayConfig: com.nltimer.core.data.model.TagDisplayConfig = com.nltimer.core.data.model.TagDisplayConfig(),
     modifier: Modifier = Modifier,
     header: @Composable (LazyItemScope.() -> Unit)? = null,
 ) {
@@ -168,6 +169,7 @@ fun TimelineReverseView(
                         timeFormatter = timeFormatter,
                         onClick = { detailCell = item.cell },
                         onLongClick = { onCellLongClick(item.cell) },
+                        tagDisplayConfig = tagDisplayConfig,
                     )
                     is TimelineDisplayItem.Idle -> TimelineIdleItem(
                         start = item.start,
@@ -326,6 +328,7 @@ private fun TimelineBehaviorItem(
     timeFormatter: DateTimeFormatter,
     onClick: () -> Unit,
     onLongClick: () -> Unit,
+    tagDisplayConfig: com.nltimer.core.data.model.TagDisplayConfig = com.nltimer.core.data.model.TagDisplayConfig(),
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -405,7 +408,7 @@ private fun TimelineBehaviorItem(
                 }
             }
 
-            BehaviorTagRow(behavior.tags)
+            BehaviorTagRow(behavior.tags, tagDisplayConfig = tagDisplayConfig)
 
             behavior.note?.let {
                 Spacer(modifier = Modifier.height(8.dp))

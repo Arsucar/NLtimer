@@ -53,6 +53,7 @@ fun GridCell(
     cell: GridCellUiState,
     modifier: Modifier = Modifier,
     gridStyle: GridLayoutStyle = GridLayoutStyle(),
+    tagDisplayConfig: com.nltimer.core.data.model.TagDisplayConfig = com.nltimer.core.data.model.TagDisplayConfig(),
 ) {
     val isPlatinum = cell.wasPlanned && cell.status == BehaviorNature.COMPLETED
     val platinumStrength = cell.platinumStrength
@@ -160,7 +161,7 @@ fun GridCell(
                     verticalArrangement = Arrangement.spacedBy(gridStyle.tagSpacing.dp),
                     maxLines = 2,
                 ) {
-                    cell.tags.forEach { tag -> TagChip(tag = tag) }
+                    cell.tags.forEach { tag -> TagChip(tag = tag, tagDisplayConfig = tagDisplayConfig) }
                 }
             }
             cell.note?.let { note ->

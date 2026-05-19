@@ -38,7 +38,7 @@ fun Modifier.behaviorCardStyle(
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun BehaviorTagRow(tags: List<TagUiState>, logStyle: LogLayoutStyle = LogLayoutStyle()) {
+fun BehaviorTagRow(tags: List<TagUiState>, logStyle: LogLayoutStyle = LogLayoutStyle(), tagDisplayConfig: com.nltimer.core.data.model.TagDisplayConfig = com.nltimer.core.data.model.TagDisplayConfig()) {
     if (tags.isNotEmpty()) {
         Spacer(modifier = Modifier.height(8.dp))
         FlowRow(
@@ -46,7 +46,7 @@ fun BehaviorTagRow(tags: List<TagUiState>, logStyle: LogLayoutStyle = LogLayoutS
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             tags.forEach { tag ->
-                TagChipSmall(tag.name)
+                TagChipSmall(tag.name, tagDisplayConfig = tagDisplayConfig)
             }
         }
     }

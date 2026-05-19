@@ -48,7 +48,9 @@ import com.nltimer.app.navigation.NLtimerRoutes
 import com.nltimer.app.viewmodel.DrawerViewModel
 import com.nltimer.core.data.SettingsPrefs
 import com.nltimer.core.data.model.DisplayColorConfig
+import com.nltimer.core.data.model.TagDisplayConfig
 import com.nltimer.core.designsystem.theme.BottomBarMode
+import com.nltimer.core.designsystem.theme.ChipDisplayMode
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
 import com.nltimer.core.designsystem.theme.DisplayColorMode
@@ -58,6 +60,7 @@ import com.nltimer.core.designsystem.theme.LocalTheme
 import com.nltimer.core.designsystem.theme.TopBarMode
 import com.nltimer.core.designsystem.theme.toDisplayString
 import com.nltimer.feature.home.ui.components.LayoutConfigDialog
+import com.nltimer.feature.home.ui.components.TagDisplayConfigDialog
 import com.nltimer.feature.home.ui.components.LocalMomentFilterState
 import com.nltimer.feature.home.ui.components.LocalVisibleDateLabel
 import com.nltimer.feature.home.ui.components.MomentFilterState
@@ -104,12 +107,15 @@ fun NLtimerScaffold(
     }
     var showLayoutPopup by remember { mutableStateOf(false) }
     var showLayoutConfigDialog by remember { mutableStateOf(false) }
+    var showTagDisplayConfigDialog by remember { mutableStateOf(false) }
     var timeLabelSettingsRequestKey by remember { mutableStateOf(0) }
     var momentFilterKey by remember { mutableStateOf("ALL") }
     var momentSortKey by remember { mutableStateOf("TIME_DESC") }
     val theme = LocalTheme.current
     val displayColorConfig by settingsPrefs.getDisplayColorConfigFlow()
         .collectAsStateWithLifecycle(initialValue = DisplayColorConfig())
+    val tagDisplayConfig by settingsPrefs.getTagDisplayConfigFlow()
+        .collectAsStateWithLifecycle(initialValue = TagDisplayConfig())
     val themeViewModel: ThemeSettingsViewModel = hiltViewModel()
     val dialogConfigViewModel: DialogConfigViewModel = hiltViewModel()
     val homeLayoutConfig by dialogConfigViewModel.homeLayoutConfig.collectAsStateWithLifecycle()
@@ -144,7 +150,7 @@ fun NLtimerScaffold(
         HomeLayout.LOG -> "日志设置"
         HomeLayout.MOMENT -> "当前时刻设置"
     }
-    val settingsDragOptions = remember(currentRoute, theme.homeLayout, theme.showTimeSideBar, displayColorConfig, layoutConfigLabel) {
+    val settingsDragOptions = remember(currentRoute, theme.homeLayout, theme.showTimeSideBar, displayColorConfig, tagDisplayConfig, layoutConfigLabel) {
         buildList {
             if (currentRoute == NLtimerRoutes.HOME) {
                 add("更改布局")
@@ -153,6 +159,7 @@ fun NLtimerScaffold(
                     add(if (theme.showTimeSideBar) "关闭侧边时间轴" else "开启侧边时间轴")
                     add("时间标签设置")
                 }
+                add("标签配置")
             }
             if (currentRoute == NLtimerRoutes.MANAGEMENT_ACTIVITIES) {
                 val mode = displayColorConfig.activityIconColorMode
@@ -214,6 +221,7 @@ fun NLtimerScaffold(
                     displayColorConfig.copy(tagDisplayColorMode = DisplayColorMode.NORMAL)
                 )
             }
+            option == "标签配置" -> showTagDisplayConfigDialog = true
         }
     }
 
@@ -379,6 +387,14 @@ fun NLtimerScaffold(
                     config = homeLayoutConfig,
                     onConfigChange = { dialogConfigViewModel.updateHomeLayoutConfig(it) },
                     onDismiss = { showLayoutConfigDialog = false },
+                )
+            }
+
+            if (showTagDisplayConfigDialog) {
+                TagDisplayConfigDialog(
+                    config = tagDisplayConfig,
+                    onConfigChange = { scope.launch { settingsPrefs.updateTagDisplayConfig(it) } },
+                    onDismiss = { showTagDisplayConfigDialog = false },
                 )
             }
         }

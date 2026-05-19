@@ -45,6 +45,7 @@ fun BehaviorLogView(
     hasReachedEarliest: Boolean = false,
     modifier: Modifier = Modifier,
     logStyle: LogLayoutStyle = LogLayoutStyle(),
+    tagDisplayConfig: com.nltimer.core.data.model.TagDisplayConfig = com.nltimer.core.data.model.TagDisplayConfig(),
     header: @Composable (LazyItemScope.() -> Unit)? = null,
 ) {
     val timeFormatter = hhmmFormatter
@@ -148,6 +149,7 @@ fun BehaviorLogView(
                             onClick = { detailCell = item.cell },
                             onLongClick = { onCellLongClick(item.cell) },
                             logStyle = logStyle,
+                            tagDisplayConfig = tagDisplayConfig,
                         )
                     }
                 }

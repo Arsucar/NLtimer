@@ -49,4 +49,9 @@ interface SettingsPrefs {
     fun getDisplayColorConfigFlow(): Flow<com.nltimer.core.data.model.DisplayColorConfig>
     /** 更新显示颜色配置并持久化 */
     suspend fun updateDisplayColorConfig(config: com.nltimer.core.data.model.DisplayColorConfig)
+
+    /** 以 Flow 形式监听标签显示配置 */
+    fun getTagDisplayConfigFlow(): Flow<com.nltimer.core.data.model.TagDisplayConfig>
+    /** 更新标签显示配置并持久化 */
+    suspend fun updateTagDisplayConfig(config: com.nltimer.core.data.model.TagDisplayConfig)
 }

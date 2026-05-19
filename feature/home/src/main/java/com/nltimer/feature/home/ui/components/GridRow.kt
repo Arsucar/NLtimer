@@ -33,6 +33,7 @@ fun GridRow(
     timeLabelConfig: TimeLabelConfig = TimeLabelConfig(),
     modifier: Modifier = Modifier,
     gridStyle: GridLayoutStyle = GridLayoutStyle(),
+    tagDisplayConfig: com.nltimer.core.data.model.TagDisplayConfig = com.nltimer.core.data.model.TagDisplayConfig(),
 ) {
     var detailCell by remember { mutableStateOf<GridCellUiState?>(null) }
 
@@ -76,6 +77,7 @@ fun GridRow(
                                             onLongClick = { onCellLongClick(cell) },
                                         ),
                                     gridStyle = gridStyle,
+                                    tagDisplayConfig = tagDisplayConfig,
                                 )
                                 index == targetEmptyIndex -> GridCellEmpty(
                                     onClick = { onEmptyCellClick(cell.startTime, cell.endTime) },

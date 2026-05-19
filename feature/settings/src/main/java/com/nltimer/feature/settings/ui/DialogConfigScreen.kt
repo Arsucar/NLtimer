@@ -27,6 +27,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nltimer.core.data.model.DialogGridConfig
 import com.nltimer.core.data.model.SecondsStrategy
+import com.nltimer.core.data.model.TagDisplayConfig
 import com.nltimer.core.designsystem.component.ExpandableCard
 import com.nltimer.core.designsystem.component.atom.SelectableOptionChip
 import com.nltimer.core.designsystem.theme.ChipDisplayMode
@@ -38,9 +39,12 @@ fun DialogConfigRoute(
     viewModel: DialogConfigViewModel = hiltViewModel(),
 ) {
     val config by viewModel.dialogConfig.collectAsStateWithLifecycle()
+    val tagDisplayConfig by viewModel.tagDisplayConfig.collectAsStateWithLifecycle()
     DialogConfigScreen(
         config = config,
+        tagDisplayConfig = tagDisplayConfig,
         onUpdateConfig = viewModel::updateConfig,
+        onUpdateTagDisplayConfig = viewModel::updateTagDisplayConfig,
     )
 }
 
@@ -48,12 +52,16 @@ fun DialogConfigRoute(
 @Composable
 fun DialogConfigScreen(
     config: DialogGridConfig,
+    tagDisplayConfig: TagDisplayConfig = TagDisplayConfig(),
     onUpdateConfig: (DialogGridConfig) -> Unit,
+    onUpdateTagDisplayConfig: (TagDisplayConfig) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     var expandedActivity by remember { mutableStateOf(false) }
     var expandedTag by remember { mutableStateOf(false) }
     var expandedOther by remember { mutableStateOf(false) }
+
+    val useGlobalTagConfig = config.useGlobalTagConfig
 
     LazyColumn(
         modifier = modifier.fillMaxWidth(),
@@ -108,29 +116,63 @@ fun DialogConfigScreen(
                 expanded = expandedTag,
                 onToggle = { expandedTag = !expandedTag },
             ) {
+                InlineToggleRow(
+                    label = "管理",
+                    options = listOf("独立" to false, "统一" to true),
+                    selected = useGlobalTagConfig,
+                    onSelect = { onUpdateConfig(config.copy(useGlobalTagConfig = it)) },
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+
+                val effectiveDisplayMode = if (useGlobalTagConfig) tagDisplayConfig.displayMode else config.tagDisplayMode
+                val effectiveLayoutMode = if (useGlobalTagConfig) tagDisplayConfig.layoutMode else config.tagLayoutMode
+                val effectiveColumnLines = if (useGlobalTagConfig) tagDisplayConfig.columnLines else config.tagColumnLines
+                val effectiveHorizontalLines = if (useGlobalTagConfig) tagDisplayConfig.horizontalLines else config.tagHorizontalLines
+                val effectiveUseColorForText = if (useGlobalTagConfig) tagDisplayConfig.useColorForText else config.tagUseColorForText
+
                 ChipFlowSelector(
                     label = "样式",
                     options = ChipDisplayMode.entries,
-                    selected = config.tagDisplayMode,
+                    selected = effectiveDisplayMode,
                     display = { it.displayName() },
-                    onSelect = { onUpdateConfig(config.copy(tagDisplayMode = it)) },
+                    onSelect = {
+                        if (useGlobalTagConfig) {
+                            onUpdateTagDisplayConfig(tagDisplayConfig.copy(displayMode = it))
+                        } else {
+                            onUpdateConfig(config.copy(tagDisplayMode = it))
+                        }
+                    },
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 LayoutWithStepperRow(
                     layoutOptions = GridLayoutMode.entries,
-                    selectedLayout = config.tagLayoutMode,
+                    selectedLayout = effectiveLayoutMode,
                     displayLayout = { it.displayName() },
-                    onSelectLayout = { onUpdateConfig(config.copy(tagLayoutMode = it)) },
-                    stepperLabel = if (config.tagLayoutMode == GridLayoutMode.Vertical) "行数" else "行数",
-                    stepperValue = if (config.tagLayoutMode == GridLayoutMode.Vertical) config.tagColumnLines else config.tagHorizontalLines,
-                    stepperMin = if (config.tagLayoutMode == GridLayoutMode.Vertical) 1 else 0,
-                    stepperMax = 10,
-                    infiniteAtMin = config.tagLayoutMode == GridLayoutMode.Horizontal,
-                    onStepperChange = {
-                        if (config.tagLayoutMode == GridLayoutMode.Vertical) {
-                            onUpdateConfig(config.copy(tagColumnLines = it))
+                    onSelectLayout = {
+                        if (useGlobalTagConfig) {
+                            onUpdateTagDisplayConfig(tagDisplayConfig.copy(layoutMode = it))
                         } else {
-                            onUpdateConfig(config.copy(tagHorizontalLines = it))
+                            onUpdateConfig(config.copy(tagLayoutMode = it))
+                        }
+                    },
+                    stepperLabel = if (effectiveLayoutMode == GridLayoutMode.Vertical) "行数" else "行数",
+                    stepperValue = if (effectiveLayoutMode == GridLayoutMode.Vertical) effectiveColumnLines else effectiveHorizontalLines,
+                    stepperMin = if (effectiveLayoutMode == GridLayoutMode.Vertical) 1 else 0,
+                    stepperMax = 10,
+                    infiniteAtMin = effectiveLayoutMode == GridLayoutMode.Horizontal,
+                    onStepperChange = {
+                        if (effectiveLayoutMode == GridLayoutMode.Vertical) {
+                            if (useGlobalTagConfig) {
+                                onUpdateTagDisplayConfig(tagDisplayConfig.copy(columnLines = it))
+                            } else {
+                                onUpdateConfig(config.copy(tagColumnLines = it))
+                            }
+                        } else {
+                            if (useGlobalTagConfig) {
+                                onUpdateTagDisplayConfig(tagDisplayConfig.copy(horizontalLines = it))
+                            } else {
+                                onUpdateConfig(config.copy(tagHorizontalLines = it))
+                            }
                         }
                     },
                 )
@@ -138,8 +180,14 @@ fun DialogConfigScreen(
                 InlineToggleRow(
                     label = "配色",
                     options = listOf("强调色" to false, "活动色" to true),
-                    selected = config.tagUseColorForText,
-                    onSelect = { onUpdateConfig(config.copy(tagUseColorForText = it)) },
+                    selected = effectiveUseColorForText,
+                    onSelect = {
+                        if (useGlobalTagConfig) {
+                            onUpdateTagDisplayConfig(tagDisplayConfig.copy(useColorForText = it))
+                        } else {
+                            onUpdateConfig(config.copy(tagUseColorForText = it))
+                        }
+                    },
                 )
             }
         }

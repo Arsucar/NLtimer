@@ -21,4 +21,6 @@ data class DialogGridConfig(
     val pathDrawMode: PathDrawMode = PathDrawMode.StartToEnd,
     val secondsStrategy: SecondsStrategy = SecondsStrategy.OPEN_TIME,
     val autoMatchNote: Boolean = false,
+    val useGlobalTagConfig: Boolean = false,
+    val tagDisplayConfig: TagDisplayConfig = TagDisplayConfig(),
 )
