@@ -34,5 +34,6 @@ data class AiInterConfig(
     val modelName: String = "openai/gpt-oss-120b",
     val promptNotes: String = "",
     val promptTaskGen: String = "",
-    val promptChat: String = ""
+    val promptChat: String = "",
+    val promptSystem: String = ""
 )

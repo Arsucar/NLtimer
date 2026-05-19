@@ -36,6 +36,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import com.nltimer.app.navigation.NLtimerRoutes
 import com.nltimer.app.experimental.ai_inter.chat.components.ChatDrawer
 import com.nltimer.app.experimental.ai_inter.chat.components.ChatInput
 import com.nltimer.app.experimental.ai_inter.chat.components.ChatList
@@ -123,6 +124,7 @@ fun AiAssistantChatRoute(
                         onNewConversation = { viewModel.newConversation() },
                         onClearCurrent = { viewModel.clearCurrent() },
                         onExport = { showExport = true },
+                        onNavigateToAiInter = { navController.navigate(NLtimerRoutes.AI_INTER) },
                         scrollBehavior = topBarScrollBehavior,
                         isImmersive = isImmersive,
                         hazeState = if (topBarHaze) hazeState else null,

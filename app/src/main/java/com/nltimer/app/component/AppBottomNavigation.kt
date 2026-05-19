@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Timelapse
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Timeline
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -73,6 +74,7 @@ internal data class NavItem(
 internal val navItems = listOf(
     NavItem(NLtimerRoutes.HOME, "主页", Icons.Default.Home),
     NavItem(NLtimerRoutes.STATS, "统计", Icons.Default.BarChart),
+    NavItem(NLtimerRoutes.AI_ASSISTANT_CHAT, "AI 助手", Icons.Default.AutoAwesome),
     NavItem(NLtimerRoutes.SETTINGS, "设置", Icons.Default.Settings),
 )
 

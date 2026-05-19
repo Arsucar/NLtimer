@@ -389,7 +389,11 @@ class AiAssistantChatViewModel @Inject constructor(
             append("当前时间: ")
             append(nowIso)
             append("\n\n")
-            append(AiChatToolHelper.TOOLS_SYSTEM_PROMPT)
+            if (cfg.promptSystem.isNotBlank()) {
+                append(cfg.promptSystem)
+            } else {
+                append(AiChatToolHelper.TOOLS_SYSTEM_PROMPT)
+            }
             if (cfg.promptChat.isNotBlank()) {
                 append("\n\n# 附加指引\n")
                 append(cfg.promptChat)
