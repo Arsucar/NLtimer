@@ -33,3 +33,7 @@ Agent 快速上下文文档位于 `docs/agent/`，按需加载：
 入口索引：`docs/agent/00-index.md`
 
 文档与代码同步校验：`python scripts/check-docs-sync.py`
+
+## 用户自主添加规则
+
+1. 如果用户要求创建工作树，默认创建在 `.worktrees` 中，避免创建在工作区外因为工作区不一致导致需要频繁申请读写权限。

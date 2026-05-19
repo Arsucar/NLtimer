@@ -74,7 +74,7 @@ fun LayoutConfigDialog(
         ) {
             Surface(
                 shape = RoundedCornerShape(20.dp),
-                color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.85f),
+                color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.70f),
                 tonalElevation = 6.dp,
                 modifier = Modifier
                     .width(340.dp)

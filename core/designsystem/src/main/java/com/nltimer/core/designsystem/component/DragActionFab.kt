@@ -19,6 +19,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -91,6 +92,7 @@ fun DraggableMenuAnchor(
     val density = LocalDensity.current
     val screenWidthPx = with(density) { LocalConfiguration.current.screenWidthDp.dp.toPx() }
     val screenHeightPx = with(density) { LocalConfiguration.current.screenHeightDp.dp.toPx() }
+    val currentOnOptionSelected by rememberUpdatedState(onOptionSelected)
 
     Box(
         modifier = modifier
@@ -113,7 +115,7 @@ fun DraggableMenuAnchor(
                     },
                     onDragEnd = {
                         state.hoveredOption?.let { option ->
-                            onOptionSelected(option)
+                            currentOnOptionSelected(option)
                         }
                         resetDragState(state)
                     },

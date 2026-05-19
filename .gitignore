@@ -328,3 +328,5 @@ app/src/main/res/values/strings.xml
 app/build.gradle.kts
 .gitignore
 docs/reference/
+.aider*
+.env
