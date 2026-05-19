@@ -35,16 +35,7 @@ class ActivityManagementRepositoryImpl @Inject constructor(
 
     companion object {
         // 首次使用时创建的预设活动列表
-        val PRESET_ACTIVITIES = listOf(
-            Activity(name = "番剧视频", iconKey = "📺", isPreset = true),
-            Activity(name = "娱乐视频", iconKey = "🎬", isPreset = true),
-            Activity(name = "玩游戏", iconKey = "🎮", isPreset = true),
-            Activity(name = "主动学习", iconKey = "📖", isPreset = true),
-            Activity(name = "运动健身", iconKey = "💪", isPreset = true),
-            Activity(name = "社交聚会", iconKey = "👥", isPreset = true),
-            Activity(name = "本职工作", iconKey = "💼", isPreset = true),
-            Activity(name = "休息放松", iconKey = "😌", isPreset = true),
-        )
+        val PRESET_ACTIVITIES = emptyList<Activity>()
     }
 
     // 实体转领域模型的基础查询

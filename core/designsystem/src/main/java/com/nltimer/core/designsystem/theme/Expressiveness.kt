@@ -4,7 +4,7 @@ enum class ExpressivenessPreset {
     SUBDUED,
     STANDARD,
     EXPRESSIVE;
-    companion object { val DEFAULT = SUBDUED }
+    companion object { val DEFAULT = STANDARD }
 }
 
 enum class CardColorStrategy {

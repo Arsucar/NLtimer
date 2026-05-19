@@ -55,26 +55,26 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
     override fun getThemeFlow(): Flow<Theme> = dataStore.data.map { prefs ->
         val seed = prefs[seedColorKey] ?: DEFAULT_SEED_COLOR
         val appThemeName = prefs[appThemeKey] ?: AppTheme.SYSTEM.name
-        val paletteStyleName = prefs[paletteStyleKey] ?: PaletteStyle.TONALSPOT.name
-        val fontName = prefs[fontKey] ?: Fonts.FIGTREE.name
+        val paletteStyleName = prefs[paletteStyleKey] ?: PaletteStyle.CONTENT.name
+        val fontName = prefs[fontKey] ?: Fonts.SYSTEM_DEFAULT.name
         val homeLayoutName = prefs[homeLayoutKey] ?: HomeLayout.GRID.name
 
         Theme(
             seedColor = Color(seed),
             appTheme = safeValueOf(appThemeName, AppTheme.SYSTEM),
             isAmoled = prefs[isAmoledKey] == true,
-            paletteStyle = safeValueOf(paletteStyleName, PaletteStyle.TONALSPOT),
+            paletteStyle = safeValueOf(paletteStyleName, PaletteStyle.CONTENT),
             isMaterialYou = prefs[isMaterialYouKey] == true,
-            font = safeValueOf(fontName, Fonts.FIGTREE),
+            font = safeValueOf(fontName, Fonts.SYSTEM_DEFAULT),
             showBorders = prefs[showBordersKey] != false,
             homeLayout = safeValueOf(homeLayoutName, HomeLayout.GRID),
             showTimeSideBar = prefs[showTimeSideBarKey] != false,
-            topBarMode = safeValueOf(prefs[topBarModeKey] ?: TopBarMode.PINNED.name, TopBarMode.PINNED),
+            topBarMode = safeValueOf(prefs[topBarModeKey] ?: TopBarMode.COLLAPSED.name, TopBarMode.COLLAPSED),
             bottomBarMode = run {
-                val mode = safeValueOf(prefs[bottomBarModeKey] ?: BottomBarMode.STANDARD.name, BottomBarMode.STANDARD)
+                val mode = safeValueOf(prefs[bottomBarModeKey] ?: BottomBarMode.CENTER_FAB.name, BottomBarMode.CENTER_FAB)
                 if (mode == BottomBarMode.FLOATING) BottomBarMode.CENTER_FAB else mode
             },
-            isImmersive = prefs[isImmersiveKey] == true,
+            isImmersive = prefs[isImmersiveKey] != false,
             topBarHaze = prefs[topBarHazeKey] != false,
             style = StyleConfig(
                 cornerPreset = safeValueOf(prefs[cornerPresetKey] ?: CornerPreset.STANDARD.name, CornerPreset.STANDARD),
@@ -83,7 +83,7 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
                 cornerScale = prefs[cornerScaleCustomKey],
                 borderScale = prefs[borderScaleCustomKey],
                 alphaScale = prefs[alphaScaleCustomKey],
-                expressiveness = safeValueOf(prefs[expressivenessKey] ?: ExpressivenessPreset.SUBDUED.name, ExpressivenessPreset.SUBDUED),
+                expressiveness = safeValueOf(prefs[expressivenessKey] ?: ExpressivenessPreset.STANDARD.name, ExpressivenessPreset.STANDARD),
                 cardColorStrategy = safeValueOf(prefs[cardColorStrategyKey] ?: CardColorStrategy.SURFACE.name, CardColorStrategy.SURFACE),
                 iconContainerSize = safeValueOf(prefs[iconContainerSizeKey] ?: IconContainerSize.NONE.name, IconContainerSize.NONE),
                 timerTypography = safeValueOf(prefs[timerTypographyKey] ?: TimerTypography.HEADLINE.name, TimerTypography.HEADLINE),
@@ -340,7 +340,7 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
     }
 
     companion object {
-        private const val DEFAULT_SEED_COLOR = 0xFF1565C0.toInt()
+        private const val DEFAULT_SEED_COLOR = 0xFF539E44.toInt()
         private val seedColorKey = intPreferencesKey("seed_color")
         private val appThemeKey = stringPreferencesKey("app_theme")
         private val isAmoledKey = booleanPreferencesKey("is_amoled")
