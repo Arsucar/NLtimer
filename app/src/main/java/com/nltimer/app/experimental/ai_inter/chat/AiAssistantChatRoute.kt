@@ -22,7 +22,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -57,14 +57,14 @@ fun AiAssistantChatRoute(
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
-    val conversations by viewModel.conversations.collectAsState()
-    val currentId by viewModel.currentConversationId.collectAsState()
-    val messages by viewModel.currentMessages.collectAsState()
-    val streaming by viewModel.streamingState.collectAsState()
-    val isSending by viewModel.isSending.collectAsState()
-    val chatError by viewModel.chatError.collectAsState()
-    val config by viewModel.config.collectAsState()
-    val availableModels by viewModel.availableModels.collectAsState()
+    val conversations by viewModel.conversations.collectAsStateWithLifecycle()
+    val currentId by viewModel.currentConversationId.collectAsStateWithLifecycle()
+    val messages by viewModel.currentMessages.collectAsStateWithLifecycle()
+    val streaming by viewModel.streamingState.collectAsStateWithLifecycle()
+    val isSending by viewModel.isSending.collectAsStateWithLifecycle()
+    val chatError by viewModel.chatError.collectAsStateWithLifecycle()
+    val config by viewModel.config.collectAsStateWithLifecycle()
+    val availableModels by viewModel.availableModels.collectAsStateWithLifecycle()
 
     val current = conversations.firstOrNull { it.id == currentId }
     val listState = rememberLazyListState()

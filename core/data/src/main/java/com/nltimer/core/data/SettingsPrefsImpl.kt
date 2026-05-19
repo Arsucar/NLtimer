@@ -16,6 +16,8 @@ import com.nltimer.core.data.model.LogLayoutStyle
 import com.nltimer.core.data.model.TimelineLayoutStyle
 import com.nltimer.core.data.model.MomentLayoutStyle
 import com.nltimer.core.data.model.SecondsStrategy
+import com.nltimer.core.data.model.DisplayColorConfig
+import com.nltimer.core.data.util.safeValueOf
 import com.nltimer.core.designsystem.theme.AppTheme
 import com.nltimer.core.designsystem.theme.AlphaPreset
 import com.nltimer.core.designsystem.theme.BorderPreset
@@ -38,6 +40,7 @@ import com.nltimer.core.designsystem.theme.TimerTypography
 import com.nltimer.core.designsystem.theme.WavyProgressLevel
 import com.nltimer.core.designsystem.theme.TopBarMode
 import com.nltimer.core.designsystem.theme.BottomBarMode
+import com.nltimer.core.designsystem.theme.DisplayColorMode
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -58,33 +61,33 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
 
         Theme(
             seedColor = Color(seed),
-            appTheme = try { AppTheme.valueOf(appThemeName) } catch (_: IllegalArgumentException) { AppTheme.SYSTEM },
+            appTheme = safeValueOf(appThemeName, AppTheme.SYSTEM),
             isAmoled = prefs[isAmoledKey] == true,
-            paletteStyle = try { PaletteStyle.valueOf(paletteStyleName) } catch (_: IllegalArgumentException) { PaletteStyle.TONALSPOT },
+            paletteStyle = safeValueOf(paletteStyleName, PaletteStyle.TONALSPOT),
             isMaterialYou = prefs[isMaterialYouKey] == true,
-            font = try { Fonts.valueOf(fontName) } catch (_: IllegalArgumentException) { Fonts.FIGTREE },
+            font = safeValueOf(fontName, Fonts.FIGTREE),
             showBorders = prefs[showBordersKey] != false,
-            homeLayout = try { HomeLayout.valueOf(homeLayoutName) } catch (_: IllegalArgumentException) { HomeLayout.GRID },
+            homeLayout = safeValueOf(homeLayoutName, HomeLayout.GRID),
             showTimeSideBar = prefs[showTimeSideBarKey] != false,
-            topBarMode = try { TopBarMode.valueOf(prefs[topBarModeKey] ?: TopBarMode.PINNED.name) } catch (_: IllegalArgumentException) { TopBarMode.PINNED },
-            bottomBarMode = try {
-                val mode = BottomBarMode.valueOf(prefs[bottomBarModeKey] ?: BottomBarMode.STANDARD.name)
+            topBarMode = safeValueOf(prefs[topBarModeKey] ?: TopBarMode.PINNED.name, TopBarMode.PINNED),
+            bottomBarMode = run {
+                val mode = safeValueOf(prefs[bottomBarModeKey] ?: BottomBarMode.STANDARD.name, BottomBarMode.STANDARD)
                 if (mode == BottomBarMode.FLOATING) BottomBarMode.CENTER_FAB else mode
-            } catch (_: IllegalArgumentException) { BottomBarMode.STANDARD },
+            },
             isImmersive = prefs[isImmersiveKey] == true,
             topBarHaze = prefs[topBarHazeKey] != false,
             style = StyleConfig(
-                cornerPreset = try { CornerPreset.valueOf(prefs[cornerPresetKey] ?: CornerPreset.STANDARD.name) } catch (_: IllegalArgumentException) { CornerPreset.STANDARD },
-                borderPreset = try { BorderPreset.valueOf(prefs[borderPresetKey] ?: BorderPreset.STANDARD.name) } catch (_: IllegalArgumentException) { BorderPreset.STANDARD },
-                alphaPreset = try { AlphaPreset.valueOf(prefs[alphaPresetKey] ?: AlphaPreset.STANDARD.name) } catch (_: IllegalArgumentException) { AlphaPreset.STANDARD },
+                cornerPreset = safeValueOf(prefs[cornerPresetKey] ?: CornerPreset.STANDARD.name, CornerPreset.STANDARD),
+                borderPreset = safeValueOf(prefs[borderPresetKey] ?: BorderPreset.STANDARD.name, BorderPreset.STANDARD),
+                alphaPreset = safeValueOf(prefs[alphaPresetKey] ?: AlphaPreset.STANDARD.name, AlphaPreset.STANDARD),
                 cornerScale = prefs[cornerScaleCustomKey],
                 borderScale = prefs[borderScaleCustomKey],
                 alphaScale = prefs[alphaScaleCustomKey],
-                expressiveness = try { ExpressivenessPreset.valueOf(prefs[expressivenessKey] ?: ExpressivenessPreset.SUBDUED.name) } catch (_: IllegalArgumentException) { ExpressivenessPreset.SUBDUED },
-                cardColorStrategy = try { CardColorStrategy.valueOf(prefs[cardColorStrategyKey] ?: CardColorStrategy.SURFACE.name) } catch (_: IllegalArgumentException) { CardColorStrategy.SURFACE },
-                iconContainerSize = try { IconContainerSize.valueOf(prefs[iconContainerSizeKey] ?: IconContainerSize.NONE.name) } catch (_: IllegalArgumentException) { IconContainerSize.NONE },
-                timerTypography = try { TimerTypography.valueOf(prefs[timerTypographyKey] ?: TimerTypography.HEADLINE.name) } catch (_: IllegalArgumentException) { TimerTypography.HEADLINE },
-                wavyProgress = try { WavyProgressLevel.valueOf(prefs[wavyProgressKey] ?: WavyProgressLevel.OFF.name) } catch (_: IllegalArgumentException) { WavyProgressLevel.OFF },
+                expressiveness = safeValueOf(prefs[expressivenessKey] ?: ExpressivenessPreset.SUBDUED.name, ExpressivenessPreset.SUBDUED),
+                cardColorStrategy = safeValueOf(prefs[cardColorStrategyKey] ?: CardColorStrategy.SURFACE.name, CardColorStrategy.SURFACE),
+                iconContainerSize = safeValueOf(prefs[iconContainerSizeKey] ?: IconContainerSize.NONE.name, IconContainerSize.NONE),
+                timerTypography = safeValueOf(prefs[timerTypographyKey] ?: TimerTypography.HEADLINE.name, TimerTypography.HEADLINE),
+                wavyProgress = safeValueOf(prefs[wavyProgressKey] ?: WavyProgressLevel.OFF.name, WavyProgressLevel.OFF),
             ),
         )
     }
@@ -142,19 +145,19 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
 
     override fun getDialogConfigFlow(): Flow<DialogGridConfig> = dataStore.data.map { prefs ->
         DialogGridConfig(
-            activityDisplayMode = try { ChipDisplayMode.valueOf(prefs[actDisplayModeKey] ?: ChipDisplayMode.Filled.name) } catch (_: IllegalArgumentException) { ChipDisplayMode.Filled },
-            activityLayoutMode = try { GridLayoutMode.valueOf(prefs[actLayoutModeKey] ?: GridLayoutMode.Horizontal.name) } catch (_: IllegalArgumentException) { GridLayoutMode.Horizontal },
+            activityDisplayMode = safeValueOf(prefs[actDisplayModeKey] ?: ChipDisplayMode.Filled.name, ChipDisplayMode.Filled),
+            activityLayoutMode = safeValueOf(prefs[actLayoutModeKey] ?: GridLayoutMode.Horizontal.name, GridLayoutMode.Horizontal),
             activityColumnLines = prefs[actColumnLinesKey] ?: 2,
             activityHorizontalLines = prefs[actHorizontalLinesKey] ?: 2,
             activityUseColorForText = prefs[actUseColorKey] ?: true,
-            tagDisplayMode = try { ChipDisplayMode.valueOf(prefs[tagDisplayModeKey] ?: ChipDisplayMode.Filled.name) } catch (_: IllegalArgumentException) { ChipDisplayMode.Filled },
-            tagLayoutMode = try { GridLayoutMode.valueOf(prefs[tagLayoutModeKey] ?: GridLayoutMode.Horizontal.name) } catch (_: IllegalArgumentException) { GridLayoutMode.Horizontal },
+            tagDisplayMode = safeValueOf(prefs[tagDisplayModeKey] ?: ChipDisplayMode.Filled.name, ChipDisplayMode.Filled),
+            tagLayoutMode = safeValueOf(prefs[tagLayoutModeKey] ?: GridLayoutMode.Horizontal.name, GridLayoutMode.Horizontal),
             tagColumnLines = prefs[tagColumnLinesKey] ?: 2,
             tagHorizontalLines = prefs[tagHorizontalLinesKey] ?: 2,
             tagUseColorForText = prefs[tagUseColorKey] ?: true,
             showBehaviorNature = prefs[showNatureKey] ?: true,
-            pathDrawMode = try { PathDrawMode.valueOf(prefs[pathDrawModeKey] ?: PathDrawMode.StartToEnd.name) } catch (_: IllegalArgumentException) { PathDrawMode.StartToEnd },
-            secondsStrategy = try { SecondsStrategy.valueOf(prefs[secondsStrategyKey] ?: SecondsStrategy.OPEN_TIME.name) } catch (_: IllegalArgumentException) { SecondsStrategy.OPEN_TIME },
+            pathDrawMode = safeValueOf(prefs[pathDrawModeKey] ?: PathDrawMode.StartToEnd.name, PathDrawMode.StartToEnd),
+            secondsStrategy = safeValueOf(prefs[secondsStrategyKey] ?: SecondsStrategy.OPEN_TIME.name, SecondsStrategy.OPEN_TIME),
             autoMatchNote = prefs[autoMatchNoteKey] ?: false,
 
         )
@@ -257,14 +260,14 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
         }
     }
 
-    override fun getDisplayColorConfigFlow(): Flow<com.nltimer.core.data.model.DisplayColorConfig> = dataStore.data.map { prefs ->
-        com.nltimer.core.data.model.DisplayColorConfig(
-            activityIconColorMode = try { com.nltimer.core.designsystem.theme.DisplayColorMode.valueOf(prefs[activityIconColorModeKey] ?: com.nltimer.core.designsystem.theme.DisplayColorMode.NORMAL.name) } catch (_: IllegalArgumentException) { com.nltimer.core.designsystem.theme.DisplayColorMode.NORMAL },
-            tagDisplayColorMode = try { com.nltimer.core.designsystem.theme.DisplayColorMode.valueOf(prefs[tagDisplayColorModeKey] ?: com.nltimer.core.designsystem.theme.DisplayColorMode.NORMAL.name) } catch (_: IllegalArgumentException) { com.nltimer.core.designsystem.theme.DisplayColorMode.NORMAL },
+    override fun getDisplayColorConfigFlow(): Flow<DisplayColorConfig> = dataStore.data.map { prefs ->
+        DisplayColorConfig(
+            activityIconColorMode = safeValueOf(prefs[activityIconColorModeKey] ?: DisplayColorMode.NORMAL.name, DisplayColorMode.NORMAL),
+            tagDisplayColorMode = safeValueOf(prefs[tagDisplayColorModeKey] ?: DisplayColorMode.NORMAL.name, DisplayColorMode.NORMAL),
         )
     }
 
-    override suspend fun updateDisplayColorConfig(config: com.nltimer.core.data.model.DisplayColorConfig) {
+    override suspend fun updateDisplayColorConfig(config: DisplayColorConfig) {
         dataStore.edit { prefs ->
             prefs[activityIconColorModeKey] = config.activityIconColorMode.name
             prefs[tagDisplayColorModeKey] = config.tagDisplayColorMode.name
@@ -280,8 +283,8 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
         if (parts.size != 3) return TimeLabelConfig()
         return TimeLabelConfig(
             visible = parts[0].toBooleanStrictOrNull() ?: true,
-            style = try { TimeLabelStyle.valueOf(parts[1]) } catch (_: IllegalArgumentException) { TimeLabelStyle.PILL },
-            format = try { TimeLabelFormat.valueOf(parts[2]) } catch (_: IllegalArgumentException) { TimeLabelFormat.HH_MM },
+            style = safeValueOf(parts[1], TimeLabelStyle.PILL),
+            format = safeValueOf(parts[2], TimeLabelFormat.HH_MM),
         )
     }
 

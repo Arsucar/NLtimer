@@ -11,9 +11,9 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 class ConversationExporter @Inject constructor() {
@@ -22,8 +22,11 @@ class ConversationExporter @Inject constructor() {
         ignoreUnknownKeys = true
         prettyPrint = false
     }
-    private val dateFmt = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
-    private val timeFmt = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
+    private val dateFmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+    private val timeFmt = DateTimeFormatter.ofPattern("HH:mm:ss")
+
+    private fun Long.toLocalDateTime() =
+        Instant.ofEpochMilli(this).atZone(ZoneId.systemDefault()).toLocalDateTime()
 
     fun exportMarkdown(
         conversation: ConversationEntity,
@@ -32,8 +35,8 @@ class ConversationExporter @Inject constructor() {
     ): String = buildString {
         appendLine("# ${conversation.title}")
         appendLine()
-        appendLine("- 创建时间：${dateFmt.format(Date(conversation.createdAt))}")
-        appendLine("- 导出时间：${dateFmt.format(Date(System.currentTimeMillis()))}")
+        appendLine("- 创建时间：${dateFmt.format(conversation.createdAt.toLocalDateTime())}")
+        appendLine("- 导出时间：${dateFmt.format(System.currentTimeMillis().toLocalDateTime())}")
         appendLine("- 消息数：${messages.size}")
         appendLine()
         appendLine("---")
@@ -41,7 +44,7 @@ class ConversationExporter @Inject constructor() {
 
         messages.forEach { msg ->
             val roleLabel = if (msg.role == "user") "用户" else "助手"
-            appendLine("## $roleLabel · ${timeFmt.format(Date(msg.createdAt))}")
+            appendLine("## $roleLabel · ${timeFmt.format(msg.createdAt.toLocalDateTime())}")
             appendLine()
 
             if (msg.role == "assistant") {

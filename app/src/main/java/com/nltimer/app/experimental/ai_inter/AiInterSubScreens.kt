@@ -54,7 +54,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -75,19 +75,19 @@ import com.nltimer.core.designsystem.component.PlaceholderScreen
 import com.nltimer.core.designsystem.component.SettingsEntryCard
 import com.nltimer.core.designsystem.theme.LocalImmersiveTopPadding
 import dev.jeziellago.compose.markdowntext.MarkdownText
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AiProviderConfigRoute(
     viewModel: AiInterViewModel = hiltViewModel()
 ) {
-    val config by viewModel.config.collectAsState()
-    val availableModels by viewModel.availableModels.collectAsState()
-    val isLoadingModels by viewModel.isLoadingModels.collectAsState()
-    val modelsError by viewModel.modelsError.collectAsState()
+    val config by viewModel.config.collectAsStateWithLifecycle()
+    val availableModels by viewModel.availableModels.collectAsStateWithLifecycle()
+    val isLoadingModels by viewModel.isLoadingModels.collectAsStateWithLifecycle()
+    val modelsError by viewModel.modelsError.collectAsStateWithLifecycle()
 
     var showModelSheet by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
@@ -312,8 +312,8 @@ fun AiCallLogsRoute(
     onNavigateToLogDetail: (Long) -> Unit = {},
     viewModel: AiInterViewModel = hiltViewModel()
 ) {
-    val logs by viewModel.logs.collectAsState()
-    val dateFormat = remember { SimpleDateFormat("MM-dd HH:mm:ss", Locale.getDefault()) }
+    val logs by viewModel.logs.collectAsStateWithLifecycle()
+    val dateFormat = remember { DateTimeFormatter.ofPattern("MM-dd HH:mm:ss") }
 
     Column(modifier = Modifier.fillMaxSize()) {
         Row(
@@ -346,7 +346,7 @@ fun AiCallLogsRoute(
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text(
-                                text = dateFormat.format(Date(log.timestamp)),
+                                text = dateFormat.format(Instant.ofEpochMilli(log.timestamp).atZone(ZoneId.systemDefault()).toLocalDateTime()),
                                 style = MaterialTheme.typography.labelSmall
                             )
                             Text(
@@ -406,7 +406,7 @@ fun AiCallLogsRoute(
 fun AiPromptConfigRoute(
     viewModel: AiInterViewModel = hiltViewModel()
 ) {
-    val config by viewModel.config.collectAsState()
+    val config by viewModel.config.collectAsStateWithLifecycle()
     
     var promptNotes by remember(config.promptNotes) { mutableStateOf(config.promptNotes) }
     var promptTaskGen by remember(config.promptTaskGen) { mutableStateOf(config.promptTaskGen) }
@@ -475,10 +475,10 @@ private fun PromptEditCard(title: String, value: String, onValueChange: (String)
 fun AiTestChatRoute(
     viewModel: AiInterViewModel = hiltViewModel()
 ) {
-    val messages by viewModel.chatMessages.collectAsState()
-    val isSending by viewModel.isSending.collectAsState()
-    val streamingState by viewModel.streamingState.collectAsState()
-    val config by viewModel.config.collectAsState()
+    val messages by viewModel.chatMessages.collectAsStateWithLifecycle()
+    val isSending by viewModel.isSending.collectAsStateWithLifecycle()
+    val streamingState by viewModel.streamingState.collectAsStateWithLifecycle()
+    val config by viewModel.config.collectAsStateWithLifecycle()
     var inputText by remember { mutableStateOf("") }
     val listState = rememberLazyListState()
 

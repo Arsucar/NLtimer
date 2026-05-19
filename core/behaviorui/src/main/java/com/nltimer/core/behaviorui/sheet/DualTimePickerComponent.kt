@@ -34,11 +34,9 @@ import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-private val ColonTextColor = Color(0xFF0A1034)
-
 @Composable
 private fun colonTextColor() = if (MaterialTheme.colorScheme.surface.luminance() > 0.5f) {
-    ColonTextColor
+    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
 } else {
     MaterialTheme.colorScheme.onSurface.copy(alpha = styledAlpha(0.6f))
 }

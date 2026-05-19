@@ -52,9 +52,9 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.longOrNull
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 private val detailJson = Json { ignoreUnknownKeys = true }
 
@@ -66,7 +66,7 @@ fun AiLogDetailRoute(
     viewModel: AiInterViewModel = hiltViewModel()
 ) {
     val log by viewModel.getLogById(logId).collectAsStateWithLifecycle(initialValue = null)
-    val dateFormat = remember { SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault()) }
+    val dateFormat = remember { DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS") }
 
     Scaffold(
         topBar = {
@@ -105,7 +105,7 @@ fun AiLogDetailRoute(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            DetailField("时间戳", dateFormat.format(Date(currentLog.timestamp)))
+            DetailField("时间戳", dateFormat.format(Instant.ofEpochMilli(currentLog.timestamp).atZone(ZoneId.systemDefault()).toLocalDateTime()))
             if (currentLog.requestUrl.isNotBlank()) {
                 DetailField("请求 URL", currentLog.requestUrl)
             }

@@ -1,8 +1,9 @@
 package com.nltimer.feature.behavior_management.viewmodel
 
-import android.app.Application
+import android.content.Context
 import android.net.Uri
-import androidx.lifecycle.AndroidViewModel
+import android.util.Log
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
@@ -23,6 +24,7 @@ import com.nltimer.feature.behavior_management.model.DuplicateHandling
 import com.nltimer.feature.behavior_management.model.TimeRangePreset
 import com.nltimer.feature.behavior_management.model.ViewMode
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -46,37 +48,37 @@ import javax.inject.Inject
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class BehaviorManagementViewModel @Inject constructor(
-    application: Application,
+    @ApplicationContext private val context: Context,
     private val behaviorRepository: BehaviorRepository,
     private val activityRepository: ActivityRepository,
     private val activityManagementRepository: ActivityManagementRepository,
     private val tagRepository: TagRepository,
     private val settingsPrefs: SettingsPrefs,
-) : AndroidViewModel(application) {
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(BehaviorManagementUiState())
     val uiState: StateFlow<BehaviorManagementUiState> = _uiState.asStateFlow()
 
     val activityGroups = activityRepository.getAllGroups()
-        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val tagCategories = tagRepository.getDistinctCategories()
-        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val allActivities = activityRepository.getAllActive()
-        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val allTags = tagRepository.getAllActive()
-        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val activityLastUsedMap = behaviorRepository.getAllActivityLastUsed()
-        .stateIn(viewModelScope, SharingStarted.Lazily, emptyMap())
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
 
     val tagLastUsedMap = behaviorRepository.getAllTagLastUsed()
-        .stateIn(viewModelScope, SharingStarted.Lazily, emptyMap())
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
 
     val tagCategoryOrder = settingsPrefs.getSavedTagCategoriesOrder()
-        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     init {
         observeBehaviors()
@@ -246,12 +248,12 @@ class BehaviorManagementViewModel @Inject constructor(
     fun exportToJson(uri: Uri, json: String) {
         viewModelScope.launch {
             try {
-                val context = getApplication<Application>()
                 context.contentResolver.openOutputStream(uri)?.use { os ->
                     os.write(json.toByteArray())
                     os.flush()
                 }
-            } catch (_: Exception) {
+            } catch (e: Exception) {
+                Log.e("BehaviorMgmt", "Export failed", e)
             }
         }
     }
@@ -259,7 +261,6 @@ class BehaviorManagementViewModel @Inject constructor(
     fun importFromJson(uri: Uri) {
         viewModelScope.launch {
             try {
-                val context = getApplication<Application>()
                 val json = context.contentResolver.openInputStream(uri)?.bufferedReader()?.readText() ?: return@launch
                 val data = JsonImporter.parse(json)
                 val localActivities = allActivities.value
@@ -267,7 +268,8 @@ class BehaviorManagementViewModel @Inject constructor(
                 val existingBehaviors = _uiState.value.behaviors.map { it.behavior }
                 val preview = JsonImporter.analyzeDuplicates(data, localActivities, localTags, existingBehaviors)
                 _uiState.update { it.copy(importPreview = preview, importData = data) }
-            } catch (_: Exception) {
+            } catch (e: Exception) {
+                Log.e("BehaviorMgmt", "Import failed", e)
             }
         }
     }
