@@ -114,7 +114,7 @@ internal fun ActiveCard(
             ActiveCardContent(
                 cell = cell,
                 durationText = durationText,
-                contentColor = containerColor,
+                contentColor = contentColor,
                 effectivePadding = effectivePadding,
                 cardHeight = cardHeight,
                 onComplete = onComplete,

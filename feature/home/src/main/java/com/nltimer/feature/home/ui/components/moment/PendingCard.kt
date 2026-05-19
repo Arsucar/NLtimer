@@ -80,7 +80,7 @@ internal fun PendingCard(
             PendingCardContent(
                 cell = cell,
                 estimatedText = estimatedText,
-                contentColor = containerColor,
+                contentColor = contentColor,
                 effectivePadding = effectivePadding,
                 cardHeight = cardHeight,
                 onStart = onStart,

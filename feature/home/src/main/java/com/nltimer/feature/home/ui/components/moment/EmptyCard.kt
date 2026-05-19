@@ -68,7 +68,7 @@ internal fun EmptyCard(
             shape = cardShape,
         ) {
             EmptyCardContent(
-                contentColor = containerColor,
+                contentColor = contentColor,
                 effectivePadding = effectivePadding,
                 cardHeight = cardHeight,
             )

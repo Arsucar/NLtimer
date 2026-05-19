@@ -3,12 +3,12 @@ package com.nltimer.feature.home.ui.components.moment
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import com.nltimer.core.data.model.FocusCardConfig
 import com.nltimer.core.data.model.FocusCardCornerStyle
 import com.nltimer.core.data.model.FocusCardShadowStyle
 import com.nltimer.core.designsystem.theme.ShapeTokens
 import com.nltimer.core.designsystem.theme.styledCorner
-
 @Composable
 internal fun FocusCardConfig.resolvedCornerDp(): Float = when (cornerStyle) {
     FocusCardCornerStyle.NONE -> 0f
@@ -32,6 +32,15 @@ internal fun FocusCardConfig.resolvedContainerColor(): Color {
 
 @Composable
 internal fun FocusCardConfig.resolvedContentColor(): Color {
-    return themeColor?.let { Color(it) }
-        ?: MaterialTheme.colorScheme.onPrimaryContainer
+    return themeColor?.let { rawColor ->
+        // 1. Wrap the primitive color in a Compose Color object first
+        val composeColor = Color(rawColor) 
+        
+        // 2. Now you can safely call .luminance() on it
+        if (composeColor.luminance() > 0.5f) {
+            Color(0xFF1B1B1B) // 亮背景用深色字
+        } else {
+            Color(0xFFF5F5F5) // 暗背景用浅色字
+        }
+    } ?: MaterialTheme.colorScheme.onPrimaryContainer
 }
