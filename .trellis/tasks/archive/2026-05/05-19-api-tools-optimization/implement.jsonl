@@ -1,0 +1,3 @@
+{"file": "docs/agent/03-module-map.md", "reason": "Module→class→file mapping for locating tool, repository, model classes"}
+{"file": "docs/agent/04-patterns.md", "reason": "Design patterns and code conventions (Hilt multibinding, sealed results, repository pattern)"}
+{"file": "docs/agent/05-data-model.md", "reason": "Data model reference for Behavior, Activity, Tag, BehaviorWithDetails"}

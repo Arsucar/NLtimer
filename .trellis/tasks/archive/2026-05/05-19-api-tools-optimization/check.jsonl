@@ -1,0 +1,2 @@
+{"file": "docs/agent/04-patterns.md", "reason": "Code conventions for reviewing new tool implementations against existing patterns"}
+{"file": "docs/agent/05-data-model.md", "reason": "Data model reference for verifying correct model usage in tools"}
