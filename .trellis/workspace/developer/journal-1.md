@@ -302,3 +302,40 @@ Theme新增topBarHaze字段，SettingsPrefsImpl读写，ThemeSettingsViewModel�
 ### Next Steps
 
 - None - task complete
+
+
+## Session 10: batch-tools: 新增批量工具 + 工具分类重组 + AI 高级配置
+
+**Date**: 2026-05-19
+**Task**: batch-tools: 新增批量工具 + 工具分类重组 + AI 高级配置
+**Branch**: `dev-v5`
+
+### Summary
+
+1) 修复 parseToolArguments JSON 嵌套解析 bug；2) 新增 6 个批量工具（batchCreateTags/batchDeleteActivities/batchCreateActivityCategories/batchCreateTagCategories + 之前已有的 batchCreateActivities/batchDeleteBehaviors）；3) 工具分类从 6 类重组为 7 类（计时/行为/活动/标签/分类/数据/搜索）；4) 新增 ToolConfig 可配置框架，maxToolRounds 和 maxBatchSize 在 AI 高级配置 UI 中可调；5) MAX_BATCH_SIZE 上限从硬编码 20 改为可配置（最大 200）
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `c1e58c8` | (see git log) |
+| `10444d9` | (see git log) |
+| `ade37ec` | (see git log) |
+| `4ac6652` | (see git log) |
+| `1c6c7cc` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
