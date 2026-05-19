@@ -14,12 +14,6 @@ import com.nltimer.core.tools.ToolDocumentation
 import com.nltimer.core.tools.ToolError
 import com.nltimer.core.tools.ToolParameter
 import com.nltimer.core.tools.ToolResult
-import java.time.Instant
-import java.time.LocalDateTime
-import java.time.OffsetDateTime
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
-import java.time.format.DateTimeParseException
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.reflect.KClass
@@ -106,12 +100,12 @@ class RecordBehaviorTool @Inject constructor(
         val tagIds = parseLongList(args["tagIds"])
         val note = (args["note"] as? String)?.takeIf { it.isNotBlank() }
 
-        val startMs = parseIsoToMillis(startStr)
+        val startMs = TimeUtils.parseIsoToMillis(startStr)
             ?: return ToolResult.Error(
                 name,
                 ToolError.ValidationError("startTime 格式错误: $startStr"),
             )
-        val endMs = parseIsoToMillis(endStr)
+        val endMs = TimeUtils.parseIsoToMillis(endStr)
             ?: return ToolResult.Error(
                 name,
                 ToolError.ValidationError("endTime 格式错误: $endStr"),
@@ -145,12 +139,12 @@ class RecordBehaviorTool @Inject constructor(
         // 先把 suspend 查询全做完，再拼 JSON
         val items = overlapping.map { b ->
             val activityName = activityRepository.getById(b.activityId)?.name ?: "(未知活动)"
-            val endStr = b.endTime?.let { formatIso(it) } ?: "(未结束)"
+            val endStr = b.endTime?.let { TimeUtils.formatIso(it) } ?: "(未结束)"
             ConflictItem(
                 id = b.id,
                 activityId = b.activityId,
                 activityName = activityName,
-                startTimeIso = formatIso(b.startTime),
+                startTimeIso = TimeUtils.formatIso(b.startTime),
                 endTimeIso = endStr,
             )
         }
@@ -186,26 +180,6 @@ class RecordBehaviorTool @Inject constructor(
         is Array<*> -> value.mapNotNull { (it as? Number)?.toLong() }
         else -> emptyList()
     }
-
-    private fun parseIsoToMillis(s: String): Long? {
-        return try {
-            OffsetDateTime.parse(s).toInstant().toEpochMilli()
-        } catch (_: DateTimeParseException) {
-            try {
-                LocalDateTime.parse(s)
-                    .atZone(ZoneId.systemDefault())
-                    .toInstant()
-                    .toEpochMilli()
-            } catch (_: DateTimeParseException) {
-                null
-            }
-        }
-    }
-
-    private fun formatIso(epochMillis: Long): String =
-        Instant.ofEpochMilli(epochMillis)
-            .atZone(ZoneId.systemDefault())
-            .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
 
     override fun getDocumentation(): ToolDocumentation = ToolDocumentation(
         name = name,
