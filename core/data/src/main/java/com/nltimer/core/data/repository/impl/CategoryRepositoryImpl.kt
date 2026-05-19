@@ -32,8 +32,10 @@ class CategoryRepositoryImpl @Inject constructor(
         }
 
     override suspend fun addActivityCategory(name: String) {
-        val maxOrder = groupDao.getMaxSortOrder() ?: -1
-        groupDao.insert(ActivityGroupEntity(name = name, sortOrder = maxOrder + 1))
+        database.withTransaction {
+            val maxOrder = groupDao.getMaxSortOrder() ?: -1
+            groupDao.insert(ActivityGroupEntity(name = name, sortOrder = maxOrder + 1))
+        }
     }
 
     override suspend fun renameActivityCategory(oldName: String, newName: String, parent: String?) {

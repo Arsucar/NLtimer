@@ -93,3 +93,54 @@
 | BehaviorManagementScreen | `feature/behavior_management/.../ui/` | 行为管理页 |
 | JsonExporter | `feature/behavior_management/.../export/` | JSON 导出 |
 | JsonImporter | `feature/behavior_management/.../` | JSON 导入 |
+
+## feature:categories
+
+| 关键类 | 路径 | 职责 |
+|--------|------|------|
+| CategoriesRoute | `feature/categories/.../ui/` | 分类页路由 |
+| CategoriesScreen | `feature/categories/.../ui/` | 分类页 UI |
+| CategoriesViewModel | `feature/categories/.../viewmodel/` | 分类状态管理 |
+
+## feature:tag_management
+
+| 关键类 | 路径 | 职责 |
+|--------|------|------|
+| TagManagementRoute | `feature/tag_management/.../ui/` | 标签管理路由 |
+| TagManagementScreen | `feature/tag_management/.../ui/` | 标签管理页 |
+| TagManagementViewModel | `feature/tag_management/.../viewmodel/` | 标签状态管理 |
+
+## feature:management_activities
+
+| 关键类 | 路径 | 职责 |
+|--------|------|------|
+| ActivityManagementRoute | `feature/management_activities/.../ui/` | 活动管理路由 |
+| ActivityManagementScreen | `feature/management_activities/.../ui/` | 活动管理页 |
+| ActivityManagementViewModel | `feature/management_activities/.../viewmodel/` | 活动状态管理 |
+
+## feature:stats
+
+| 关键类 | 路径 | 职责 |
+|--------|------|------|
+| StatsScreen | `feature/stats/.../ui/` | 统计页（占位） |
+
+## feature:sub
+
+| 关键类 | 路径 | 职责 |
+|--------|------|------|
+| SubScreen | `feature/sub/.../ui/` | 订阅页（占位） |
+
+## feature:debug
+
+| 关键类 | 路径 | 职责 |
+|--------|------|------|
+| DebugRoute | `feature/debug/.../` | Debug 入口 |
+| DebugPage | `feature/debug/.../ui/` | Debug 主页 |
+| ToolConsoleViewModel | `feature/debug/.../tools/` | 工具控制台 |
+
+## core:debugui
+
+| 关键类 | 路径 | 职责 |
+|--------|------|------|
+| FieldDetailDialog | `core/debugui/.../` | 字段详情对话框 |
+| FieldInfo | `core/debugui/.../` | 字段信息模型 |

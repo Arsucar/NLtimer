@@ -50,6 +50,8 @@ import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.model.TimelineLayoutStyle
 import com.nltimer.core.data.util.formatDuration
 import com.nltimer.core.data.util.hhmmFormatter
+import com.nltimer.core.designsystem.component.DayDividerRow
+import com.nltimer.core.designsystem.component.LoadingMoreIndicator
 import com.nltimer.core.designsystem.icon.IconRenderer
 import com.nltimer.core.designsystem.theme.BorderTokens
 import com.nltimer.core.designsystem.theme.LocalImmersiveTopPadding
@@ -163,7 +165,7 @@ fun TimelineReverseView(
                 }
             ) { item ->
                 when (item) {
-                    is TimelineDisplayItem.Divider -> DayDividerRow(label = item.label)
+                    is TimelineDisplayItem.Divider -> DayDividerRow(label = item.label, modifier = Modifier.padding(vertical = 8.dp))
                     is TimelineDisplayItem.BehaviorRow -> TimelineBehaviorItem(
                         behavior = item.cell,
                         timeFormatter = timeFormatter,
@@ -228,30 +230,6 @@ private fun buildTimelineItemsReversed(items: List<HomeListItem>): List<Timeline
         }
     }
     return result
-}
-
-@Composable
-private fun DayDividerRow(label: String) {
-    Box(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-    }
-}
-
-@Composable
-private fun LoadingMoreIndicator() {
-    Box(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
-        contentAlignment = Alignment.Center,
-    ) {
-        CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
-    }
 }
 
 @Composable

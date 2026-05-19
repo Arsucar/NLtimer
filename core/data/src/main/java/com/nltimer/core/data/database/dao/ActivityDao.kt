@@ -37,6 +37,9 @@ interface ActivityDao {
     @Query("SELECT * FROM activities WHERE id = :id")
     suspend fun getById(id: Long): ActivityEntity?
 
+    @Query("SELECT * FROM activities WHERE id IN (:ids)")
+    suspend fun getByIds(ids: List<Long>): List<ActivityEntity>
+
     @Query("SELECT * FROM activities WHERE name = :name LIMIT 1")
     suspend fun getByName(name: String): ActivityEntity?
 

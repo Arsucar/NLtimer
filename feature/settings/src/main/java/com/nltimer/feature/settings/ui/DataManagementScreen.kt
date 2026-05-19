@@ -95,7 +95,6 @@ fun DataManagementRoute(
         DataManagementScreen(
             isExporting = uiState.isExporting,
             isImporting = uiState.isImporting,
-            showImportDialog = uiState.pendingImportData != null,
             onExport = { scope -> viewModel.exportData(scope) },
             onImport = { scope ->
                 viewModel.triggerImport(scope)
@@ -103,8 +102,6 @@ fun DataManagementRoute(
             },
             onExportToClipboard = { scope -> viewModel.exportToClipboard(context, scope) },
             onImportFromClipboard = { scope -> viewModel.importFromClipboard(context, scope) },
-            onConfirmImport = { mode -> viewModel.confirmImport(mode) },
-            onDismissImportDialog = { viewModel.dismissImportDialog() },
             onNavigateToBehaviorManagement = onNavigateToBehaviorManagement,
             modifier = Modifier.padding(padding),
         )
@@ -115,13 +112,10 @@ fun DataManagementRoute(
 fun DataManagementScreen(
     isExporting: Boolean,
     isImporting: Boolean,
-    showImportDialog: Boolean,
     onExport: (ExportScope) -> Unit,
     onImport: (ImportScope) -> Unit,
     onExportToClipboard: (ExportScope) -> Unit,
     onImportFromClipboard: (ImportScope) -> Unit,
-    onConfirmImport: (ImportMode) -> Unit,
-    onDismissImportDialog: () -> Unit,
     onNavigateToBehaviorManagement: () -> Unit,
     modifier: Modifier = Modifier,
 ) {

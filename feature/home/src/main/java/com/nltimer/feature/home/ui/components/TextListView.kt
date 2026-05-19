@@ -16,13 +16,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -53,6 +51,8 @@ import com.nltimer.core.data.model.TextListLayoutStyle
 import com.nltimer.core.data.model.TagDisplayConfig
 import com.nltimer.core.data.util.formatDuration
 import com.nltimer.core.data.util.hhmmFormatter
+import com.nltimer.core.designsystem.component.DayDividerRow
+import com.nltimer.core.designsystem.component.LoadingMoreIndicator
 import com.nltimer.core.designsystem.theme.LocalImmersiveTopPadding
 import com.nltimer.core.designsystem.theme.ShapeTokens
 import com.nltimer.core.designsystem.theme.styledCorner
@@ -177,7 +177,7 @@ fun TextListView(
                     }
                 ) { item ->
                     when (item) {
-                        is HomeListItem.DayDivider -> TextListDayDivider(label = item.label)
+                        is HomeListItem.DayDivider -> DayDividerRow(label = item.label)
                         is HomeListItem.CellItem -> {
                             if (isTable) TextListTableRow(
                                 cell = item.cell,
@@ -196,7 +196,7 @@ fun TextListView(
                         }
                     }
                 }
-                if (isLoadingMore) item { TextListLoadingIndicator() }
+                if (isLoadingMore) item { LoadingMoreIndicator() }
             }
         }
     }
@@ -373,33 +373,6 @@ private fun TextListTagRow(tags: List<TagUiState>, tagDisplayConfig: TagDisplayC
         tags.forEach { tag ->
             TagChipSmall(tag.name, tagDisplayConfig = tagDisplayConfig)
         }
-    }
-}
-
-@Composable
-private fun TextListDayDivider(label: String) {
-    Box(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-    }
-}
-
-@Composable
-private fun TextListLoadingIndicator() {
-    Box(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
-        contentAlignment = Alignment.Center,
-    ) {
-        CircularProgressIndicator(
-            modifier = Modifier.size(24.dp),
-            strokeWidth = 2.dp,
-        )
     }
 }
 

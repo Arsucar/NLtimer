@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nltimer.core.behaviorui.sheet.AddBehaviorSheet
+import com.nltimer.core.designsystem.component.DayDividerRow
 import com.nltimer.core.designsystem.component.EmptyStateView
 import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.model.BehaviorWithDetails
@@ -48,7 +49,6 @@ import java.util.Locale
 @Composable
 fun BehaviorManagementScreen(
     viewModel: BehaviorManagementViewModel,
-    onNavigateBack: () -> Unit,
     onExport: () -> Unit,
     onImport: () -> Unit,
     modifier: Modifier = Modifier,
@@ -173,7 +173,10 @@ fun BehaviorManagementScreen(
                             contentType = { if (it is BehaviorManagementDisplayItem.DayDivider) "day" else "behavior" },
                         ) { displayItem ->
                             when (displayItem) {
-                                is BehaviorManagementDisplayItem.DayDivider -> DayDividerRow(displayItem.label)
+                                is BehaviorManagementDisplayItem.DayDivider -> DayDividerRow(
+                                    displayItem.label,
+                                    modifier = Modifier.background(MaterialTheme.colorScheme.surface).padding(vertical = 8.dp),
+                                )
                                 is BehaviorManagementDisplayItem.BehaviorRow -> {
                                     val item = displayItem.behaviorWithDetails
                                     BehaviorListItem(
@@ -199,7 +202,10 @@ fun BehaviorManagementScreen(
                             contentType = { if (it is BehaviorManagementDisplayItem.DayDivider) "day" else "behavior" },
                         ) { displayItem ->
                             when (displayItem) {
-                                is BehaviorManagementDisplayItem.DayDivider -> DayDividerRow(displayItem.label)
+                                is BehaviorManagementDisplayItem.DayDivider -> DayDividerRow(
+                                    displayItem.label,
+                                    modifier = Modifier.background(MaterialTheme.colorScheme.surface).padding(vertical = 8.dp),
+                                )
                                 is BehaviorManagementDisplayItem.BehaviorRow -> {
                                     val item = displayItem.behaviorWithDetails
                                     BehaviorTimelineItem(
@@ -320,23 +326,6 @@ private fun buildDisplayItems(
         )
     }
     return result
-}
-
-@Composable
-private fun DayDividerRow(label: String) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.surface)
-            .padding(vertical = 8.dp),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-    }
 }
 
 @Composable

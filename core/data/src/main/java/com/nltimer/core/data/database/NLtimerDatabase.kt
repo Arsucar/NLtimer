@@ -32,7 +32,7 @@ import com.nltimer.core.data.database.migration.MIGRATION_9_10
         BehaviorTagCrossRefEntity::class,
     ],
     version = 12,
-    exportSchema = false,
+    exportSchema = true,
 )
 abstract class NLtimerDatabase : RoomDatabase() {
     abstract fun activityDao(): ActivityDao

@@ -86,7 +86,6 @@ private fun applyDragShiftOffsets(
 @Composable
 fun TagManagementScreen(
     viewModel: TagManagementViewModel,
-    onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()

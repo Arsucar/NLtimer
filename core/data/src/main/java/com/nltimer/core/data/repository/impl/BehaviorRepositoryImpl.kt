@@ -39,6 +39,10 @@ class BehaviorRepositoryImpl @Inject constructor(
     private val database: NLtimerDatabase,
 ) : BehaviorRepository {
 
+    private companion object {
+        const val TAG = "BehaviorRepository"
+    }
+
     override fun getByDayRange(dayStart: Long, dayEnd: Long): Flow<List<Behavior>> =
         behaviorDao.getByDayRange(dayStart, dayEnd).mapList { Behavior.fromEntity(it) }
 
@@ -156,8 +160,10 @@ class BehaviorRepositoryImpl @Inject constructor(
     }
 
     override suspend fun reorderGoals(orderedIds: List<Long>) {
-        orderedIds.forEachIndexed { index, id ->
-            behaviorDao.setSequence(id, index)
+        database.withTransaction {
+            orderedIds.forEachIndexed { index, id ->
+                behaviorDao.setSequence(id, index)
+            }
         }
     }
 
@@ -227,12 +233,18 @@ class BehaviorRepositoryImpl @Inject constructor(
     override fun getBehaviorsWithDetailsByTimeRange(startTime: Long, endTime: Long): Flow<List<BehaviorWithDetails>> =
         behaviorDao.getByTimeRange(startTime, endTime).map { entities ->
             assembleBehaviorWithDetailsList(entities)
-        }.catch { emit(emptyList()) }
+        }.catch { e ->
+            android.util.Log.e(TAG, "Failed to load behaviors by time range", e)
+            emit(emptyList())
+        }
 
     override fun getBehaviorsWithDetailsOverlappingTimeRange(startTime: Long, endTime: Long): Flow<List<BehaviorWithDetails>> =
         behaviorDao.getByOverlappingTimeRange(startTime, endTime).map { entities ->
             assembleBehaviorWithDetailsList(entities)
-        }.catch { emit(emptyList()) }
+        }.catch { e ->
+            android.util.Log.e(TAG, "Failed to load behaviors by overlapping time range", e)
+            emit(emptyList())
+        }
 
     override suspend fun getBehaviorsWithDetailsByTimeRangeSync(startTime: Long, endTime: Long): List<BehaviorWithDetails> {
         val entities = behaviorDao.getByTimeRangeSync(startTime, endTime)
@@ -274,8 +286,10 @@ class BehaviorRepositoryImpl @Inject constructor(
                     )
                 }
             }
+        val activityIds = entities.map { it.activityId }.distinct()
+        val activityMap = activityDao.getByIds(activityIds).associateBy { it.id }
         return entities.mapNotNull { entity ->
-            val activityEntity = activityDao.getById(entity.activityId) ?: return@mapNotNull null
+            val activityEntity = activityMap[entity.activityId] ?: return@mapNotNull null
             val behavior = Behavior.fromEntity(entity)
             val activity = Activity.fromEntity(activityEntity)
             val tags = tagsMap[entity.id] ?: emptyList()

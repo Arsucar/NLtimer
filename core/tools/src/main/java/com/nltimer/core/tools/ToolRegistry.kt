@@ -1,6 +1,7 @@
 package com.nltimer.core.tools
 
 import android.util.Log
+import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.withTimeoutOrNull
@@ -18,7 +19,7 @@ class ToolRegistry @Inject constructor(
     initialTools: @JvmSuppressWildcards Set<ToolDefinition>,
 ) {
 
-    private val tools: MutableMap<String, ToolDefinition> = mutableMapOf()
+    private val tools: MutableMap<String, ToolDefinition> = ConcurrentHashMap()
 
     init {
         initialTools.forEach(::register)

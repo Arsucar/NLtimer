@@ -120,9 +120,9 @@ class HomeViewModel @Inject constructor(
     val focusCardConfig: StateFlow<FocusCardConfig> = settingsPrefs.getFocusCardConfigFlow()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(HomeUiStateBuilder.STATE_TIMEOUT_MS), FocusCardConfig())
 
-    private val today = LocalDate.now()
+    private fun today(): LocalDate = LocalDate.now()
 
-    private val _loadedEarliest = MutableStateFlow(today)
+    private val _loadedEarliest = MutableStateFlow(LocalDate.now())
     private val _earliestRecord = MutableStateFlow<LocalDate?>(null)
     private val _isLoadingMore = MutableStateFlow(false)
 
@@ -182,7 +182,7 @@ class HomeViewModel @Inject constructor(
                 _loadedEarliest.flatMapLatest { earliest ->
                     behaviorRepository.getHomeBehaviors(
                         earliest.startOfDayMillis(),
-                        today.endOfDayMillis()
+                        today().endOfDayMillis()
                     )
                 },
                 homeLayoutConfig,
@@ -235,7 +235,7 @@ class HomeViewModel @Inject constructor(
             tagsByBehaviorId = tagsByBehaviorId,
             now = now,
             currentTimeMs = clockService.currentTimeMillis(),
-            today = today,
+            today = today(),
             gridColumns = homeLayoutConfig.value.grid.columns,
         )
     }

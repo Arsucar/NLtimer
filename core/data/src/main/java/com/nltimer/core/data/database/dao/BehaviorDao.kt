@@ -256,7 +256,7 @@ interface BehaviorDao {
         WHERE startTime < :rangeEnd
           AND (
               endTime IS NULL
-              OR endTime > :rangeStart
+              OR endTime >= :rangeStart
           )
           AND status != 'pending'
           AND startTime > 0

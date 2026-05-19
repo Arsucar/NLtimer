@@ -198,7 +198,7 @@ private fun FilterChipDropdown(
             trailingIcon = {
                 Icon(
                     imageVector = Icons.Default.ArrowDropDown,
-                    contentDescription = null,
+                    contentDescription = "展开筛选",
                     modifier = Modifier.size(FilterChipDefaults.IconSize),
                 )
             },
@@ -226,7 +226,7 @@ private fun SearchChip(
             leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.Search,
-                    contentDescription = null,
+                    contentDescription = "搜索",
                     modifier = Modifier.size(AssistChipDefaults.IconSize),
                 )
             },

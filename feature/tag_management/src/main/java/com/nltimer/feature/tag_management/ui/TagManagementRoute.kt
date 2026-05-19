@@ -19,6 +19,5 @@ fun TagManagementRoute(
 ) {
     TagManagementScreen(
         viewModel = viewModel,
-        onNavigateBack = onNavigateBack,
     )
 }

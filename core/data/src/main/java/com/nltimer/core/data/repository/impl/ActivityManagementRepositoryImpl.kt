@@ -78,9 +78,9 @@ class ActivityManagementRepositoryImpl @Inject constructor(
     override suspend fun moveActivityToGroup(activityId: Long, groupId: Long?) =
         activityDao.moveToGroup(activityId, groupId)
 
-    override suspend fun addGroup(name: String): Long {
+    override suspend fun addGroup(name: String): Long = database.withTransaction {
         val maxOrder = groupDao.getMaxSortOrder()
-        return groupDao.insert(
+        groupDao.insert(
             ActivityGroupEntity(name = name, sortOrder = (maxOrder ?: -1) + 1)
         )
     }

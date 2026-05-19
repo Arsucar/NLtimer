@@ -7,12 +7,7 @@
 # === Hilt / Dagger ===
 -keep class dagger.hilt.** { *; }
 -keep class javax.inject.** { *; }
--keep class * extends dagger.hilt.android.internal.managers.ViewComponentManager$FragmentContextWrapper { *; }
 -dontwarn dagger.hilt.**
-
-# Keep Hilt generated classes
--keep,allowobfuscation,allowshrinking class com.nltimer.**_HiltModules { *; }
--keep,allowobfuscation,allowshrinking class * extends dagger.hilt.android.internal.managers.ViewComponentManager$FragmentContextWrapper { *; }
 
 # === Room ===
 -keep class com.nltimer.core.data.database.entity.** { *; }
@@ -32,24 +27,6 @@
 # Keep data classes used by Compose and potential serialization
 -keep class com.nltimer.core.data.model.** { *; }
 -keep class com.nltimer.feature.**.model.** { *; }
-
-# === Compose ===
--keep class androidx.compose.** { *; }
--dontwarn androidx.compose.**
-
-# Keep Compose tooling metadata
--keep class * extends androidx.compose.runtime.Composable { *; }
-
-# === MaterialKolor ===
--keep class com.materialkolor.** { *; }
--dontwarn com.materialkolor.**
-
-# === Navigation ===
--keep class androidx.navigation.** { *; }
-
-# === Okio ===
--dontwarn okio.**
--keep class okio.** { *; }
 
 # === App-specific keep rules ===
 -keep class com.nltimer.app.NLtimerApplication { *; }

@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
@@ -186,7 +187,7 @@ class AiInterViewModel @Inject constructor(
                     }
                 },
                 onFailure = { e ->
-                    _modelsError.value = e.message ?: (e::class.simpleName ?: "未知错误") + "（无错误描述）"
+                    _modelsError.value = e.message ?: ("${e::class.simpleName ?: "未知错误"}（无错误描述）")
                     _availableModels.value = emptyList()
                 }
             )
@@ -205,7 +206,7 @@ class AiInterViewModel @Inject constructor(
         _chatError.value = null
 
         val userMessage = ChatMessage(role = "user", content = text)
-        _chatMessages.value = _chatMessages.value + userMessage
+        _chatMessages.update { it + userMessage }
 
         val cfg = config.value
         val toolDefs = toolRegistry.getAllTools()
@@ -336,12 +337,12 @@ class AiInterViewModel @Inject constructor(
 
                 if (wasCancelled) {
                     if (finalContentStr.isNotEmpty() || finalReasoningStr.isNotEmpty() || finalToolCalls.isNotEmpty()) {
-                        _chatMessages.value = _chatMessages.value + ChatMessage(
+                        _chatMessages.update { it + ChatMessage(
                             role = "assistant",
                             content = if (finalContentStr.isNotEmpty()) "$finalContentStr\n\n(已中断)" else "(已中断)",
                             reasoning = finalReasoningStr,
                             toolCalls = finalToolCalls,
-                        )
+                        ) }
                     }
                     _streamingState.value = StreamingState()
                     _isSending.value = false

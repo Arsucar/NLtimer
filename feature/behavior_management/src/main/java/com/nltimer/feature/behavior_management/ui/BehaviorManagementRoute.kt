@@ -45,7 +45,6 @@ fun BehaviorManagementRoute(
 
     BehaviorManagementScreen(
         viewModel = viewModel,
-        onNavigateBack = onNavigateBack,
         onExport = {
             exportLauncher.launch("nltimer_behaviors_${System.currentTimeMillis()}.json")
         },

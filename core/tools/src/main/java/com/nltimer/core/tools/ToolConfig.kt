@@ -11,5 +11,6 @@ import javax.inject.Singleton
 @Singleton
 class ToolConfig @Inject constructor() {
     /** 批量工具单次最大条数，范围 1–200，默认 20 */
+    @Volatile
     var maxBatchSize: Int = 20
 }

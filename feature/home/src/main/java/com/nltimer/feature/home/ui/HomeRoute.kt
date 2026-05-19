@@ -58,7 +58,6 @@ fun HomeRoute(
     val onCompleteBehavior = remember(viewModel) {
         { id: Long -> viewModel.completeBehavior(id) }
     }
-    val onToggleIdleMode = remember(viewModel) { { viewModel.toggleIdleMode() } }
     val onStartNextPending = remember(viewModel) { { viewModel.startNextPending() } }
     val onStartBehavior = remember(viewModel) { { id: Long -> viewModel.startBehavior(id) } }
     val onAddActivity = remember(viewModel) {
@@ -110,7 +109,6 @@ fun HomeRoute(
         onAddBehavior = onAddBehavior,
         onDismissSheet = onDismissSheet,
         onCompleteBehavior = onCompleteBehavior,
-        onToggleIdleMode = onToggleIdleMode,
         onStartNextPending = onStartNextPending,
         onStartBehavior = onStartBehavior,
         onAddActivity = onAddActivity,

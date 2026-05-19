@@ -27,6 +27,8 @@
 | archivedAt | Long? | 归档时间 |
 | color | Long? | 自定义颜色 |
 | usageCount | Int | 使用次数 |
+| createdAt | Long | 创建时间 |
+| updatedAt | Long | 更新时间 |
 
 ### ActivityGroupEntity
 
@@ -35,6 +37,9 @@
 | id | Long (PK, auto) | 主键 |
 | name | String | 分组名称 |
 | sortOrder | Int | 排序 |
+| isArchived | Boolean | 是否归档 |
+| archivedAt | Long? | 归档时间 |
+| createdAt | Long | 创建时间 |
 
 ### TagEntity
 
@@ -69,12 +74,26 @@
 | achievementLevel | Int? | 成就等级 |
 | wasPlanned | Boolean | 是否为计划行为 |
 
+### ActivityTagBindingEntity
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| activityId | Long (FK) | → activities.id |
+| tagId | Long (FK) | → tags.id |
+
+### BehaviorTagCrossRefEntity
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| behaviorId | Long (FK) | → behaviors.id |
+| tagId | Long (FK) | → tags.id |
+
 ### 关系表
 
 | 表 | 字段 | 关系 |
 |----|------|------|
-| activity_tag_binding | activityId, tagId | Activity ↔ Tag (M:N) |
-| behavior_tag_cross_ref | behaviorId, tagId | Behavior ↔ Tag (M:N) |
+| activity_tag_binding | activityId (FK), tagId (FK) | Activity ↔ Tag (M:N) |
+| behavior_tag_cross_ref | behaviorId (FK), tagId (FK) | Behavior ↔ Tag (M:N) |
 
 ## BehaviorNature 枚举
 

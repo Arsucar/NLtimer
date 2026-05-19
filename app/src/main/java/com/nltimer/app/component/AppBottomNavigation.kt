@@ -103,7 +103,7 @@ fun AppBottomNavigation(
                         ) {
                             Icon(
                                 imageVector = item.icon,
-                                contentDescription = null,
+                                contentDescription = item.label,
                             )
                         }
                     },
@@ -116,7 +116,7 @@ fun AppBottomNavigation(
                     icon = {
                         Icon(
                             imageVector = item.icon,
-                            contentDescription = null,
+                            contentDescription = item.label,
                         )
                     },
                     label = { Text(item.label) },

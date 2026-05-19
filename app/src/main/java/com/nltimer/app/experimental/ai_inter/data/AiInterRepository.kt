@@ -58,7 +58,7 @@ class AiInterRepository @Inject constructor(
                 promptChat = preferences[PROMPT_CHAT] ?: "",
                 promptSystem = preferences[PROMPT_SYSTEM] ?: "",
                 maxToolRounds = preferences[MAX_TOOL_ROUNDS] ?: 5,
-                maxBatchSize = preferences[MAX_BATCH_SIZE] ?: 20,
+                maxBatchSize = preferences[MAX_BATCH_SIZE] ?: 50,
             )
             val updated = update(current)
             preferences[API_ADDRESS] = updated.apiAddress

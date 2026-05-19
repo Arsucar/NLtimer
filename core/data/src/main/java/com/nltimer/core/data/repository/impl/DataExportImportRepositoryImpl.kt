@@ -244,6 +244,9 @@ class DataExportImportRepositoryImpl @Inject constructor(
         val groups = activityGroupDao.getAllSync()
         val groupNameToId = groups.associate { it.name to it.id }
 
+        val tags = tagDao.getAllDistinctSync()
+        val tagNameToId = tags.associate { it.name to it.id }
+
         val activityTagBindings = mutableListOf<ActivityTagBindingEntity>()
         var imported = 0
         for (activity in activities) {
@@ -254,8 +257,6 @@ class DataExportImportRepositoryImpl @Inject constructor(
                 activityDao.update(merged)
             } else {
                 val id = activityDao.insert(activity.toEntity(groupId))
-                val tags = tagDao.getAllDistinctSync()
-                val tagNameToId = tags.associate { it.name to it.id }
                 val tagIds = activity.tagNames.mapNotNull { tagNameToId[it] }
                 for (tagId in tagIds) {
                     activityTagBindings.add(ActivityTagBindingEntity(activityId = id, tagId = tagId))
