@@ -122,20 +122,22 @@ object AiChatToolHelper {
         return try {
             val element = json.parseToJsonElement(argsStr)
             if (element !is JsonObject) return emptyMap()
-            element.mapValues { (_, v) ->
-                when (v) {
-                    is JsonPrimitive -> when {
-                        v.isString -> v.content
-                        v.content == "true" -> true
-                        v.content == "false" -> false
-                        else -> v.content.toLongOrNull() ?: v.content.toDoubleOrNull() ?: v.content
-                    }
-                    else -> v.toString()
-                }
-            }
+            element.mapValues { (_, v) -> convertJsonElement(v) }
         } catch (_: Exception) {
             emptyMap()
         }
+    }
+
+    private fun convertJsonElement(element: Any?): Any? = when (element) {
+        is JsonPrimitive -> when {
+            element.isString -> element.content
+            element.content == "true" -> true
+            element.content == "false" -> false
+            else -> element.content.toLongOrNull() ?: element.content.toDoubleOrNull() ?: element.content
+        }
+        is JsonArray -> element.map { convertJsonElement(it) }
+        is JsonObject -> element.mapValues { (_, v) -> convertJsonElement(v) }
+        else -> element?.toString()
     }
 
     fun serializeToolCalls(records: List<ToolCallRecord>): String {
