@@ -28,4 +28,6 @@ interface DataExportImportRepository {
     suspend fun importActivities(data: ExportData, mode: ImportMode): ImportResult
     suspend fun importTags(data: ExportData, mode: ImportMode): ImportResult
     suspend fun importCategories(data: ExportData, mode: ImportMode): ImportResult
+
+    suspend fun exportByDateRange(startMs: Long, endMs: Long): ExportData
 }

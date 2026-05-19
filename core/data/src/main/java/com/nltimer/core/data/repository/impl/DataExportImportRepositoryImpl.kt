@@ -326,6 +326,36 @@ class DataExportImportRepositoryImpl @Inject constructor(
         return ImportResult.Success(tagsImported = tags.size)
     }
 
+    override suspend fun exportByDateRange(startMs: Long, endMs: Long): ExportData {
+        val behaviors = behaviorDao.getByTimeRangeSync(startMs, endMs)
+        val activityIds = behaviors.map { it.activityId }.toSet()
+        val groups = activityGroupDao.getAllSync()
+        val groupIdToName = groups.associate { it.id to it.name }
+        val activities = activityIds.mapNotNull { activityDao.getById(it) }
+        val involvedGroupIds = activities.mapNotNull { it.groupId }.toSet()
+        val involvedGroups = groups.filter { it.id in involvedGroupIds }
+
+        val activityTagBindings = behaviorDao.getAllActivityTagBindingsSync()
+            .filter { it.activityId in activityIds }
+        val tagIdsFromActivities = activityTagBindings.map { it.tagId }.toMutableSet()
+        val behaviorTagRows = behaviorDao.getTagsForBehaviorsSync(behaviors.map { it.id })
+        tagIdsFromActivities.addAll(behaviorTagRows.map { it.id })
+        val allTagEntities = tagDao.getAllDistinctSync()
+        val involvedTags = allTagEntities.filter { it.id in tagIdsFromActivities }
+        val tagIdToName = involvedTags.associate { it.id to it.name }
+        val activityIdToTagNames = activityTagBindings.groupBy { it.activityId }
+            .mapValues { (_, bindings) -> bindings.mapNotNull { tagIdToName[it.tagId] } }
+
+        val categories = tagDao.getDistinctCategoriesSync()
+
+        return ExportData(
+            activities = activities.map { it.toExported(groupIdToName, activityIdToTagNames) },
+            activityGroups = involvedGroups.map { it.toExported() },
+            tags = involvedTags.map { it.toExported() },
+            tagCategories = categories,
+        )
+    }
+
     private suspend fun importCategoriesSmart(categories: List<String>): ImportResult {
         val existing = tagDao.getDistinctCategoriesSync().toSet()
         var imported = 0

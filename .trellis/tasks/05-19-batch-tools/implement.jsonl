@@ -1,0 +1,4 @@
+{"_example": "Fill with {\"file\": \"<path>\", \"reason\": \"<why>\"}. Put spec/research files only — no code paths. Run `python .trellis/scripts/get_context.py --mode packages` to list available specs. Delete this line once real entries are added."}
+{"file": "docs/agent/04-patterns.md", "reason": "设计模式与代码约定——工具注册、命名、DI模块模式"}
+{"file": "docs/agent/05-data-model.md", "reason": "数据模型速查——Entity字段、关系表结构、BehaviorNature枚举"}
+{"file": "docs/agent/03-module-map.md", "reason": "模块映射——关键类路径定位"}

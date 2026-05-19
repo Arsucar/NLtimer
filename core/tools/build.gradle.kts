@@ -17,6 +17,7 @@ android {
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.serialization.json)
 
     // 数据层 Repository 接口（业务工具调用入口）
     implementation(projects.core.data)

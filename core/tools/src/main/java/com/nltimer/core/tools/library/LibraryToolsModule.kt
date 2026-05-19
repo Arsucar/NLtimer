@@ -40,4 +40,24 @@ abstract class LibraryToolsModule {
     @Binds
     @IntoSet
     abstract fun bindBatchCreateActivitiesTool(impl: BatchCreateActivitiesTool): ToolDefinition
+
+    @Binds
+    @IntoSet
+    abstract fun bindBatchDeleteBehaviorsTool(impl: BatchDeleteBehaviorsTool): ToolDefinition
+
+    @Binds
+    @IntoSet
+    abstract fun bindBulkUpdateActivitiesTool(impl: BulkUpdateActivitiesTool): ToolDefinition
+
+    @Binds
+    @IntoSet
+    abstract fun bindSetBehaviorTagTool(impl: SetBehaviorTagTool): ToolDefinition
+
+    @Binds
+    @IntoSet
+    abstract fun bindExportDataTool(impl: ExportDataTool): ToolDefinition
+
+    @Binds
+    @IntoSet
+    abstract fun bindImportDataTool(impl: ImportDataTool): ToolDefinition
 }
