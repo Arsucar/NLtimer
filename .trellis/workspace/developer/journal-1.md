@@ -236,3 +236,36 @@ Theme新增topBarHaze字段，SettingsPrefsImpl读写，ThemeSettingsViewModel�
 ### Next Steps
 
 - None - task complete
+
+
+## Session 8: 全项目彻夜无人值守优化
+
+**Date**: 2026-05-19
+**Task**: 全项目彻夜无人值守优化
+**Branch**: `dev-v5`
+
+### Summary
+
+11 项重构优化：enum 工具函数提取、SharingStarted 修复、collectAsState 生命周期修复、AndroidViewModel 替换为 DI 注入、SimpleDateFormat 现代化、硬编码颜色修复、AppTopAppBar 去重、AI 模块 AiChatToolHelper 提取。净减 315 行代码，编译通过。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `8fd1b12` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
