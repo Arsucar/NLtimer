@@ -17,6 +17,12 @@ import com.nltimer.core.data.model.FocusCardShadowStyle
 import com.nltimer.core.data.model.HomeLayoutConfig
 import com.nltimer.core.data.model.GridLayoutStyle
 import com.nltimer.core.data.model.LogLayoutStyle
+import com.nltimer.core.data.model.TextListFieldConfig
+import com.nltimer.core.data.model.TextListFieldType
+import com.nltimer.core.data.model.TextListFieldColorMode
+import com.nltimer.core.data.model.TextListColumnMode
+import com.nltimer.core.data.model.TextListLayoutStyle
+import com.nltimer.core.data.model.defaultTextListFieldConfigs
 import com.nltimer.core.data.model.TimelineLayoutStyle
 import com.nltimer.core.data.model.MomentLayoutStyle
 import com.nltimer.core.data.model.SecondsStrategy
@@ -270,6 +276,17 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
             moment = MomentLayoutStyle(
                 cardPadding = prefs[momentCardPaddingKey] ?: 16,
             ),
+            textList = TextListLayoutStyle(
+                rowSpacing = prefs[textListRowSpacingKey] ?: 4,
+                fieldSpacing = prefs[textListFieldSpacingKey] ?: 8,
+                paddingH = prefs[textListPaddingHKey] ?: 12,
+                paddingV = prefs[textListPaddingVKey] ?: 2,
+                globalFontScale = prefs[textListGlobalFontScaleKey] ?: 1f,
+                fieldConfigs = prefs[textListFieldConfigsKey]?.let { parseTextListFieldConfigs(it) }
+                    ?: defaultTextListFieldConfigs(),
+                separator = prefs[textListSeparatorKey] ?: " · ",
+                columnMode = safeValueOf(prefs[textListColumnModeKey] ?: TextListColumnMode.FLOW.name, TextListColumnMode.FLOW),
+            ),
         )
     }
 
@@ -292,6 +309,14 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
             prefs[logBadgePaddingVKey] = config.log.statusBadgePaddingV
             prefs[timelineItemSpacingKey] = config.timeline.itemSpacing
             prefs[momentCardPaddingKey] = config.moment.cardPadding
+            prefs[textListRowSpacingKey] = config.textList.rowSpacing
+            prefs[textListFieldSpacingKey] = config.textList.fieldSpacing
+            prefs[textListPaddingHKey] = config.textList.paddingH
+            prefs[textListPaddingVKey] = config.textList.paddingV
+            prefs[textListGlobalFontScaleKey] = config.textList.globalFontScale
+            prefs[textListFieldConfigsKey] = serializeTextListFieldConfigs(config.textList.fieldConfigs)
+            prefs[textListSeparatorKey] = config.textList.separator
+            prefs[textListColumnModeKey] = config.textList.columnMode.name
         }
     }
 
@@ -368,6 +393,36 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
         )
     }
 
+    private fun serializeTextListFieldConfigs(configs: List<TextListFieldConfig>): String {
+        return configs.joinToString(",") { cfg ->
+            "${cfg.field.name}:${cfg.visible}:${cfg.bold}:${cfg.italic}:${cfg.fontScale}:${cfg.colorMode.name}"
+        }
+    }
+
+    private fun parseTextListFieldConfigs(raw: String): List<TextListFieldConfig> {
+        if (raw.isBlank()) return defaultTextListFieldConfigs()
+        return raw.split(",").mapNotNull { entry ->
+            val parts = entry.split(":")
+            if (parts.size < 5) return@mapNotNull null
+            val field = try {
+                enumValueOf<TextListFieldType>(parts[0])
+            } catch (_: IllegalArgumentException) {
+                return@mapNotNull null
+            }
+            val colorMode = if (parts.size >= 6) {
+                try { enumValueOf<TextListFieldColorMode>(parts[5]) } catch (_: IllegalArgumentException) { TextListFieldColorMode.DEFAULT }
+            } else TextListFieldColorMode.DEFAULT
+            TextListFieldConfig(
+                field = field,
+                visible = parts[1].toBooleanStrictOrNull() ?: true,
+                bold = parts[2].toBooleanStrictOrNull() ?: false,
+                italic = parts[3].toBooleanStrictOrNull() ?: false,
+                fontScale = parts[4].toFloatOrNull() ?: 1f,
+                colorMode = colorMode,
+            )
+        }.ifEmpty { defaultTextListFieldConfigs() }
+    }
+
     companion object {
         private const val DEFAULT_SEED_COLOR = 0xFF539E44.toInt()
         private val seedColorKey = intPreferencesKey("seed_color")
@@ -431,6 +486,14 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
         private val logBadgePaddingVKey = intPreferencesKey("home_log_badge_padding_v")
         private val timelineItemSpacingKey = intPreferencesKey("home_timeline_item_spacing")
         private val momentCardPaddingKey = intPreferencesKey("home_moment_card_padding")
+        private val textListRowSpacingKey = intPreferencesKey("home_text_row_spacing")
+        private val textListFieldSpacingKey = intPreferencesKey("home_text_field_spacing")
+        private val textListPaddingHKey = intPreferencesKey("home_text_padding_h")
+        private val textListPaddingVKey = intPreferencesKey("home_text_padding_v")
+        private val textListGlobalFontScaleKey = floatPreferencesKey("home_text_global_font_scale")
+        private val textListFieldConfigsKey = stringPreferencesKey("home_text_field_configs")
+        private val textListSeparatorKey = stringPreferencesKey("home_text_separator")
+        private val textListColumnModeKey = stringPreferencesKey("home_text_column_mode")
         private val activityIconColorModeKey = stringPreferencesKey("activity_icon_color_mode")
         private val tagDisplayColorModeKey = stringPreferencesKey("tag_display_color_mode")
         private val globalTagDisplayModeKey = stringPreferencesKey("global_tag_display_mode")

@@ -154,6 +154,7 @@ fun NLtimerScaffold(
         HomeLayout.TIMELINE_REVERSE -> "时间轴设置"
         HomeLayout.LOG -> "日志设置"
         HomeLayout.MOMENT -> "当前时刻设置"
+        HomeLayout.TEXT_LIST -> "纯文字列表设置"
     }
     val settingsDragOptions = remember(currentRoute, theme.homeLayout, theme.showTimeSideBar, displayColorConfig, tagDisplayConfig, layoutConfigLabel) {
         buildList {
