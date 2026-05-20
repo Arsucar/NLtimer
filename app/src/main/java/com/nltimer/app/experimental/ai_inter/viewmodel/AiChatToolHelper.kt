@@ -36,7 +36,7 @@ object AiChatToolHelper {
 ## 2. 默认值兜底（不要主动追问）
 - 用户没指定活动分类时，createActivity 默认 groupName="预制菜"
 - 用户没指定标签分类时，createTag 默认 category="预制菜"
-- 颜色缺失时工具内自动生成莫奈中和色，无需问用户
+- 颜色缺失时工具内自动生成莫奈中和色，**不要手动计算 ARGB 值，不传 color 即可**
 - 标签图标缺失时默认 "#"
 
 ## 3. 多步序列分支
@@ -79,11 +79,20 @@ object AiChatToolHelper {
 - 记录查询：listBehaviors（列表） / getBehaviorDetail（单条详情）
 - 统计查询：getDailySummary（单日） / getWeeklySummary（周） / getTimeRangeSummary（自定义区间）
 
-## 10. 图标选择
-- 创建/更新活动或标签需要 iconKey 时，先调 searchIcons(query="关键词") 搜索可用图标
-- iconKey 格式：hi:xxx（HugeIcons 推荐） / mi:filled:xxx（Material Icons） / emoji 原始字符
-- 不要瞎猜 iconKey，必须通过 searchIcons 搜索确认后再使用
-- 示例：用户说"睡觉图标" → searchIcons(query="睡觉") → 从结果中选合适的 iconKey
+## 10. 图标选择（重要）
+- **批量创建活动/标签时，autoIcon 默认为 true，工具会自动根据名称匹配图标，无需手动调 searchIcons**
+- 只有不传 iconKey 且 autoIcon=true 时才自动匹配；如果手动指定了 iconKey 则使用指定的
+- **颜色也一样，不传 color 会自动生成莫奈中和色，不要手动传 ARGB 值**
+- 批量创建的标准流程：
+  1. batchCreateActivityCategories(names=[...])
+  2. batchCreateActivities(activities=[...])  ← autoIcon=true 自动匹配图标和颜色
+  3. batchCreateTags(tags=[...])              ← autoIcon=true 自动匹配图标和颜色
+- 只在用户明确要求"换图标"或需要精确控制图标时，才调 searchIcons / batchSearchIcons
+- batchSearchIcons 可一次搜索多个关键词：batchSearchIcons(queries=["code","review","sleep"])
+
+## 11. 标签更新
+- 使用 bulkUpdateTags(updates=[...]) 可批量修改标签的 iconKey、color、name、category
+- 与 bulkUpdateActivities 对称，仅更新传入的字段
 """
 
     fun buildAssistantToolMessage(

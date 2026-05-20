@@ -10,6 +10,7 @@
 | behaviors | BehaviorEntity | BehaviorDao | 大量（核心数据） |
 | activity_tag_binding | ActivityTagBindingEntity | — | 中等 |
 | behavior_tag_cross_ref | BehaviorTagCrossRefEntity | — | 大量 |
+| icon_search_miss | IconSearchMissEntity | IconSearchMissDao | 少量 |
 
 ## 实体字段
 
@@ -87,6 +88,15 @@
 |------|------|------|
 | behaviorId | Long (FK) | → behaviors.id |
 | tagId | Long (FK) | → tags.id |
+
+### IconSearchMissEntity
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | Long (PK, auto) | 主键 |
+| query | String | 搜索关键词 |
+| library | String | 图标库过滤 |
+| timestamp | Long | 记录时间 |
 
 ### 关系表
 

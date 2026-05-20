@@ -79,6 +79,13 @@
 | UpdateBehaviorTool | `core/tools/.../timing/` | 修改已有行为 |
 | DeleteBehaviorTool | `core/tools/.../timing/` | 删除行为 |
 | NoteMatcher | `core/tools/.../match/` | 备注匹配工具 |
+| SearchIconsTool | `core/tools/.../timing/` | 单关键词图标搜索（含同义词回退） |
+| BatchSearchIconsTool | `core/tools/.../timing/` | 批量关键词图标搜索 |
+| IconSearchEngine | `core/tools/.../timing/` | 图标搜索引擎（共享搜索+同义词逻辑） |
+| BatchCreateActivitiesTool | `core/tools/.../library/` | 批量创建活动（支持 autoIcon） |
+| BatchCreateTagsTool | `core/tools/.../library/` | 批量创建标签（支持 autoIcon） |
+| BulkUpdateActivitiesTool | `core/tools/.../library/` | 批量修改活动属性 |
+| BulkUpdateTagsTool | `core/tools/.../library/` | 批量修改标签属性 |
 
 ## feature:home
 
