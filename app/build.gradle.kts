@@ -69,11 +69,12 @@ android {
 
 }
 
-afterEvaluate {
-    android.applicationVariants.configureEach { variant ->
-        variant.outputs.configureEach { output ->
-            val outputImpl = output as com.android.build.gradle.internal.api.BaseVariantOutputImpl
-            outputImpl.outputFileName = "NLTimer-v${APP_VERSION_NAME}-${variant.name}.apk"
+//  请将这段代码粘在最外层（不要放进 android { ... } 闭包内）
+androidComponents {
+    onVariants { variant ->
+        variant.outputs.forEach { output ->
+            // variant.name 会返回 "debug" 或 "release"
+            output.outputFileName.set("NLTimer-v${APP_VERSION_NAME}-${variant.name}.apk")
         }
     }
 }
