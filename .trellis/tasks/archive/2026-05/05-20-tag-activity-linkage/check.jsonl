@@ -1,0 +1,3 @@
+{"file": "docs/agent/04-patterns.md", "reason": "Compose conventions, MVVM patterns for verifying code quality"}
+{"file": "docs/agent/05-data-model.md", "reason": "Verify binding table usage and entity field correctness"}
+{"file": "docs/agent/03-module-map.md", "reason": "Module structure for cross-layer consistency checks"}

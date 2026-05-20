@@ -1,0 +1,4 @@
+{"file": "docs/agent/04-patterns.md", "reason": "Compose conventions, MVVM patterns, naming conventions for implementing UI changes"}
+{"file": "docs/agent/05-data-model.md", "reason": "ActivityTagBindingEntity schema, Tag/Activity fields, relationship table structure for R5 linkage"}
+{"file": "docs/agent/03-module-map.md", "reason": "Module → key class → file path mapping for locating all files to modify"}
+{"file": "docs/agent/02-architecture-digest.md", "reason": "Architecture and data flow for understanding cross-layer changes"}
