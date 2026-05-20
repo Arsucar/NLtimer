@@ -439,4 +439,10 @@ class HomeViewModel @Inject constructor(
         _isLoadingMore.value = true
         _loadedEarliest.value = target
     }
+
+    suspend fun queryTagIdsForActivity(activityId: Long): List<Long> =
+        activityManagementRepository.getTagIdsForActivity(activityId)
+
+    suspend fun queryActivityIdsForTag(tagId: Long): List<Long> =
+        tagRepository.getActivityIdsForTag(tagId)
 }

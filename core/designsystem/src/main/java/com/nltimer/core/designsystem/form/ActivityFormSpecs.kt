@@ -45,7 +45,7 @@ object ActivityFormSpecs {
         sections = listOf(
             FormSection(
                 rows = listOf(
-                    FormRow.IconColor(iconKey = "icon", colorKey = "color", initialEmoji = "🏷️"),
+                    FormRow.IconColor(iconKey = "icon", colorKey = "color", initialEmoji = "hi:Tag01"),
                 ),
             ),
             FormSection(

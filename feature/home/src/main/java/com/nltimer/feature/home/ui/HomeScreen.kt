@@ -122,6 +122,8 @@ fun HomeScreen(
     onHomeLayoutChange: (HomeLayout) -> Unit = {},
     onMatchNote: (String) -> NoteScanResult = { NoteScanResult(null, emptySet()) },
     onProcessNote: suspend (String) -> NoteProcessOutcome = { NoteProcessOutcome.Empty },
+    onQueryTagsForActivity: suspend (Long) -> List<Long> = { emptyList() },
+    onQueryActivitiesForTag: suspend (Long) -> List<Long> = { emptyList() },
     modifier: Modifier = Modifier,
 ) {
     val theme = LocalTheme.current
@@ -213,6 +215,8 @@ fun HomeScreen(
                 onTagCategoriesReordered = onTagCategoriesReordered,
                 onMatchNote = onMatchNote,
                 onProcessNote = onProcessNote,
+                onQueryTagsForActivity = onQueryTagsForActivity,
+                onQueryActivitiesForTag = onQueryActivitiesForTag,
             )
         }
 

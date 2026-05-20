@@ -26,6 +26,12 @@ import java.time.LocalDateTime
 /** Sheet 透传给 ViewModel 的"智能识别"统一回调；默认 no-op 兜底无 directive 流的页面。 */
 typealias OnProcessNote = suspend (note: String) -> NoteProcessOutcome
 
+/** 查询活动绑定的标签ID列表 */
+typealias QueryTagsForActivity = suspend (activityId: Long) -> List<Long>
+
+/** 查询标签绑定的活动ID列表 */
+typealias QueryActivitiesForTag = suspend (tagId: Long) -> List<Long>
+
 private const val ScrimAlpha = 0.32f
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -54,6 +60,8 @@ fun AddBehaviorSheet(
     onAddTag: AddTagCallback = { _, _, _, _, _, _, _ -> },
     onProcessNote: OnProcessNote = { NoteProcessOutcome.Empty },
     onMatchNote: (String) -> NoteScanResult = { NoteScanResult(null, emptySet()) },
+    onQueryTagsForActivity: QueryTagsForActivity = { emptyList() },
+    onQueryActivitiesForTag: QueryActivitiesForTag = { emptyList() },
 ) {
     BehaviorSheetWrapper(
         modifier = modifier,
@@ -80,6 +88,8 @@ fun AddBehaviorSheet(
         onAddTag = onAddTag,
         onProcessNote = onProcessNote,
         onMatchNote = onMatchNote,
+        onQueryTagsForActivity = onQueryTagsForActivity,
+        onQueryActivitiesForTag = onQueryActivitiesForTag,
     )
 }
 
@@ -108,6 +118,8 @@ fun AddCurrentBehaviorSheet(
     onAddTag: AddTagCallback = { _, _, _, _, _, _, _ -> },
     onProcessNote: OnProcessNote = { NoteProcessOutcome.Empty },
     onMatchNote: (String) -> NoteScanResult = { NoteScanResult(null, emptySet()) },
+    onQueryTagsForActivity: QueryTagsForActivity = { emptyList() },
+    onQueryActivitiesForTag: QueryActivitiesForTag = { emptyList() },
 ) {
     BehaviorSheetWrapper(
         modifier = modifier,
@@ -133,6 +145,8 @@ fun AddCurrentBehaviorSheet(
         onAddTag = onAddTag,
         onProcessNote = onProcessNote,
         onMatchNote = onMatchNote,
+        onQueryTagsForActivity = onQueryTagsForActivity,
+        onQueryActivitiesForTag = onQueryActivitiesForTag,
     )
 }
 
@@ -160,6 +174,8 @@ fun AddTargetBehaviorSheet(
     onAddTag: AddTagCallback = { _, _, _, _, _, _, _ -> },
     onProcessNote: OnProcessNote = { NoteProcessOutcome.Empty },
     onMatchNote: (String) -> NoteScanResult = { NoteScanResult(null, emptySet()) },
+    onQueryTagsForActivity: QueryTagsForActivity = { emptyList() },
+    onQueryActivitiesForTag: QueryActivitiesForTag = { emptyList() },
 ) {
     BehaviorSheetWrapper(
         modifier = modifier,
@@ -184,6 +200,8 @@ fun AddTargetBehaviorSheet(
         onAddTag = onAddTag,
         onProcessNote = onProcessNote,
         onMatchNote = onMatchNote,
+        onQueryTagsForActivity = onQueryTagsForActivity,
+        onQueryActivitiesForTag = onQueryActivitiesForTag,
     )
 }
 
@@ -214,6 +232,8 @@ private fun BehaviorSheetWrapper(
     onAddTag: AddTagCallback,
     onProcessNote: OnProcessNote,
     onMatchNote: (String) -> NoteScanResult,
+    onQueryTagsForActivity: QueryTagsForActivity,
+    onQueryActivitiesForTag: QueryActivitiesForTag,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -253,6 +273,8 @@ private fun BehaviorSheetWrapper(
             onAddTag = onAddTag,
             onProcessNote = onProcessNote,
             onMatchNote = onMatchNote,
+            onQueryTagsForActivity = onQueryTagsForActivity,
+            onQueryActivitiesForTag = onQueryActivitiesForTag,
         )
     }
 }

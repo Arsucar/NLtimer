@@ -15,6 +15,7 @@ import com.nltimer.core.tools.ToolDocumentation
 import com.nltimer.core.tools.ToolError
 import com.nltimer.core.tools.ToolParameter
 import com.nltimer.core.tools.ToolResult
+import com.nltimer.core.tools.match.KeywordMatcher
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.reflect.KClass
@@ -107,11 +108,11 @@ class StartBehaviorTool @Inject constructor(
             val resolvedActivityId = if (activityIdArg != null) {
                 activityIdArg
             } else {
-                // 通过 tagName 查找关联的活动
-                val tag = tagRepository.getByName(tagNameArg!!)
+                val allTags = tagRepository.getAllActive().first()
+                val tag = KeywordMatcher.matchTag(tagNameArg!!, allTags)
                     ?: return@runCatching ToolResult.Error(
                         name = name,
-                        error = ToolError.NotFound("标签不存在: $tagNameArg"),
+                        error = ToolError.NotFound("未找到标签（名称或关键词匹配）: $tagNameArg"),
                     )
                 val activityIds = tagRepository.getActivityIdsForTag(tag.id)
                 if (activityIds.isEmpty()) {
@@ -186,8 +187,8 @@ class StartBehaviorTool @Inject constructor(
             ),
             ErrorExample(
                 code = "NOT_FOUND",
-                message = "标签不存在: 小睡",
-                scenario = "传入的标签名在数据库中不存在",
+                message = "未找到标签（名称或关键词匹配）: 小睡",
+                scenario = "传入的标签名在数据库中不存在（名称和关键词均未匹配）",
             ),
             ErrorExample(
                 code = "VALIDATION_ERROR",

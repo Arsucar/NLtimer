@@ -50,7 +50,7 @@ internal fun SheetPickerDialogs(
     if (showAddTagDialog) {
         // Todo 待完善增加标签弹窗 以及绑定数据
         AddTagDialog(
-            categories = emptyList(),
+            categories = allTags.mapNotNull { it.category }.distinct(),
             allActivities = activities,
             activityGroups = activityGroups,
             onDismiss = onAddTagDialogDismiss,

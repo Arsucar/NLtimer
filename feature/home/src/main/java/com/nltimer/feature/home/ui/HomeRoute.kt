@@ -87,6 +87,13 @@ fun HomeRoute(
         lambda
     }
 
+    val onQueryTagsForActivity: suspend (Long) -> List<Long> = remember(viewModel) {
+        { activityId: Long -> viewModel.queryTagIdsForActivity(activityId) }
+    }
+    val onQueryActivitiesForTag: suspend (Long) -> List<Long> = remember(viewModel) {
+        { tagId: Long -> viewModel.queryActivityIdsForTag(tagId) }
+    }
+
     val onHomeLayoutChange = remember(viewModel) {
         { layout: com.nltimer.core.designsystem.theme.HomeLayout -> viewModel.onHomeLayoutChange(layout) }
     }
@@ -125,5 +132,7 @@ fun HomeRoute(
         onHomeLayoutChange = onHomeLayoutChange,
         onMatchNote = onMatchNote,
         onProcessNote = onProcessNote,
+        onQueryTagsForActivity = onQueryTagsForActivity,
+        onQueryActivitiesForTag = onQueryActivitiesForTag,
     )
 }

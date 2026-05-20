@@ -344,6 +344,7 @@ fun NLtimerScaffold(
                         navController = navController,
                         timeLabelSettingsRequestKey = timeLabelSettingsRequestKey,
                         onTimeLabelSettingsShown = { timeLabelSettingsRequestKey = 0 },
+                        drawerState = drawerState,
                         modifier = Modifier
                             .then(if (theme.topBarHaze) Modifier.hazeSource(state = topBarHazeState) else Modifier)
                             .fillMaxSize()

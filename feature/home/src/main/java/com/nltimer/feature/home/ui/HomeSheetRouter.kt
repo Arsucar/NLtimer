@@ -37,6 +37,8 @@ internal fun HomeSheetRouter(
     onTagCategoriesReordered: (List<String>) -> Unit = {},
     onMatchNote: (String) -> NoteScanResult,
     onProcessNote: suspend (String) -> NoteProcessOutcome,
+    onQueryTagsForActivity: suspend (Long) -> List<Long> = { emptyList() },
+    onQueryActivitiesForTag: suspend (Long) -> List<Long> = { emptyList() },
 ) {
     if (uiState.addSheetMode == null) return
 
@@ -88,6 +90,8 @@ internal fun HomeSheetRouter(
             onAddTag = onAddTag,
             onMatchNote = onMatchNote,
             onProcessNote = onProcessNote,
+            onQueryTagsForActivity = onQueryTagsForActivity,
+            onQueryActivitiesForTag = onQueryActivitiesForTag,
         )
 
         AddSheetMode.CURRENT -> AddCurrentBehaviorSheet(
@@ -112,6 +116,8 @@ internal fun HomeSheetRouter(
             onAddTag = onAddTag,
             onMatchNote = onMatchNote,
             onProcessNote = onProcessNote,
+            onQueryTagsForActivity = onQueryTagsForActivity,
+            onQueryActivitiesForTag = onQueryActivitiesForTag,
         )
 
         AddSheetMode.TARGET -> AddTargetBehaviorSheet(
@@ -135,6 +141,8 @@ internal fun HomeSheetRouter(
             onAddTag = onAddTag,
             onMatchNote = onMatchNote,
             onProcessNote = onProcessNote,
+            onQueryTagsForActivity = onQueryTagsForActivity,
+            onQueryActivitiesForTag = onQueryActivitiesForTag,
         )
     }
 }

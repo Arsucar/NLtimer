@@ -94,6 +94,8 @@ internal fun AddBehaviorSheetContent(
     onAddTag: (name: String, color: Long?, icon: String?, priority: Int, category: String?, keywords: String?, activityId: Long?) -> Unit = { _, _, _, _, _, _, _ -> },
     onProcessNote: OnProcessNote = { NoteProcessOutcome.Empty },
     onMatchNote: (String) -> NoteScanResult = { NoteScanResult(null, emptySet()) },
+    onQueryTagsForActivity: suspend (Long) -> List<Long> = { emptyList() },
+    onQueryActivitiesForTag: suspend (Long) -> List<Long> = { emptyList() },
 ) {
     val state = rememberAddBehaviorState(mode, initialStartTime, initialEndTime, initialActivityId, initialTagIds, initialNote, editBehaviorId, existingBehaviors, dialogConfig)
 
@@ -131,6 +133,8 @@ internal fun AddBehaviorSheetContent(
                         onDismiss = onDismiss,
                         onProcessNote = onProcessNote,
                         onMatchNote = onMatchNote,
+                        onQueryTagsForActivity = onQueryTagsForActivity,
+                        onQueryActivitiesForTag = onQueryActivitiesForTag,
                     )
                 }
             }
@@ -195,6 +199,8 @@ private fun SheetMainContent(
     onDismiss: () -> Unit,
     onProcessNote: OnProcessNote,
     onMatchNote: (String) -> NoteScanResult,
+    onQueryTagsForActivity: suspend (Long) -> List<Long>,
+    onQueryActivitiesForTag: suspend (Long) -> List<Long>,
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -267,7 +273,15 @@ private fun SheetMainContent(
             Spacer(modifier = Modifier.height(1.dp))
             ActivityGridComponent(
                 chips = activityChips,
-                onChipClick = { id -> state.selectedActivityId = id },
+                onChipClick = { id ->
+                    state.selectedActivityId = id
+                    scope.launch {
+                        val tagIds = onQueryTagsForActivity(id)
+                        if (tagIds.isNotEmpty()) {
+                            state.selectedTagIds = state.selectedTagIds + tagIds.toSet()
+                        }
+                    }
+                },
                 selectedId = state.selectedActivityId,
                 displayMode = dialogConfig.activityDisplayMode,
                 layoutMode = dialogConfig.activityLayoutMode,
@@ -285,10 +299,19 @@ private fun SheetMainContent(
             ActivityGridComponent(
                 chips = tagChips,
                 onChipClick = { tagId ->
-                    state.selectedTagIds = if (tagId in state.selectedTagIds) {
+                    val wasSelected = tagId in state.selectedTagIds
+                    state.selectedTagIds = if (wasSelected) {
                         state.selectedTagIds - tagId
                     } else {
                         state.selectedTagIds + tagId
+                    }
+                    if (!wasSelected) {
+                        scope.launch {
+                            val activityIds = onQueryActivitiesForTag(tagId)
+                            if (activityIds.isNotEmpty()) {
+                                state.selectedActivityId = activityIds.first()
+                            }
+                        }
                     }
                 },
                 selectedIds = state.selectedTagIds,
@@ -311,7 +334,12 @@ private fun SheetMainContent(
                 enabled = dialogConfig.autoMatchNote,
                 note = state.note,
                 onMatchNote = onMatchNote,
-                onApplyScan = { state.applyNoteScan(it) },
+                onApplyScan = { result ->
+                    state.applyNoteScan(result)
+                    scope.launch {
+                        applyLinkage(state, result.activityId, result.tagIds, onQueryTagsForActivity, onQueryActivitiesForTag)
+                    }
+                },
             )
 
             NoteInputComponent(
@@ -326,7 +354,9 @@ private fun SheetMainContent(
                             val processed = onProcessNote(raw)
                             state.note = processed.cleanedNote
                             val directiveApply = state.applyDirectiveOutcome(processed.directiveOutcome)
-                            val scanApply = state.applyNoteScan(processed.scanResult)
+                            val scanResult = processed.scanResult
+                            val scanApply = state.applyNoteScan(scanResult)
+                            applyLinkage(state, scanResult.activityId, scanResult.tagIds, onQueryTagsForActivity, onQueryActivitiesForTag)
                             Toast.makeText(
                                 context,
                                 buildFeedbackMessage(processed.directiveOutcome, directiveApply, scanApply),
@@ -537,6 +567,30 @@ private fun EndTimeAutoTickEffect(state: AddBehaviorState) {
 }
 
 private const val END_TIME_TICK_INTERVAL_MS = 1000L
+
+/**
+ * 根据备注扫描结果执行标签-活动联动：活动→绑定标签追加，标签→绑定活动（仅当活动未选中时）。
+ */
+private suspend fun applyLinkage(
+    state: AddBehaviorState,
+    matchedActivityId: Long?,
+    matchedTagIds: Set<Long>,
+    onQueryTagsForActivity: suspend (Long) -> List<Long>,
+    onQueryActivitiesForTag: suspend (Long) -> List<Long>,
+) {
+    if (matchedActivityId != null) {
+        val tagIds = onQueryTagsForActivity(matchedActivityId)
+        if (tagIds.isNotEmpty()) {
+            state.selectedTagIds = state.selectedTagIds + tagIds.toSet()
+        }
+    }
+    for (tagId in matchedTagIds) {
+        val activityIds = onQueryActivitiesForTag(tagId)
+        if (activityIds.isNotEmpty() && state.selectedActivityId == null) {
+            state.selectedActivityId = activityIds.first()
+        }
+    }
+}
 
 /**
  * 智能识别按钮按下后的 Toast 文案生成。

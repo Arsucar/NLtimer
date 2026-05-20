@@ -2,6 +2,7 @@ package com.nltimer.app.navigation
 
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.material3.DrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavGraphBuilder
@@ -47,6 +48,7 @@ fun NLtimerNavHost(
     modifier: Modifier = Modifier,
     timeLabelSettingsRequestKey: Int = 0,
     onTimeLabelSettingsShown: () -> Unit = {},
+    drawerState: DrawerState? = null,
 ) {
     NavHost(
         navController = navController,
@@ -73,7 +75,7 @@ fun NLtimerNavHost(
             popEnterTransition = { slideInHorizontally { -it } },
             popExitTransition = { slideOutHorizontally { it } },
         ) {
-            AiAssistantChatRoute(navController = navController)
+            AiAssistantChatRoute(navController = navController, mainDrawerState = drawerState)
         }
         composable(
             route = NLtimerRoutes.AI_CALL_LOG_DETAIL_PATTERN,

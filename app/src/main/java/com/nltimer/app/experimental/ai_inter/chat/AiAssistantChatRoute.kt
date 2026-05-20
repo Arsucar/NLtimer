@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -52,10 +53,11 @@ import kotlinx.coroutines.launch
 @Composable
 fun AiAssistantChatRoute(
     navController: NavHostController,
+    mainDrawerState: DrawerState? = null,
     viewModel: AiAssistantChatViewModel = hiltViewModel(),
 ) {
     val context: Context = LocalContext.current
-    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val chatHistoryDrawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
     val conversations by viewModel.conversations.collectAsStateWithLifecycle()
@@ -79,23 +81,24 @@ fun AiAssistantChatRoute(
     val isImmersive = LocalTheme.current.isImmersive
     val topBarHaze = LocalTheme.current.topBarHaze
 
-    BackHandler(enabled = drawerState.isOpen) {
-        scope.launch { drawerState.close() }
+    BackHandler(enabled = chatHistoryDrawerState.isOpen) {
+        scope.launch { chatHistoryDrawerState.close() }
     }
 
     ModalNavigationDrawer(
-        drawerState = drawerState,
+        drawerState = chatHistoryDrawerState,
+        gesturesEnabled = false,
         drawerContent = {
             ChatDrawer(
                 conversations = conversations,
                 currentId = currentId,
                 onSelect = {
                     viewModel.selectConversation(it)
-                    scope.launch { drawerState.close() }
+                    scope.launch { chatHistoryDrawerState.close() }
                 },
                 onCreate = {
                     viewModel.newConversation()
-                    scope.launch { drawerState.close() }
+                    scope.launch { chatHistoryDrawerState.close() }
                 },
                 onRename = viewModel::renameConversation,
                 onDelete = viewModel::deleteConversation,
@@ -119,7 +122,9 @@ fun AiAssistantChatRoute(
                     ChatTopBar(
                         title = current?.title ?: "新对话",
                         modelName = config.modelName,
-                        onOpenDrawer = { scope.launch { drawerState.open() } },
+                        onOpenChatHistory = if (mainDrawerState != null) {
+                            { scope.launch { chatHistoryDrawerState.open() } }
+                        } else null,
                         onTitleClick = { if (current != null) showRename = true },
                         onNewConversation = { viewModel.newConversation() },
                         onClearCurrent = { viewModel.clearCurrent() },

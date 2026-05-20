@@ -5,9 +5,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.IosShare
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -27,7 +27,7 @@ import dev.chrisbanes.haze.materials.HazeMaterials
 fun ChatTopBar(
     title: String,
     modelName: String,
-    onOpenDrawer: () -> Unit,
+    onOpenChatHistory: (() -> Unit)? = null,
     onTitleClick: () -> Unit,
     onNewConversation: () -> Unit,
     onClearCurrent: () -> Unit,
@@ -46,7 +46,9 @@ fun ChatTopBar(
             scrolledContainerColor = Color.Transparent,
         ),
         navigationIcon = {
-            IconButton(onClick = onOpenDrawer) { Icon(Icons.Default.Menu, "会话列表") }
+            if (onOpenChatHistory != null) {
+                IconButton(onClick = onOpenChatHistory) { Icon(Icons.AutoMirrored.Filled.Chat, "会话历史") }
+            }
         },
         title = {
             val titleContent = @Composable {
