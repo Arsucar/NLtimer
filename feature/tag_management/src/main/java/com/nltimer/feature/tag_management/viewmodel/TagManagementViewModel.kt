@@ -41,8 +41,8 @@ class TagManagementViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             _addedCategories.value = settingsPrefs.getSavedTagCategoriesOrder().first()
+            loadData()
         }
-        loadData()
         loadActivities()
         loadGroups()
         settingsPrefs.getDisplayColorConfigFlow()
