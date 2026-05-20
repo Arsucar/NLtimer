@@ -55,10 +55,8 @@ fun TimeAxisGrid(
     val visibleDateLabelState = LocalVisibleDateLabel.current
     val initialScrollDone = rememberSaveable { mutableStateOf(false) }
 
-    LaunchedEffect(sections) {
-        if (sections.isNotEmpty() && !initialScrollDone.value) {
-            initialScrollDone.value = true
-        }
+    LaunchedEffect(Unit) {
+        initialScrollDone.value = true
     }
 
     val dateIndexMap = remember(sections) {

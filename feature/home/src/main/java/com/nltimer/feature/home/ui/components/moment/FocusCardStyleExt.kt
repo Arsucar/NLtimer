@@ -32,15 +32,15 @@ internal fun FocusCardConfig.resolvedContainerColor(): Color {
 
 @Composable
 internal fun FocusCardConfig.resolvedContentColor(): Color {
+    if (!enableCardStyle) {
+        return MaterialTheme.colorScheme.onSurface
+    }
     return themeColor?.let { rawColor ->
-        // 1. Wrap the primitive color in a Compose Color object first
-        val composeColor = Color(rawColor) 
-        
-        // 2. Now you can safely call .luminance() on it
+        val composeColor = Color(rawColor)
         if (composeColor.luminance() > 0.5f) {
-            Color(0xFF1B1B1B) // 亮背景用深色字
+            Color(0xFF1B1B1B)
         } else {
-            Color(0xFFF5F5F5) // 暗背景用浅色字
+            Color(0xFFF5F5F5)
         }
     } ?: MaterialTheme.colorScheme.onPrimaryContainer
 }

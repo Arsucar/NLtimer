@@ -42,8 +42,8 @@ fun <T> WheelPicker(
     animate: Boolean = true,
     onCenterClick: () -> Unit = {},
     content: @Composable (item: T, isSelected: Boolean) -> Unit = { item, isSelected ->
-        val textColor = MaterialTheme.colorScheme.onSecondaryContainer
-        val selectedColor = MaterialTheme.colorScheme.onPrimaryContainer
+        val textColor = MaterialTheme.colorScheme.onSurfaceVariant
+        val selectedColor = MaterialTheme.colorScheme.onSecondaryContainer
         Text(
             text = item.toString(),
             style = MaterialTheme.typography.labelMedium.copy(

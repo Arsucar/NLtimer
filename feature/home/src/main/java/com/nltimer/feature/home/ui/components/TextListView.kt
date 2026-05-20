@@ -81,10 +81,8 @@ fun TextListView(
     val displayItems = remember(items) { reverseGroupedItems(items) }
     val hasHeader = header != null
 
-    LaunchedEffect(displayItems) {
-        if (displayItems.isNotEmpty() && !initialScrollDone.value) {
-            initialScrollDone.value = true
-        }
+    LaunchedEffect(Unit) {
+        initialScrollDone.value = true
     }
 
     val alphaState = animateFloatAsState(

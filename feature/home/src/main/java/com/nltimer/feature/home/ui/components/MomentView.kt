@@ -174,10 +174,8 @@ fun MomentView(
     }
     val hasHeader = header != null
 
-    LaunchedEffect(displayItems) {
-        if (displayItems.isNotEmpty() && !initialScrollDone.value) {
-            initialScrollDone.value = true
-        }
+    LaunchedEffect(Unit) {
+        initialScrollDone.value = true
     }
 
     val alphaState = animateFloatAsState(

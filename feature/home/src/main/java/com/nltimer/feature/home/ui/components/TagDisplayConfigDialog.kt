@@ -2,15 +2,15 @@ package com.nltimer.feature.home.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -23,9 +23,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.TagDisplayConfig
+import com.nltimer.core.designsystem.component.atom.SelectableOptionChip
 import com.nltimer.core.designsystem.theme.ChipDisplayMode
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun TagDisplayConfigDialog(
     config: TagDisplayConfig,
@@ -67,21 +68,21 @@ fun TagDisplayConfigDialog(
                             ChipDisplayMode.None to "无",
                         )
                     }
-                    SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-                        modes.forEachIndexed { index, (mode, label) ->
-                            SegmentedButton(
-                                shape = SegmentedButtonDefaults.itemShape(
-                                    index = index,
-                                    count = modes.size,
-                                ),
-                                onClick = { displayMode = mode },
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                    ) {
+                        modes.forEach { (mode, label) ->
+                            SelectableOptionChip(
+                                text = label,
                                 selected = displayMode == mode,
-                            ) {
-                                Text(
-                                    text = label,
-                                    style = MaterialTheme.typography.labelSmall,
-                                )
-                            }
+                                onSelect = { displayMode = mode },
+                                shape = RoundedCornerShape(8.dp),
+                                showCheckIcon = false,
+                                showBorder = false,
+                                textStyle = MaterialTheme.typography.labelMedium,
+                                contentPaddingVertical = 5.dp,
+                            )
                         }
                     }
                 }
@@ -91,21 +92,27 @@ fun TagDisplayConfigDialog(
                         text = "配色",
                         style = MaterialTheme.typography.bodyLarge,
                     )
-                    SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-                        SegmentedButton(
-                            shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
-                            onClick = { useColorForText = false },
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        SelectableOptionChip(
+                            text = "强调色",
                             selected = !useColorForText,
-                        ) {
-                            Text("强调色", style = MaterialTheme.typography.labelSmall)
-                        }
-                        SegmentedButton(
-                            shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
-                            onClick = { useColorForText = true },
+                            onSelect = { useColorForText = false },
+                            shape = RoundedCornerShape(8.dp),
+                            showCheckIcon = false,
+                            showBorder = false,
+                            textStyle = MaterialTheme.typography.labelMedium,
+                            contentPaddingVertical = 5.dp,
+                        )
+                        SelectableOptionChip(
+                            text = "活动色",
                             selected = useColorForText,
-                        ) {
-                            Text("活动色", style = MaterialTheme.typography.labelSmall)
-                        }
+                            onSelect = { useColorForText = true },
+                            shape = RoundedCornerShape(8.dp),
+                            showCheckIcon = false,
+                            showBorder = false,
+                            textStyle = MaterialTheme.typography.labelMedium,
+                            contentPaddingVertical = 5.dp,
+                        )
                     }
                 }
 

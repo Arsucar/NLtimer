@@ -92,10 +92,8 @@ fun TimelineReverseView(
     val timelineItems = remember(items) { buildTimelineItemsReversed(items) }
     val hasHeader = header != null
 
-    LaunchedEffect(timelineItems) {
-        if (timelineItems.isNotEmpty() && !initialScrollDone.value) {
-            initialScrollDone.value = true
-        }
+    LaunchedEffect(Unit) {
+        initialScrollDone.value = true
     }
 
     val alphaState = animateFloatAsState(

@@ -31,7 +31,7 @@ fun HomeRoute(
 
     val onEmptyCellClick = remember(viewModel) {
         { idleStart: LocalDateTime?, idleEnd: LocalDateTime? ->
-            viewModel.showAddSheet(AddSheetMode.COMPLETED, idleStart, idleEnd)
+            viewModel.showAddSheet(AddSheetMode.CURRENT, idleStart, idleEnd)
         }
     }
     val onShowAddSheet = remember(viewModel) {
