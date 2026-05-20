@@ -9,6 +9,7 @@ import androidx.compose.material.icons.filled.OpenInFull
 import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -23,6 +24,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.DialogProperties
+import androidx.compose.foundation.shape.RoundedCornerShape
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.materials.HazeMaterials
@@ -145,38 +148,55 @@ fun ChatInput(
     if (isFullScreen) {
         BasicAlertDialog(
             onDismissRequest = { isFullScreen = false },
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
+            properties = DialogProperties(
+                usePlatformDefaultWidth = false,
+                decorFitsSystemWindows = false,
+            ),
         ) {
-            Surface(
-                shape = MaterialTheme.shapes.large,
-                tonalElevation = 4.dp,
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .safeDrawingPadding()
+                    .imePadding(),
+                verticalArrangement = Arrangement.Bottom,
             ) {
-                Column(
+                Surface(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
+                        .widthIn(max = 800.dp)
+                        .fillMaxHeight(0.9f),
+                    shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Text("编辑", style = MaterialTheme.typography.titleMedium)
-                        TextButton(onClick = { isFullScreen = false }) {
-                            Text("完成")
-                        }
-                    }
-                    Spacer(Modifier.height(8.dp))
-                    OutlinedTextField(
-                        value = text,
-                        onValueChange = onTextChange,
+                    Column(
                         modifier = Modifier
-                            .fillMaxSize()
-                            .weight(1f),
-                        placeholder = { Text("输入消息…") },
-                    )
+                            .padding(8.dp)
+                            .fillMaxSize(),
+                        horizontalAlignment = Alignment.End,
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        Row {
+                            TextButton(onClick = { isFullScreen = false }) {
+                                Text("完成")
+                            }
+                        }
+                        val fullScreenFocusRequester = remember { FocusRequester() }
+                        LaunchedEffect(Unit) { fullScreenFocusRequester.requestFocus() }
+                        TextField(
+                            value = text,
+                            onValueChange = onTextChange,
+                            modifier = Modifier
+                                .focusRequester(fullScreenFocusRequester)
+                                .padding(bottom = 2.dp)
+                                .fillMaxSize(),
+                            shape = RoundedCornerShape(32.dp),
+                            placeholder = { Text("输入消息…") },
+                            colors = TextFieldDefaults.colors(
+                                unfocusedIndicatorColor = Color.Transparent,
+                                focusedIndicatorColor = Color.Transparent,
+                                focusedContainerColor = Color.Transparent,
+                                unfocusedContainerColor = Color.Transparent,
+                            ),
+                        )
+                    }
                 }
             }
         }

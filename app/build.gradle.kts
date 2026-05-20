@@ -44,9 +44,7 @@ android {
 
         getByName("debug") {
             isDebuggable = true
-            if (worktreeSuffix.isNotEmpty()) {
-                applicationIdSuffix = worktreeSuffix
-            }
+            applicationIdSuffix = ".debug$worktreeSuffix"
         }
 
         getByName("release") {
