@@ -330,3 +330,4 @@ app/build.gradle.kts
 docs/reference/
 .aider*
 .env
+.trellis/scripts/common/__pycache__
