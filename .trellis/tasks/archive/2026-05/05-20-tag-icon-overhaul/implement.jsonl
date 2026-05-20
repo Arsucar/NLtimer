@@ -1,0 +1,4 @@
+{"file": "docs/agent/05-data-model.md", "reason": "数据模型速查 — Room Entity 字段、表关系、数据库版本号"}
+{"file": "docs/agent/04-patterns.md", "reason": "代码约定与设计模式 — 写代码时参考"}
+{"file": "docs/agent/03-module-map.md", "reason": "模块→关键类→文件路径映射 — 定位代码"}
+{"file": "docs/agent/01-project-overview.md", "reason": "项目基本信息、构建注意事项(如 --no-daemon)"}
