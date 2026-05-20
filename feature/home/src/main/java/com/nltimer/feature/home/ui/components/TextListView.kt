@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.items
@@ -53,6 +54,7 @@ import com.nltimer.core.data.util.formatDuration
 import com.nltimer.core.data.util.hhmmFormatter
 import com.nltimer.core.designsystem.component.DayDividerRow
 import com.nltimer.core.designsystem.component.LoadingMoreIndicator
+import com.nltimer.core.designsystem.icon.IconRenderer
 import com.nltimer.core.designsystem.theme.LocalImmersiveTopPadding
 import com.nltimer.core.designsystem.theme.ShapeTokens
 import com.nltimer.core.designsystem.theme.styledCorner
@@ -128,7 +130,9 @@ fun TextListView(
 
     val isTable = textListStyle.columnMode == TextListColumnMode.TABLE
     val visibleFields = remember(textListStyle.fieldConfigs) {
-        textListStyle.fieldConfigs.filter { it.visible && it.field != TextListFieldType.TAGS }
+        textListStyle.fieldConfigs.filter {
+            it.visible && it.field != TextListFieldType.TAGS && it.field != TextListFieldType.ICON
+        }
     }
 
     Box(modifier = modifier.fillMaxSize()) {
@@ -215,6 +219,14 @@ private fun TextListFlowRow(
 ) {
     val baseFontSize = MaterialTheme.typography.bodySmall.fontSize * style.globalFontScale
     val onSurfaceColor = MaterialTheme.colorScheme.onSurface
+    val colorMap = TextListFieldColorMode.entries.associateWith { resolveFieldColor(it, onSurfaceColor) }
+
+    val visibleFields = remember(style.fieldConfigs) { style.fieldConfigs.filter { it.visible } }
+    val iconField = remember(visibleFields) { visibleFields.find { it.field == TextListFieldType.ICON } }
+    val textFields = remember(visibleFields) { visibleFields.filter { it.field != TextListFieldType.ICON } }
+    val annotatedText = remember(cell, textFields, baseFontSize, colorMap, style.separator) {
+        buildFlowAnnotatedString(cell, textFields, baseFontSize, colorMap, style.separator)
+    }
 
     Column(
         modifier = Modifier
@@ -223,9 +235,30 @@ private fun TextListFlowRow(
             .combinedClickable(onClick = onClick, onLongClick = onLongClick)
             .padding(vertical = style.paddingV.dp),
     ) {
-        val colorMap = TextListFieldColorMode.entries.associateWith { resolveFieldColor(it, onSurfaceColor) }
-        val annotatedText = buildFlowAnnotatedString(cell, style, baseFontSize, colorMap)
-        Text(text = annotatedText)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            val firstField = visibleFields.firstOrNull()
+            if (iconField != null && firstField?.field == TextListFieldType.ICON) {
+                cell.activityIconKey?.let {
+                    IconRenderer(
+                        iconKey = it,
+                        iconSize = (baseFontSize.value * 1.2f).dp,
+                        tint = onSurfaceColor,
+                    )
+                    Spacer(Modifier.width(4.dp))
+                }
+            }
+            Text(text = annotatedText)
+            if (iconField != null && firstField?.field != TextListFieldType.ICON) {
+                cell.activityIconKey?.let {
+                    Spacer(Modifier.width(4.dp))
+                    IconRenderer(
+                        iconKey = it,
+                        iconSize = (baseFontSize.value * 1.2f).dp,
+                        tint = onSurfaceColor,
+                    )
+                }
+            }
+        }
 
         val showTags = style.fieldConfigs.any { it.field == TextListFieldType.TAGS && it.visible }
         if (showTags && cell.tags.isNotEmpty()) {
@@ -248,6 +281,13 @@ private fun TextListTableRow(
     val baseFontSize = MaterialTheme.typography.bodySmall.fontSize * style.globalFontScale
     val onSurfaceColor = MaterialTheme.colorScheme.onSurface
 
+    val iconField = remember(style.fieldConfigs) {
+        style.fieldConfigs.find { it.visible && it.field == TextListFieldType.ICON }
+    }
+    val iconFirst = remember(style.fieldConfigs) {
+        style.fieldConfigs.firstOrNull { it.visible }?.field == TextListFieldType.ICON
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -257,8 +297,19 @@ private fun TextListTableRow(
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Start,
         ) {
+            if (iconField != null && iconFirst) {
+                cell.activityIconKey?.let {
+                    IconRenderer(
+                        iconKey = it,
+                        iconSize = (baseFontSize.value * 1.2f).dp,
+                        tint = onSurfaceColor,
+                    )
+                    Spacer(Modifier.width(4.dp))
+                }
+            }
             for (fieldConfig in visibleFields) {
                 val text = getFieldText(cell, fieldConfig.field) ?: ""
                 if (text.isEmpty()) {
@@ -281,6 +332,16 @@ private fun TextListTableRow(
                     modifier = Modifier.weight(1f),
                 )
             }
+            if (iconField != null && !iconFirst) {
+                cell.activityIconKey?.let {
+                    Spacer(Modifier.width(4.dp))
+                    IconRenderer(
+                        iconKey = it,
+                        iconSize = (baseFontSize.value * 1.2f).dp,
+                        tint = onSurfaceColor,
+                    )
+                }
+            }
         }
 
         val showTags = style.fieldConfigs.any { it.field == TextListFieldType.TAGS && it.visible }
@@ -293,16 +354,14 @@ private fun TextListTableRow(
 
 private fun buildFlowAnnotatedString(
     cell: GridCellUiState,
-    style: TextListLayoutStyle,
+    textFields: List<TextListFieldConfig>,
     baseFontSize: androidx.compose.ui.unit.TextUnit,
     colorMap: Map<TextListFieldColorMode, Color>,
+    separator: String,
 ): androidx.compose.ui.text.AnnotatedString {
-    val visibleFields = style.fieldConfigs.filter { it.visible }
-    val separator = style.separator
-
     return buildAnnotatedString {
         var added = false
-        for (fieldConfig in visibleFields) {
+        for (fieldConfig in textFields) {
             val text = getFieldText(cell, fieldConfig.field) ?: continue
             if (added && separator.isNotEmpty()) {
                 append(separator)
@@ -359,6 +418,7 @@ private fun getFieldText(cell: GridCellUiState, field: TextListFieldType): Strin
     TextListFieldType.ESTIMATED -> cell.estimatedDuration?.let { "预估:${formatDuration(it)}" }
     TextListFieldType.ACHIEVEMENT -> cell.achievementLevel?.let { "完成度:$it" }
     TextListFieldType.PLANNED -> if (cell.wasPlanned) "计划内" else null
+    TextListFieldType.ICON -> null
 }
 
 @OptIn(ExperimentalLayoutApi::class)

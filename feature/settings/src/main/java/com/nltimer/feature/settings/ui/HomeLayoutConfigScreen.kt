@@ -401,6 +401,7 @@ private fun TextListFieldType.displayName(): String = when (this) {
     TextListFieldType.ESTIMATED -> "预估"
     TextListFieldType.ACHIEVEMENT -> "完成度"
     TextListFieldType.PLANNED -> "计划内"
+    TextListFieldType.ICON -> "图标"
 }
 
 private fun TextListFieldColorMode.displayName(): String = when (this) {
