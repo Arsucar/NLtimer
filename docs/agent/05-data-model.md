@@ -6,6 +6,7 @@
 |------|-----------|--------|---------|
 | activities | ActivityEntity | ActivityDao | 用户创建 |
 | activity_groups | ActivityGroupEntity | ActivityGroupDao | 少量 |
+| tag_groups | TagGroupEntity | TagGroupDao | 少量（新增 v14） |
 | tags | TagEntity | TagDao | 用户创建 |
 | behaviors | BehaviorEntity | BehaviorDao | 大量（核心数据） |
 | activity_tag_binding | ActivityTagBindingEntity | — | 中等 |
@@ -37,6 +38,19 @@
 |------|------|------|
 | id | Long (PK, auto) | 主键 |
 | name | String | 分组名称 |
+| iconKey | String? | 图标（v14 新增） |
+| sortOrder | Int | 排序 |
+| isArchived | Boolean | 是否归档 |
+| archivedAt | Long? | 归档时间 |
+| createdAt | Long | 创建时间 |
+
+### TagGroupEntity
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | Long (PK, auto) | 主键 |
+| name | String | 分组名称（unique index） |
+| iconKey | String? | 分组统一图标 |
 | sortOrder | Int | 排序 |
 | isArchived | Boolean | 是否归档 |
 | archivedAt | Long? | 归档时间 |
@@ -50,7 +64,8 @@
 | name | String | 标签名称 |
 | color | Long? | 颜色 |
 | iconKey | String? | 图标 |
-| category | String? | 分类 |
+| category | String? | 分类（待废弃，逐步迁移到 groupId） |
+| groupId | Long? (FK) | → tag_groups.id（v14 新增） |
 | priority | Int | 优先级 |
 | usageCount | Int | 使用次数 |
 | sortOrder | Int | 排序 |
@@ -116,8 +131,24 @@
 ## 关系图
 
 ```
+TagGroup 1:N Tag
 ActivityGroup 1:N Activity M:N Tag
                        |
                        1:N
                     Behavior M:N Tag
+
+## DB 版本历史
+
+| 版本 | 变更 |
+|------|------|
+| 13 | v0.1.5 |
+| 14 | 新增 tag_groups 表；TagEntity 新增 groupId；ActivityGroupEntity 新增 iconKey |
+
+## DisplayColorConfig
+
+| 字段 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| activityIconColorMode | DisplayColorMode | NORMAL | 活动图标颜色模式 |
+| tagDisplayColorMode | DisplayColorMode | NORMAL | 标签颜色模式 |
+| showTagIcon | Boolean | true | 全局标签图标显示开关（v14 新增） |
 ```

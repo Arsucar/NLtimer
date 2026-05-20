@@ -33,3 +33,21 @@
 **已有案例**：
 - `QueryCurrentBehaviorTool` 曾直接返回 `Behavior?` 对象，已重构为返回含 activityName/tags/durationMinutes 的 JSON。
 - `ListActivitiesTool` 曾返回 `List<Activity>` 原始列表，已重构为含 groupName/tags 的 JSON 数组。
+
+## 3. CategorizableItem.iconKey 硬编码为 null
+
+**出现时机**：新增或修改 `CategoryPickerModels` 中的 `CategorizableItem` 实现类。
+
+**现象**：在 CategoryPickerDialog 或 CategoryGroupCard 中选择项时，图标显示为 ❓ 或占位符。
+
+**典型场景**：
+- 新写 `data class XxxCategorizable : CategorizableItem` 时忘记传递 `iconKey`
+- `TagCategorizable.iconKey` 曾硬编码为 `null` 而不是取 `tag.iconKey`
+
+**避免方式**：
+- 实现 `CategorizableItem` 时必须检查 `iconKey` 是否从源对象传递，而非硬编码 `null`
+- 在 `ActivityGroupCategorizable` 等新类中确保 `iconKey = group.iconKey`
+
+**检查清单**：
+- [ ] `iconKey` 是否从领域模型传递而非硬编码
+- [ ] 若源对象无 iconKey，`CategoryGroupCard.ItemChip` 会自动跳过图标（`showIcon && item.iconKey != null`）
