@@ -55,6 +55,7 @@ enum class TextListFieldType {
     ESTIMATED,
     ACHIEVEMENT,
     PLANNED,
+    ICON,
 }
 
 enum class TextListFieldColorMode {
@@ -103,4 +104,5 @@ fun defaultTextListFieldConfigs(): List<TextListFieldConfig> = listOf(
     TextListFieldConfig(TextListFieldType.ESTIMATED, visible = false),
     TextListFieldConfig(TextListFieldType.ACHIEVEMENT, visible = false),
     TextListFieldConfig(TextListFieldType.PLANNED, visible = false),
+    TextListFieldConfig(TextListFieldType.ICON, visible = true),
 )

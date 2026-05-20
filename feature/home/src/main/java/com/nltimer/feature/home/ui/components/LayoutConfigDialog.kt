@@ -1,6 +1,7 @@
 package com.nltimer.feature.home.ui.components
 
 import android.view.WindowManager
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -32,6 +33,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -43,7 +45,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -63,6 +67,9 @@ import com.nltimer.core.designsystem.component.ConfigStepper
 import com.nltimer.core.designsystem.component.LayoutResetButton
 import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.feature.home.model.resetLayout
+
+private val DialogShape = RoundedCornerShape(16.dp)
+private val FieldShape = RoundedCornerShape(12.dp)
 
 @Composable
 fun LayoutConfigDialog(
@@ -92,8 +99,8 @@ fun LayoutConfigDialog(
             contentAlignment = Alignment.Center,
         ) {
             Surface(
-                shape = RoundedCornerShape(20.dp),
-                color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.70f),
+                shape = DialogShape,
+                color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.85f),
                 tonalElevation = 6.dp,
                 modifier = Modifier
                     .width(340.dp)
@@ -232,17 +239,24 @@ private fun TextListConfigSection(textList: TextListLayoutStyle, onChange: (Text
         min = 50, max = 200, step = 5,
         onValueChange = { onChange(textList.copy(globalFontScale = it / 100f)) })
 
-    Spacer(Modifier.height(4.dp))
+    Spacer(Modifier.height(8.dp))
+
     var separatorText by remember(textList.separator) { mutableStateOf(textList.separator) }
     OutlinedTextField(
         value = separatorText,
         onValueChange = { separatorText = it; onChange(textList.copy(separator = it)) },
         label = { Text("分隔符") },
         singleLine = true,
+        shape = FieldShape,
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = MaterialTheme.colorScheme.primary,
+            unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+        ),
         modifier = Modifier.fillMaxWidth(),
     )
 
-    Spacer(Modifier.height(4.dp))
+    Spacer(Modifier.height(8.dp))
+
     var colModeExpanded by remember { mutableStateOf(false) }
     ExposedDropdownMenuBox(
         expanded = colModeExpanded,
@@ -257,7 +271,14 @@ private fun TextListConfigSection(textList: TextListLayoutStyle, onChange: (Text
             readOnly = true,
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = colModeExpanded) },
             label = { Text("列模式") },
-            modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable),
+            shape = FieldShape,
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .menuAnchor(MenuAnchorType.PrimaryNotEditable),
         )
         ExposedDropdownMenu(expanded = colModeExpanded, onDismissRequest = { colModeExpanded = false }) {
             DropdownMenuItem(text = { Text("流式布局") }, onClick = { onChange(textList.copy(columnMode = TextListColumnMode.FLOW)); colModeExpanded = false })
@@ -265,8 +286,15 @@ private fun TextListConfigSection(textList: TextListLayoutStyle, onChange: (Text
         }
     }
 
-    Spacer(Modifier.height(8.dp))
-    Text("字段配置", style = MaterialTheme.typography.titleSmall)
+    Spacer(Modifier.height(12.dp))
+
+    Text(
+        "字段配置",
+        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+        color = MaterialTheme.colorScheme.primary,
+    )
+
+    Spacer(Modifier.height(4.dp))
 
     textList.fieldConfigs.forEachIndexed { index, fieldConfig ->
         TextListDialogFieldRow(
@@ -325,6 +353,7 @@ private fun TextListFieldType.displayName(): String = when (this) {
     TextListFieldType.ESTIMATED -> "预估"
     TextListFieldType.ACHIEVEMENT -> "完成度"
     TextListFieldType.PLANNED -> "计划内"
+    TextListFieldType.ICON -> "图标"
 }
 
 private fun TextListFieldColorMode.displayName(): String = when (this) {
@@ -349,49 +378,112 @@ private fun TextListDialogFieldRow(
     onMoveUp: () -> Unit,
     onMoveDown: () -> Unit,
 ) {
-    Column(modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-            Switch(checked = fieldConfig.visible, onCheckedChange = { onToggleVisible() })
-            Spacer(Modifier.width(4.dp))
-            Text(text = fieldConfig.field.displayName(), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
-            if (canMoveUp) {
-                IconButton(onClick = onMoveUp, modifier = Modifier.size(28.dp)) {
-                    Icon(Icons.Default.ArrowUpward, contentDescription = "上移", modifier = Modifier.size(14.dp))
-                }
-            }
-            if (canMoveDown) {
-                IconButton(onClick = onMoveDown, modifier = Modifier.size(28.dp)) {
-                    Icon(Icons.Default.ArrowDownward, contentDescription = "下移", modifier = Modifier.size(14.dp))
-                }
-            }
-        }
-        if (fieldConfig.visible) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("B", style = MaterialTheme.typography.labelSmall)
-                Checkbox(checked = fieldConfig.bold, onCheckedChange = { onToggleBold() })
-                Text("I", style = MaterialTheme.typography.labelSmall)
-                Checkbox(checked = fieldConfig.italic, onCheckedChange = { onToggleItalic() })
+    val cardColor by animateColorAsState(
+        if (fieldConfig.visible) MaterialTheme.colorScheme.surfaceContainerLow
+        else MaterialTheme.colorScheme.surfaceContainerLow.copy(alpha = 0.5f),
+        label = "fieldCard",
+    )
+
+    Surface(
+        shape = FieldShape,
+        color = cardColor,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 2.dp),
+    ) {
+        Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(FieldShape)
+                    .clickable { onToggleVisible() }
+                    .padding(vertical = 4.dp),
+            ) {
+                Switch(
+                    checked = fieldConfig.visible,
+                    onCheckedChange = { onToggleVisible() },
+                )
                 Spacer(Modifier.width(8.dp))
-                var colorExpanded by remember { mutableStateOf(false) }
-                ExposedDropdownMenuBox(expanded = colorExpanded, onExpandedChange = { colorExpanded = !colorExpanded }) {
-                    OutlinedTextField(
-                        value = fieldConfig.colorMode.displayName(),
-                        onValueChange = {},
-                        readOnly = true,
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = colorExpanded) },
-                        modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable).height(40.dp),
-                        textStyle = MaterialTheme.typography.labelSmall,
-                    )
-                    ExposedDropdownMenu(expanded = colorExpanded, onDismissRequest = { colorExpanded = false }) {
-                        TextListFieldColorMode.entries.forEach { mode ->
-                            DropdownMenuItem(text = { Text(mode.displayName()) }, onClick = { onColorChange(mode); colorExpanded = false })
-                        }
+                Text(
+                    text = fieldConfig.field.displayName(),
+                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+                    modifier = Modifier.weight(1f),
+                )
+                if (canMoveUp) {
+                    IconButton(onClick = onMoveUp, modifier = Modifier.size(28.dp)) {
+                        Icon(Icons.Default.ArrowUpward, contentDescription = "上移", modifier = Modifier.size(14.dp))
+                    }
+                }
+                if (canMoveDown) {
+                    IconButton(onClick = onMoveDown, modifier = Modifier.size(28.dp)) {
+                        Icon(Icons.Default.ArrowDownward, contentDescription = "下移", modifier = Modifier.size(14.dp))
                     }
                 }
             }
-            ConfigStepper(label = "字号", value = (fieldConfig.fontScale * 100).toInt(), suffix = "%",
-                min = 50, max = 200, step = 5,
-                onValueChange = { onFontScaleChange(it / 100f) })
+            if (fieldConfig.visible) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(top = 4.dp),
+                ) {
+                    Surface(
+                        onClick = onToggleBold,
+                        shape = RoundedCornerShape(6.dp),
+                        color = if (fieldConfig.bold) MaterialTheme.colorScheme.primaryContainer
+                        else MaterialTheme.colorScheme.surfaceContainerHigh,
+                    ) {
+                        Text(
+                            "B",
+                            style = MaterialTheme.typography.labelMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                            ),
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                        )
+                    }
+                    Spacer(Modifier.width(8.dp))
+                    Surface(
+                        onClick = onToggleItalic,
+                        shape = RoundedCornerShape(6.dp),
+                        color = if (fieldConfig.italic) MaterialTheme.colorScheme.primaryContainer
+                        else MaterialTheme.colorScheme.surfaceContainerHigh,
+                    ) {
+                        Text(
+                            "I",
+                            style = MaterialTheme.typography.labelMedium.copy(
+                                fontStyle = FontStyle.Italic,
+                            ),
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                        )
+                    }
+                    Spacer(Modifier.width(8.dp))
+                    var colorExpanded by remember { mutableStateOf(false) }
+                    ExposedDropdownMenuBox(expanded = colorExpanded, onExpandedChange = { colorExpanded = !colorExpanded }) {
+                        OutlinedTextField(
+                            value = fieldConfig.colorMode.displayName(),
+                            onValueChange = {},
+                            readOnly = true,
+                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = colorExpanded) },
+                            shape = FieldShape,
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                            ),
+                            modifier = Modifier
+                                .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                                .height(40.dp),
+                            textStyle = MaterialTheme.typography.labelSmall,
+                        )
+                        ExposedDropdownMenu(expanded = colorExpanded, onDismissRequest = { colorExpanded = false }) {
+                            TextListFieldColorMode.entries.forEach { mode ->
+                                DropdownMenuItem(text = { Text(mode.displayName()) }, onClick = { onColorChange(mode); colorExpanded = false })
+                            }
+                        }
+                    }
+                }
+                ConfigStepper(label = "字号", value = (fieldConfig.fontScale * 100).toInt(), suffix = "%",
+                    min = 50, max = 200, step = 5,
+                    onValueChange = { onFontScaleChange(it / 100f) })
+            }
         }
     }
 }
