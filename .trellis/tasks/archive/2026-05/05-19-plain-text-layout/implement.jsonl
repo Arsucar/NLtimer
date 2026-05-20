@@ -1,0 +1,3 @@
+{"file": "docs/agent/04-patterns.md", "reason": "Compose 约定、命名规则、状态提升模式——实现时需遵循"}
+{"file": "docs/agent/06-common-bug.md", "reason": "常见 bug 模式（嵌套 Scaffold、嵌套布局陷阱）——避免重蹈覆辙"}
+{"file": "docs/agent/03-module-map.md", "reason": "模块→文件路径映射——快速定位要修改的文件"}
