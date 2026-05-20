@@ -67,18 +67,13 @@ android {
         }
     }
 
-    applicationVariants.all {
-        outputs.all {
-            val output = this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
-            
-            // 1. 设置你的软件名称 (例如：NLTimer)
-            val appName = "NLTimer"
-            
-            // 2. 获取当前是 debug 还是 release
-            val buildType = name
-            
-            // 3. 拼接最终的文件名，如：NLTimer-v1.0.0-release.apk
-            output.outputFileName = "${appName}-v${APP_VERSION_NAME}-${buildType}.apk"
+}
+
+afterEvaluate {
+    android.applicationVariants.configureEach { variant ->
+        variant.outputs.configureEach { output ->
+            val outputImpl = output as com.android.build.gradle.internal.api.BaseVariantOutputImpl
+            outputImpl.outputFileName = "NLTimer-v${APP_VERSION_NAME}-${variant.name}.apk"
         }
     }
 }
