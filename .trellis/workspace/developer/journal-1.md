@@ -372,3 +372,36 @@ Theme新增topBarHaze字段，SettingsPrefsImpl读写，ThemeSettingsViewModel�
 ### Next Steps
 
 - None - task complete
+
+
+## Session 12: 修复6项UI问题(专注卡片/滚轴/AI输入框/标签配置)
+
+**Date**: 2026-05-20
+**Task**: 修复6项UI问题(专注卡片/滚轴/AI输入框/标签配置)
+**Branch**: `dev-v5`
+
+### Summary
+
+B1专注卡片关闭模式文字色改为onSurface; B2滚轴选中文字色改为onSecondaryContainer; B3五个布局视图修复空数据不可见; B4 AI输入框对标rikkahub背景色; O1空卡片点击改为CURRENT弹窗; O2标签样式弹窗FlowRow替代单行挤压
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `e129d03f` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
