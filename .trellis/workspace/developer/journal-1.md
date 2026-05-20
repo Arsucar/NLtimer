@@ -438,3 +438,37 @@ B5 TextField背景色改回透明统一由hazeEffect处理; F1 添加isFocused�
 ### Next Steps
 
 - None - task complete
+
+
+## Session 14: 标签图标优化：分组iconKey、全局图标开关、图标bug修复
+
+**Date**: 2026-05-20
+**Task**: 标签图标优化：分组iconKey、全局图标开关、图标bug修复
+**Branch**: `dev-v5`
+
+### Summary
+
+完成标签图标优化任务：\n- 新建 TagGroupEntity 表（对齐 ActivityGroup 架构），支持分组统一管理图标\n- ActivityGroupEntity 新增 iconKey 字段\n- 新增 DisplayColorConfig.showTagIcon 全局开关，在 Scaffold 设置 FAB 中可切换\n- 修复 TagCategorizable.iconKey 硬编码为 null 的 bug（标签选择器显示❓）\n- 修复 ActivityGroupCategorizable.iconKey 同样问题\n- TagPicker 添加图标渲染\n- CategoryGroupCard 图标从20dp缩小到16dp\n- 默认标签图标改为 hi:Tag01
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `1ac0f126` | (see git log) |
+| `2b62d119` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
