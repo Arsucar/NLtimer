@@ -5,15 +5,20 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.OpenInFull
 import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.input.ImeAction
@@ -22,7 +27,8 @@ import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.materials.HazeMaterials
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.runtime.getValue // 如果你用了 by 关键字，这个也必须导
+import androidx.compose.foundation.text.KeyboardOptions
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatInput(
@@ -36,17 +42,18 @@ fun ChatInput(
     modifier: Modifier = Modifier,
 ) {
     val focusRequester = remember { FocusRequester() }
+    var isFocused by remember { mutableStateOf(false) }
+    var isFullScreen by remember { mutableStateOf(false) }
 
     val density = LocalDensity.current
     val isImeVisible = WindowInsets.ime.getBottom(density) > 0
-val animatedBottomPadding by animateDpAsState(
-    targetValue = if (isImeVisible) 0.dp else 70.dp,
-    label = "IME Padding Animation"
-)
+    val animatedBottomPadding by animateDpAsState(
+        targetValue = if (isImeVisible) 0.dp else 70.dp,
+        label = "IME Padding Animation"
+    )
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            // .padding(bottom = if (isImeVisible) 0.dp else 70.dp)
             .navigationBarsPadding()
             .padding(bottom = animatedBottomPadding)
             .imePadding()
@@ -67,18 +74,32 @@ val animatedBottomPadding by animateDpAsState(
                 value = text,
                 onValueChange = onTextChange,
                 placeholder = { Text("输入消息…") },
-                modifier = Modifier.focusRequester(focusRequester).fillMaxWidth(),
+                modifier = Modifier
+                    .focusRequester(focusRequester)
+                    .fillMaxWidth()
+                    .onFocusChanged { isFocused = it.isFocused },
                 colors = TextFieldDefaults.colors(
                     unfocusedIndicatorColor = Color.Transparent,
                     focusedIndicatorColor = Color.Transparent,
-                    focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.6f),
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.6f),
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
                     disabledIndicatorColor = Color.Transparent,
-                    disabledContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.6f),
+                    disabledContainerColor = Color.Transparent,
                 ),
                 maxLines = 5,
-                keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(imeAction = ImeAction.Send),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
                 enabled = !isSending,
+                trailingIcon = {
+                    if (isFocused) {
+                        IconButton(onClick = { isFullScreen = !isFullScreen }) {
+                            Icon(
+                                imageVector = Icons.Default.OpenInFull,
+                                contentDescription = "全屏",
+                                modifier = Modifier.size(18.dp),
+                            )
+                        }
+                    }
+                },
             )
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -116,6 +137,46 @@ val animatedBottomPadding by animateDpAsState(
                             )
                         }
                     }
+                }
+            }
+        }
+    }
+
+    if (isFullScreen) {
+        BasicAlertDialog(
+            onDismissRequest = { isFullScreen = false },
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+        ) {
+            Surface(
+                shape = MaterialTheme.shapes.large,
+                tonalElevation = 4.dp,
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text("编辑", style = MaterialTheme.typography.titleMedium)
+                        TextButton(onClick = { isFullScreen = false }) {
+                            Text("完成")
+                        }
+                    }
+                    Spacer(Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = text,
+                        onValueChange = onTextChange,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .weight(1f),
+                        placeholder = { Text("输入消息…") },
+                    )
                 }
             }
         }
