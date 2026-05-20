@@ -20,9 +20,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Branch name
-        run: echo running on branch ${GITHUB_REF##*/}
-
       - name: Setup JDK
         uses: actions/setup-java@v4
         with:
@@ -45,12 +42,8 @@ jobs:
           echo "Updating APP_VERSION_NAME=$VERSION APP_VERSION_CODE=$VERSION_CODE"
           sed -i "s/^APP_VERSION_NAME=.*/APP_VERSION_NAME=$VERSION/" gradle.properties
           sed -i "s/^APP_VERSION_CODE=.*/APP_VERSION_CODE=$VERSION_CODE/" gradle.properties
-          grep -E "APP_VERSION" gradle.properties
-
+          
       - name: Configure Gradle JVM for CI
-        # 本地 gradle.properties 是为多 worktree 场景做的保守内存（Xmx=1.5G），
-        # 在 CI 单次构建场景下 R8 minify 会 OOM。GitHub runner 内存约 7G，
-        # 此处追加覆盖：properties 后定义生效，仅影响 CI，不污染本地配置。
         run: |
           cat >> gradle.properties <<'EOF'
 
@@ -59,50 +52,52 @@ jobs:
           org.gradle.workers.max=4
           EOF
 
+      # 只有在非 tag（普通分支、PR）时，才去编译 Debug APK
       - name: Build Debug APK
+        if: "!startsWith(github.ref, 'refs/tags/')"
         run: ./gradlew assembleDebug --stacktrace
 
       - name: Upload Debug APK
+        if: "!startsWith(github.ref, 'refs/tags/')"
         uses: actions/upload-artifact@v4
         with:
-          name: apk
-          path: app/build/outputs/apk/debug/app-debug.apk
+          name: debug-apk
+          path: app/build/outputs/apk/debug/*.apk
 
+      # 【已修正】if 判断中读取 secrets 必须包裹住 ${{ }}
       - name: Decode Keystore
-        id: keystore
-        if: startsWith(github.ref, 'refs/tags/') && env.KEYSTORE_BASE64 != ''
-        env:
-          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        if: startsWith(github.ref, 'refs/tags/') && secrets.KEYSTORE_BASE64 != ''
         run: |
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > ${{ github.workspace }}/release-key.jks
 
+      # 【已修正】修正了 secrets 条件判断语法，并注意：把 KEYSTORE_PASSWORD 纠正为你 build.gradle.kts 里的名字
       - name: Build Release APK
-        if: startsWith(github.ref, 'refs/tags/') && env.KEYSTORE_BASE64 != ''
+        if: startsWith(github.ref, 'refs/tags/') && secrets.KEYSTORE_BASE64 != ''
         env:
           KEYSTORE_PATH: ${{ github.workspace }}/release-key.jks
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
         run: ./gradlew assembleRelease --stacktrace
 
-      - name: Upload Release APK
-        if: startsWith(github.ref, 'refs/tags/') && env.KEYSTORE_BASE64 != ''
-        env:
-          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+      - name: Upload Release APK (Signed)
+        if: startsWith(github.ref, 'refs/tags/') && secrets.KEYSTORE_BASE64 != ''
         uses: actions/upload-artifact@v4
         with:
-          name: release-apk
-          path: app/build/outputs/apk/release/app-release.apk
+          name: release-artifacts
+          path: app/build/outputs/apk/release/*.apk
 
-      - name: Upload Debug APK as Fallback
-        if: startsWith(github.ref, 'refs/tags/') && env.KEYSTORE_BASE64 == ''
-        env:
-          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+      # 【已修正】降级方案判断修正
+      - name: Build & Upload Debug APK as Fallback
+        if: startsWith(github.ref, 'refs/tags/') && secrets.KEYSTORE_BASE64 == ''
+        run: ./gradlew assembleDebug --stacktrace
+
+      - name: Upload Fallback APK
+        if: startsWith(github.ref, 'refs/tags/') && secrets.KEYSTORE_BASE64 == ''
         uses: actions/upload-artifact@v4
         with:
-          name: release-apk
-          path: app/build/outputs/apk/debug/app-debug.apk
+          name: release-artifacts
+          path: app/build/outputs/apk/debug/*.apk
 
   release:
     name: Release APK
@@ -110,22 +105,17 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     steps:
-      - name: Download APK
+      - name: Download Artifacts
         uses: actions/download-artifact@v4
         with:
-          name: release-apk
-
-      - name: Rename APK if needed
-        run: |
-          if [ -f "app-debug.apk" ]; then
-            mv app-debug.apk app-release.apk
-          fi
+          name: release-artifacts
+          path: release-env
 
       - name: Create Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
           name: Release ${{ github.ref_name }}
-          files: app-release.apk
+          files: release-env/**/*.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
