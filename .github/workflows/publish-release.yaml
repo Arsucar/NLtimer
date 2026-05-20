@@ -54,17 +54,10 @@ jobs:
           org.gradle.workers.max=4
           EOF
 
-      # 只有在非 tag（普通分支、PR）时，才去编译 Debug APK
-      - name: Build Debug APK
+      # 普通分支/PR 只检查编译，不打包
+      - name: Compile Debug Sources
         if: "!startsWith(github.ref, 'refs/tags/')"
-        run: ./gradlew assembleDebug --stacktrace
-
-      - name: Upload Debug APK
-        if: "!startsWith(github.ref, 'refs/tags/')"
-        uses: actions/upload-artifact@v4
-        with:
-          name: debug-apk
-          path: app/build/outputs/apk/debug/*.apk
+        run: ./gradlew compileDebugSources --stacktrace
 
       - name: Decode Keystore
         if: startsWith(github.ref, 'refs/tags/') && env.KEYSTORE_BASE64 != ''

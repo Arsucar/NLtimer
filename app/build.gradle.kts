@@ -74,7 +74,7 @@ androidComponents {
     onVariants { variant ->
         variant.outputs.forEach { output ->
             // variant.name 会返回 "debug" 或 "release"
-            output.outputFileName.set("NLTimer-v${APP_VERSION_NAME}-${variant.name}.apk")
+            output.outputFileName.set("NLtimer-v${APP_VERSION_NAME}-${variant.name}.apk")
         }
     }
 }
