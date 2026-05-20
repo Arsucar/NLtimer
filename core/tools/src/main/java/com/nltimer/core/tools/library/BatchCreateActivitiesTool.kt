@@ -14,6 +14,7 @@ import com.nltimer.core.tools.ToolError
 import com.nltimer.core.tools.ToolParameter
 import com.nltimer.core.tools.ToolResult
 import com.nltimer.core.tools.timing.IconSearchEngine
+import com.nltimer.core.tools.timing.IconSearchMissLog
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.reflect.KClass
@@ -26,6 +27,7 @@ class BatchCreateActivitiesTool @Inject constructor(
     private val activityRepository: ActivityRepository,
     private val categoryRepository: CategoryRepository,
     private val toolConfig: ToolConfig,
+    private val iconSearchMissLog: IconSearchMissLog,
 ) : ToolDefinition {
 
     override val name: String = "batchCreateActivities"
@@ -95,13 +97,13 @@ class BatchCreateActivitiesTool @Inject constructor(
 
             val color = (item["color"] as? Number)?.toLong() ?: RandomMonetColor.next()
 
-            val iconKey = resolveIconKey(item["iconKey"] as? String, actName, autoIcon)
+            val iconResult = resolveIconKey(item["iconKey"] as? String, actName, autoIcon)
 
             val newId = activityRepository.insert(
                 Activity(
                     id = 0L,
                     name = actName,
-                    iconKey = iconKey,
+                    iconKey = iconResult.iconKey,
                     keywords = null,
                     groupId = groupId,
                     isPreset = false,
@@ -110,9 +112,16 @@ class BatchCreateActivitiesTool @Inject constructor(
                     usageCount = 0,
                 ),
             )
-            created.put(
-                JSONObject().put("id", newId).put("name", actName).put("iconKey", iconKey ?: "⁉")
-            )
+            val createdObj = JSONObject()
+                .put("id", newId)
+                .put("name", actName)
+                .put("iconKey", iconResult.iconKey ?: "⁉")
+                .put("iconMatched", iconResult.iconKey != null)
+            if (iconResult.fallbackLibrary != null) {
+                createdObj.put("fallbackLibrary", iconResult.fallbackLibrary)
+                createdObj.put("fallbackNote", "hi库无匹配，使用${iconResult.fallbackLibrary}库")
+            }
+            created.put(createdObj)
         }
 
         val result = JSONObject()
@@ -122,16 +131,57 @@ class BatchCreateActivitiesTool @Inject constructor(
         return ToolResult.Success(this.name, result.toString())
     }
 
-    private fun resolveIconKey(
+    private data class IconResult(
+        val iconKey: String?,
+        val fallbackLibrary: String?,
+    )
+
+    private suspend fun resolveIconKey(
         explicitIconKey: String?,
         activityName: String,
         autoIcon: Boolean,
-    ): String? {
-        explicitIconKey?.takeIf { it.isNotBlank() }?.let { return it }
-        if (!autoIcon) return null
+    ): IconResult {
+        explicitIconKey?.takeIf { it.isNotBlank() }?.let { return IconResult(it, null) }
+        if (!autoIcon) return IconResult(null, null)
 
-        val matches = IconSearchEngine.searchWithFallback(activityName, limit = 1)
-        return matches.firstOrNull()?.iconKey
+        val queries = listOf(activityName) + inferRelatedKeywords(activityName)
+        val result = IconSearchEngine.searchMultipleQueries(queries, limit = 1)
+        // PRD: 使用 mi/emoji 时记录到 icon_search_miss 表
+        if (result.fallbackLibrary != null) {
+            iconSearchMissLog.record(activityName, result.fallbackLibrary)
+        }
+        return IconResult(
+            iconKey = result.match?.iconKey,
+            fallbackLibrary = result.fallbackLibrary,
+        )
+    }
+
+    /**
+     * 推断活动的相关关键词，用于多关键词图标搜索。
+     */
+    private fun inferRelatedKeywords(activityName: String): List<String> {
+        val keywordMap = mapOf(
+            "阅读" to listOf("看书", "读书", "book", "read"),
+            "跑步" to listOf("慢跑", "run", "jogging", "运动"),
+            "编程" to listOf("代码", "开发", "code", "programming"),
+            "学习" to listOf("阅读", "书", "study", "book"),
+            "工作" to listOf("办公", "公文包", "work", "briefcase"),
+            "休息" to listOf("放松", "relax", "spa"),
+            "冥想" to listOf("瑜伽", "meditation", "yoga", "放松"),
+            "购物" to listOf("买东西", "shopping", "store"),
+            "散步" to listOf("走路", "walk"),
+            "做饭" to listOf("烹饪", "cooking", "食物", "餐厅"),
+            "运动" to listOf("健身", "fitness", "exercise"),
+            "看电影" to listOf("电影", "movie", "film"),
+            "听音乐" to listOf("音乐", "music", "耳机"),
+            "写代码" to listOf("编程", "开发", "code", "programming"),
+            "开会" to listOf("会议", "meeting", "讨论"),
+            "午睡" to listOf("小睡", "睡觉", "nap", "sleep"),
+            "洗澡" to listOf("淋浴", "shower", "bath"),
+            "整理" to listOf("收拾", "clean", "tidy"),
+            "写日记" to listOf("日记", "journal", "diary"),
+        )
+        return keywordMap[activityName] ?: emptyList()
     }
 
     private suspend fun ensureActivityGroupId(groupName: String): Long {
@@ -152,8 +202,8 @@ class BatchCreateActivitiesTool @Inject constructor(
         returnExample = """
             {
               "created": [
-                {"id": 14, "name": "阅读", "iconKey": "hi:BookOpen01"},
-                {"id": 15, "name": "跑步", "iconKey": "🏃"}
+                {"id": 14, "name": "阅读", "iconKey": "hi:BookOpen01", "iconMatched": true},
+                {"id": 15, "name": "跑步", "iconKey": "🏃", "iconMatched": true, "fallbackLibrary": "emoji", "fallbackNote": "hi库无匹配，使用emoji库"}
               ],
               "skipped": [
                 {"name": "编程", "reason": "活动已存在"}

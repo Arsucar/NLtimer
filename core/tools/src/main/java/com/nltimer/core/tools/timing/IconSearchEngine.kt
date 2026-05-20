@@ -75,6 +75,52 @@ object IconSearchEngine {
         return emptyList()
     }
 
+    /**
+     * 多关键词搜索，优先 hi 库。
+     * 按关键词顺序尝试，每个关键词先搜 hi，hi 无结果再搜 mi/emoji。
+     * 返回第一个有结果的关键词的匹配，以及匹配来源的库信息。
+     */
+    data class MultiSearchResult(
+        val match: IconMatch?,
+        val matchedQuery: String?,
+        val fallbackLibrary: String?,  // 如果使用了 mi/emoji 则记录，hi 匹配为 null
+    )
+
+    fun searchMultipleQueries(
+        queries: List<String>,
+        limit: Int = 1,
+    ): MultiSearchResult {
+        for (query in queries) {
+            // 优先 hi 库
+            val hiResults = searchHugeIcons(query.lowercase(), limit)
+            if (hiResults.isNotEmpty()) {
+                return MultiSearchResult(
+                    match = hiResults.first(),
+                    matchedQuery = query,
+                    fallbackLibrary = null,
+                )
+            }
+            // hi 无结果，搜索 mi 和 emoji
+            val miResults = searchMaterialIcons(query.lowercase(), limit)
+            if (miResults.isNotEmpty()) {
+                return MultiSearchResult(
+                    match = miResults.first(),
+                    matchedQuery = query,
+                    fallbackLibrary = "mi",
+                )
+            }
+            val emojiResults = searchEmoji(query.lowercase(), limit)
+            if (emojiResults.isNotEmpty()) {
+                return MultiSearchResult(
+                    match = emojiResults.first(),
+                    matchedQuery = query,
+                    fallbackLibrary = "emoji",
+                )
+            }
+        }
+        return MultiSearchResult(match = null, matchedQuery = null, fallbackLibrary = null)
+    }
+
     fun toJsonObject(match: IconMatch): JSONObject = JSONObject().apply {
         put("iconKey", match.iconKey)
         put("name", match.name)

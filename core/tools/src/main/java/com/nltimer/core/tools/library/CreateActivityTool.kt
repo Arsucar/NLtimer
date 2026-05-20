@@ -13,6 +13,7 @@ import com.nltimer.core.tools.ToolDocumentation
 import com.nltimer.core.tools.ToolError
 import com.nltimer.core.tools.ToolParameter
 import com.nltimer.core.tools.ToolResult
+import com.nltimer.core.tools.timing.IconSearchEngine
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.reflect.KClass
@@ -23,7 +24,7 @@ import kotlinx.coroutines.flow.first
  *
  * 默认行为：
  * - 未指定 groupName → 落到 "预制菜" 分组（不存在则自动创建）
- * - 未指定 iconKey → 留 null，由 UI 渲染兜底
+ * - 未指定 iconKey 且 autoIcon=true → 根据活动名称自动匹配图标
  * - 未指定 color → 工具内随机莫奈中和色
  */
 @Singleton
@@ -65,6 +66,13 @@ class CreateActivityTool @Inject constructor(
             type = ParameterType.NUMBER,
             required = false,
         ),
+        ToolParameter(
+            name = "autoIcon",
+            description = "是否自动根据活动名称匹配图标（默认 true）。自动匹配基于活动名称搜索图标库，无需手动调 searchIcons",
+            type = ParameterType.BOOLEAN,
+            required = false,
+            default = true,
+        ),
     )
 
     override val returnType: KClass<*> = Long::class
@@ -79,7 +87,8 @@ class CreateActivityTool @Inject constructor(
         }
         val groupName = (args["groupName"] as? String)?.trim()?.takeIf { it.isNotEmpty() }
             ?: DEFAULT_GROUP_NAME
-        val iconKey = (args["iconKey"] as? String)?.takeIf { it.isNotBlank() }
+        val autoIcon = (args["autoIcon"] as? Boolean) ?: true
+        val iconKey = resolveIconKey(args["iconKey"] as? String, name, autoIcon)
         val color = (args["color"] as? Number)?.toLong() ?: RandomMonetColor.next()
 
         return runCatching {
@@ -113,6 +122,38 @@ class CreateActivityTool @Inject constructor(
         }
     }
 
+    private fun resolveIconKey(
+        explicitIconKey: String?,
+        activityName: String,
+        autoIcon: Boolean,
+    ): String? {
+        explicitIconKey?.takeIf { it.isNotBlank() }?.let { return it }
+        if (!autoIcon) return null
+
+        // 先尝试多关键词搜索（与 BatchCreateActivitiesTool 一致）
+        val queries = listOf(activityName) + inferRelatedKeywords(activityName)
+        val multiResult = IconSearchEngine.searchMultipleQueries(queries, limit = 1)
+        return multiResult.match?.iconKey
+    }
+
+    private fun inferRelatedKeywords(activityName: String): List<String> {
+        val keywordMap = mapOf(
+            "阅读" to listOf("看书", "读书", "book", "read"),
+            "跑步" to listOf("慢跑", "run", "jogging", "运动"),
+            "编程" to listOf("代码", "开发", "code", "programming"),
+            "学习" to listOf("阅读", "书", "study", "book"),
+            "工作" to listOf("办公", "公文包", "work", "briefcase"),
+            "休息" to listOf("放松", "relax", "spa"),
+            "冥想" to listOf("瑜伽", "meditation", "yoga", "放松"),
+            "购物" to listOf("买东西", "shopping", "store"),
+            "散步" to listOf("走路", "walk"),
+            "做饭" to listOf("烹饪", "cooking", "食物", "餐厅"),
+            "运动" to listOf("健身", "fitness", "exercise"),
+            "午睡" to listOf("小睡", "睡觉", "nap", "sleep"),
+        )
+        return keywordMap[activityName] ?: emptyList()
+    }
+
     private suspend fun ensureActivityGroupId(groupName: String): Long {
         val groups = activityRepository.getAllGroups().first()
         groups.firstOrNull { it.name == groupName }?.let { return it.id }
@@ -139,6 +180,7 @@ class CreateActivityTool @Inject constructor(
         usageExamples = listOf(
             "createActivity(name=\"看小说\")",
             "createActivity(name=\"追番\", groupName=\"娱乐\", iconKey=\"📺\")",
+            "createActivity(name=\"休息\", groupName=\"生活\")  // autoIcon=true 自动匹配图标",
         ),
     )
 

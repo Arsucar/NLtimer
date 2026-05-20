@@ -13,6 +13,7 @@ import com.nltimer.core.tools.ToolError
 import com.nltimer.core.tools.ToolParameter
 import com.nltimer.core.tools.ToolResult
 import com.nltimer.core.tools.timing.IconSearchEngine
+import com.nltimer.core.tools.timing.IconSearchMissLog
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.reflect.KClass
@@ -23,6 +24,7 @@ import org.json.JSONObject
 class BatchCreateTagsTool @Inject constructor(
     private val tagRepository: TagRepository,
     private val toolConfig: ToolConfig,
+    private val iconSearchMissLog: IconSearchMissLog,
 ) : ToolDefinition {
 
     override val name: String = "batchCreateTags"
@@ -88,7 +90,7 @@ class BatchCreateTagsTool @Inject constructor(
 
             val category = (item["category"] as? String)?.trim()?.takeIf { it.isNotEmpty() }
                 ?: DEFAULT_CATEGORY
-            val iconKey = resolveIconKey(item["iconKey"] as? String, tagName, autoIcon)
+            val iconResult = resolveIconKey(item["iconKey"] as? String, tagName, autoIcon)
             val color = (item["color"] as? Number)?.toLong() ?: RandomMonetColor.next()
 
             val newId = tagRepository.insert(
@@ -96,7 +98,7 @@ class BatchCreateTagsTool @Inject constructor(
                     id = 0L,
                     name = tagName,
                     color = color,
-                    iconKey = iconKey,
+                    iconKey = iconResult.iconKey,
                     category = category,
                     groupId = null,
                     priority = 0,
@@ -106,7 +108,16 @@ class BatchCreateTagsTool @Inject constructor(
                     isArchived = false,
                 ),
             )
-            created.put(JSONObject().put("id", newId).put("name", tagName).put("iconKey", iconKey ?: "⁉"))
+            val createdObj = JSONObject()
+                .put("id", newId)
+                .put("name", tagName)
+                .put("iconKey", iconResult.iconKey ?: "⁉")
+                .put("iconMatched", iconResult.iconKey != null)
+            if (iconResult.fallbackLibrary != null) {
+                createdObj.put("fallbackLibrary", iconResult.fallbackLibrary)
+                createdObj.put("fallbackNote", "hi库无匹配，使用${iconResult.fallbackLibrary}库")
+            }
+            created.put(createdObj)
         }
 
         val result = JSONObject()
@@ -116,16 +127,59 @@ class BatchCreateTagsTool @Inject constructor(
         return ToolResult.Success(this.name, result.toString())
     }
 
-    private fun resolveIconKey(
+    private data class IconResult(
+        val iconKey: String?,
+        val fallbackLibrary: String?,
+    )
+
+    private suspend fun resolveIconKey(
         explicitIconKey: String?,
         tagName: String,
         autoIcon: Boolean,
-    ): String? {
-        explicitIconKey?.takeIf { it.isNotBlank() }?.let { return it }
-        if (!autoIcon) return DEFAULT_ICON_KEY
+    ): IconResult {
+        explicitIconKey?.takeIf { it.isNotBlank() }?.let { return IconResult(it, null) }
+        if (!autoIcon) return IconResult(null, null)
 
-        val matches = IconSearchEngine.searchWithFallback(tagName, limit = 1)
-        return matches.firstOrNull()?.iconKey ?: DEFAULT_ICON_KEY
+        val queries = listOf(tagName) + inferRelatedKeywords(tagName)
+        val result = IconSearchEngine.searchMultipleQueries(queries, limit = 1)
+        // PRD: 使用 mi/emoji 时记录到 icon_search_miss 表
+        if (result.fallbackLibrary != null) {
+            iconSearchMissLog.record(tagName, result.fallbackLibrary)
+        }
+        return IconResult(
+            iconKey = result.match?.iconKey,
+            fallbackLibrary = result.fallbackLibrary,
+        )
+    }
+
+    /**
+     * 推断标签的相关关键词，用于多关键词图标搜索。
+     * 例如："小睡" -> ["睡觉", "nap", "sleep"]
+     */
+    private fun inferRelatedKeywords(tagName: String): List<String> {
+        val keywordMap = mapOf(
+            "小睡" to listOf("睡觉", "nap", "sleep", "休息"),
+            "睡觉" to listOf("睡眠", "sleep", "nap", "休息"),
+            "起床" to listOf("醒来", "alarm", "morning"),
+            "吃饭" to listOf("餐厅", "食物", "food", "meal"),
+            "做饭" to listOf("烹饪", "cooking", "食物", "餐厅"),
+            "运动" to listOf("健身", "跑步", "fitness", "exercise"),
+            "学习" to listOf("阅读", "书", "study", "book"),
+            "工作" to listOf("办公", "公文包", "work", "briefcase"),
+            "休息" to listOf("放松", "relax", "spa"),
+            "冥想" to listOf("瑜伽", "meditation", "yoga", "放松"),
+            "购物" to listOf("买东西", "shopping", "store"),
+            "阅读" to listOf("看书", "读书", "book", "read"),
+            "编程" to listOf("代码", "开发", "code", "programming"),
+            "会议" to listOf("讨论", "meeting", "discussion"),
+            "散步" to listOf("走路", "walk", "散步"),
+            "跑步" to listOf("慢跑", "run", "jogging"),
+            "洗澡" to listOf("淋浴", "shower", "bath"),
+            "化妆" to listOf("打扮", "makeup", "beauty"),
+            "整理" to listOf("收拾", "clean", "tidy"),
+            "写日记" to listOf("日记", "journal", "diary"),
+        )
+        return keywordMap[tagName] ?: emptyList()
     }
 
     override fun getDocumentation(): ToolDocumentation = ToolDocumentation(
@@ -137,8 +191,9 @@ class BatchCreateTagsTool @Inject constructor(
         returnExample = """
             {
               "created": [
-                {"id": 14, "name": "重要", "iconKey": "⭐"},
-                {"id": 15, "name": "紧急", "iconKey": "⚡"}
+                {"id": 14, "name": "重要", "iconKey": "⭐", "iconMatched": true},
+                {"id": 15, "name": "紧急", "iconKey": "⚡", "iconMatched": true},
+                {"id": 16, "name": "小睡", "iconKey": "hi:Moon", "iconMatched": true}
               ],
               "skipped": [{"name": "吃饭", "reason": "标签已存在"}]
             }
@@ -165,6 +220,5 @@ class BatchCreateTagsTool @Inject constructor(
         const val MAX_BATCH_SIZE = 20
         const val MAX_NAME_LENGTH = 50
         const val DEFAULT_CATEGORY = "预制菜"
-        const val DEFAULT_ICON_KEY = "#"
     }
 }

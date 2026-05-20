@@ -1,6 +1,7 @@
 package com.nltimer.core.tools.library
 
 import com.nltimer.core.data.repository.ActivityRepository
+import com.nltimer.core.data.repository.CategoryRepository
 import com.nltimer.core.tools.AccessLevel
 import com.nltimer.core.tools.ErrorExample
 import com.nltimer.core.tools.ParameterType
@@ -14,12 +15,14 @@ import com.nltimer.core.tools.ToolResult
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.reflect.KClass
+import kotlinx.coroutines.flow.first
 import org.json.JSONArray
 import org.json.JSONObject
 
 @Singleton
 class BulkUpdateActivitiesTool @Inject constructor(
     private val activityRepository: ActivityRepository,
+    private val categoryRepository: CategoryRepository,
     private val toolConfig: ToolConfig,
 ) : ToolDefinition {
 
@@ -32,7 +35,7 @@ class BulkUpdateActivitiesTool @Inject constructor(
     override val parameters: List<ToolParameter> = listOf(
         ToolParameter(
             name = "updates",
-            description = "更新列表，每个元素含 id(必填)、groupId(可选)、iconKey(可选)、color(可选)、name(可选)，最多 $MAX_BATCH_SIZE 条",
+            description = "更新列表，每个元素含 id(必填)、groupId(可选)、groupName(可选)、iconKey(可选)、color(可选)、name(可选)，最多 $MAX_BATCH_SIZE 条。groupName 不存在时自动创建",
             type = ParameterType.ARRAY,
             required = true,
         ),
@@ -72,11 +75,21 @@ class BulkUpdateActivitiesTool @Inject constructor(
                 continue
             }
 
+            // 解析 groupId：优先使用 groupId，其次使用 groupName
+            val resolvedGroupId = when {
+                item.containsKey("groupId") -> (item["groupId"] as? Number)?.toLong()
+                item.containsKey("groupName") -> {
+                    val groupName = (item["groupName"] as? String)?.trim()?.takeIf { it.isNotEmpty() }
+                    if (groupName != null) ensureActivityGroupId(groupName) else existing.groupId
+                }
+                else -> existing.groupId
+            }
+
             val merged = existing.copy(
                 name = (item["name"] as? String)?.trim()?.takeIf { it.isNotEmpty() } ?: existing.name,
                 iconKey = if (item.containsKey("iconKey")) (item["iconKey"] as? String) else existing.iconKey,
                 color = if (item.containsKey("color")) (item["color"] as? Number)?.toLong() else existing.color,
-                groupId = if (item.containsKey("groupId")) (item["groupId"] as? Number)?.toLong() else existing.groupId,
+                groupId = resolvedGroupId,
             )
 
             runCatching {
@@ -92,6 +105,15 @@ class BulkUpdateActivitiesTool @Inject constructor(
             .put("notFound", notFound)
 
         return ToolResult.Success(name, result.toString())
+    }
+
+    private suspend fun ensureActivityGroupId(groupName: String): Long {
+        val groups = activityRepository.getAllGroups().first()
+        groups.firstOrNull { it.name == groupName }?.let { return it.id }
+        categoryRepository.addActivityCategory(groupName)
+        return activityRepository.getAllGroups().first()
+            .firstOrNull { it.name == groupName }?.id
+            ?: error("创建分组后仍未找到: $groupName")
     }
 
     override fun getDocumentation(): ToolDocumentation = ToolDocumentation(
@@ -121,6 +143,7 @@ class BulkUpdateActivitiesTool @Inject constructor(
         usageExamples = listOf(
             """bulkUpdateActivities(updates=[{"id":1,"color":4278190335},{"id":2,"name":"新名称"}])""",
             """bulkUpdateActivities(updates=[{"id":3,"groupId":5,"iconKey":"01"}])""",
+            """bulkUpdateActivities(updates=[{"id":1,"groupName":"生活"}])""",
         ),
     )
 
