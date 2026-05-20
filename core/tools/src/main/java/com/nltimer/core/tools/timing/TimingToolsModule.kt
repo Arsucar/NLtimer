@@ -90,4 +90,8 @@ abstract class TimingToolsModule {
     @Binds
     @IntoSet
     abstract fun bindClearIconSearchMissesTool(impl: ClearIconSearchMissesTool): ToolDefinition
+
+    @Binds
+    @IntoSet
+    abstract fun bindBatchSearchIconsTool(impl: BatchSearchIconsTool): ToolDefinition
 }

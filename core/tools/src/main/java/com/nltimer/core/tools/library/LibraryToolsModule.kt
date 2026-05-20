@@ -76,4 +76,8 @@ abstract class LibraryToolsModule {
     @Binds
     @IntoSet
     abstract fun bindBatchCreateTagCategoriesTool(impl: BatchCreateTagCategoriesTool): ToolDefinition
+
+    @Binds
+    @IntoSet
+    abstract fun bindBulkUpdateTagsTool(impl: BulkUpdateTagsTool): ToolDefinition
 }

@@ -13,6 +13,7 @@ import com.nltimer.core.tools.ToolDocumentation
 import com.nltimer.core.tools.ToolError
 import com.nltimer.core.tools.ToolParameter
 import com.nltimer.core.tools.ToolResult
+import com.nltimer.core.tools.timing.IconSearchEngine
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.reflect.KClass
@@ -20,12 +21,6 @@ import kotlinx.coroutines.flow.first
 import org.json.JSONArray
 import org.json.JSONObject
 
-/**
- * 工具：批量创建活动
- *
- * 一次调用创建多条活动，自动去重，返回 created / skipped 列表。
- * 分组不存在时自动创建（复用 ensureActivityGroupId 逻辑）。
- */
 @Singleton
 class BatchCreateActivitiesTool @Inject constructor(
     private val activityRepository: ActivityRepository,
@@ -35,7 +30,7 @@ class BatchCreateActivitiesTool @Inject constructor(
 
     override val name: String = "batchCreateActivities"
     override val description: String =
-        "批量创建活动；传入活动列表，自动去重并创建不存在的活动，返回 created/skipped 结果"
+        "批量创建活动；传入活动列表，自动去重并创建不存在的活动，返回 created/skipped 结果。autoIcon=true 时自动为每个活动匹配图标。"
     override val category: ToolCategory = ToolCategory.ACTIVITY
     override val accessLevel: AccessLevel = AccessLevel.WRITE
 
@@ -45,6 +40,13 @@ class BatchCreateActivitiesTool @Inject constructor(
             description = "活动列表，每个元素含 name(必填)、groupName(可选,默认'预制菜')、iconKey(可选)、color(可选)",
             type = ParameterType.ARRAY,
             required = true,
+        ),
+        ToolParameter(
+            name = "autoIcon",
+            description = "是否自动为未指定 iconKey 的活动匹配图标（默认 true）。自动匹配基于活动名称搜索图标库，无需手动调 searchIcons",
+            type = ParameterType.BOOLEAN,
+            required = false,
+            default = true,
         ),
     )
 
@@ -66,6 +68,8 @@ class BatchCreateActivitiesTool @Inject constructor(
             )
         }
 
+        val autoIcon = (args["autoIcon"] as? Boolean) ?: true
+
         val created = JSONArray()
         val skipped = JSONArray()
 
@@ -78,7 +82,6 @@ class BatchCreateActivitiesTool @Inject constructor(
                 continue
             }
 
-            // 查重
             if (activityRepository.getByName(actName) != null) {
                 skipped.put(
                     JSONObject().put("name", actName).put("reason", "活动已存在")
@@ -86,18 +89,14 @@ class BatchCreateActivitiesTool @Inject constructor(
                 continue
             }
 
-            // 确保分组存在
             val groupName = (item["groupName"] as? String)?.trim()?.takeIf { it.isNotEmpty() }
                 ?: DEFAULT_GROUP_NAME
             val groupId = ensureActivityGroupId(groupName)
 
-            // 颜色
             val color = (item["color"] as? Number)?.toLong() ?: RandomMonetColor.next()
 
-            // 图标
-            val iconKey = (item["iconKey"] as? String)?.takeIf { it.isNotBlank() }
+            val iconKey = resolveIconKey(item["iconKey"] as? String, actName, autoIcon)
 
-            // 插入
             val newId = activityRepository.insert(
                 Activity(
                     id = 0L,
@@ -112,7 +111,7 @@ class BatchCreateActivitiesTool @Inject constructor(
                 ),
             )
             created.put(
-                JSONObject().put("id", newId).put("name", actName)
+                JSONObject().put("id", newId).put("name", actName).put("iconKey", iconKey ?: "⁉")
             )
         }
 
@@ -123,12 +122,18 @@ class BatchCreateActivitiesTool @Inject constructor(
         return ToolResult.Success(this.name, result.toString())
     }
 
-    /**
-     * 确保分组存在，不存在则创建并返回 id
-     *
-     * 逻辑与 [CreateActivityTool.ensureActivityGroupId] 一致，
-     * 因 Kotlin abstract class 不支持跨工具共享 private 方法，故在此重复。
-     */
+    private fun resolveIconKey(
+        explicitIconKey: String?,
+        activityName: String,
+        autoIcon: Boolean,
+    ): String? {
+        explicitIconKey?.takeIf { it.isNotBlank() }?.let { return it }
+        if (!autoIcon) return null
+
+        val matches = IconSearchEngine.searchWithFallback(activityName, limit = 1)
+        return matches.firstOrNull()?.iconKey
+    }
+
     private suspend fun ensureActivityGroupId(groupName: String): Long {
         val groups = activityRepository.getAllGroups().first()
         groups.firstOrNull { it.name == groupName }?.let { return it.id }
@@ -147,8 +152,8 @@ class BatchCreateActivitiesTool @Inject constructor(
         returnExample = """
             {
               "created": [
-                {"id": 14, "name": "阅读"},
-                {"id": 15, "name": "跑步"}
+                {"id": 14, "name": "阅读", "iconKey": "hi:BookOpen01"},
+                {"id": 15, "name": "跑步", "iconKey": "🏃"}
               ],
               "skipped": [
                 {"name": "编程", "reason": "活动已存在"}
@@ -169,7 +174,7 @@ class BatchCreateActivitiesTool @Inject constructor(
         ),
         usageExamples = listOf(
             """batchCreateActivities(activities=[{"name":"阅读"},{"name":"跑步"}])""",
-            """batchCreateActivities(activities=[{"name":"看小说","groupName":"娱乐","iconKey":"📺"}])""",
+            """batchCreateActivities(activities=[{"name":"看小说","groupName":"娱乐","iconKey":"📺"}], autoIcon=false)""",
         ),
     )
 

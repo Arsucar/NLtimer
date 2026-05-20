@@ -4,7 +4,6 @@ import com.nltimer.core.data.model.Tag
 import com.nltimer.core.data.repository.TagRepository
 import com.nltimer.core.tools.AccessLevel
 import com.nltimer.core.tools.ErrorExample
-import com.nltimer.core.tools.ParameterConstraint
 import com.nltimer.core.tools.ParameterType
 import com.nltimer.core.tools.ToolCategory
 import com.nltimer.core.tools.ToolConfig
@@ -13,6 +12,7 @@ import com.nltimer.core.tools.ToolDocumentation
 import com.nltimer.core.tools.ToolError
 import com.nltimer.core.tools.ToolParameter
 import com.nltimer.core.tools.ToolResult
+import com.nltimer.core.tools.timing.IconSearchEngine
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.reflect.KClass
@@ -27,16 +27,23 @@ class BatchCreateTagsTool @Inject constructor(
 
     override val name: String = "batchCreateTags"
     override val description: String =
-        "批量创建标签；传入标签列表，自动去重并创建不存在的标签，返回 created/skipped 结果"
+        "批量创建标签；传入标签列表，自动去重并创建不存在的标签，返回 created/skipped 结果。autoIcon=true 时自动为每个标签匹配图标。"
     override val category: ToolCategory = ToolCategory.TAG
     override val accessLevel: AccessLevel = AccessLevel.WRITE
 
     override val parameters: List<ToolParameter> = listOf(
         ToolParameter(
             name = "tags",
-            description = "标签列表，每个元素含 name(必填)、category(可选,默认'预制菜')、iconKey(可选,默认'#')、color(可选)",
+            description = "标签列表，每个元素含 name(必填)、category(可选,默认'预制菜')、iconKey(可选)、color(可选)",
             type = ParameterType.ARRAY,
             required = true,
+        ),
+        ToolParameter(
+            name = "autoIcon",
+            description = "是否自动为未指定 iconKey 的标签匹配图标（默认 true）。自动匹配基于标签名称搜索图标库，无需手动调 searchIcons",
+            type = ParameterType.BOOLEAN,
+            required = false,
+            default = true,
         ),
     )
 
@@ -57,6 +64,8 @@ class BatchCreateTagsTool @Inject constructor(
                 ToolError.ValidationError("单次最多 ${toolConfig.maxBatchSize} 条，当前 ${rawList.size} 条"),
             )
         }
+
+        val autoIcon = (args["autoIcon"] as? Boolean) ?: true
 
         val created = JSONArray()
         val skipped = JSONArray()
@@ -79,8 +88,7 @@ class BatchCreateTagsTool @Inject constructor(
 
             val category = (item["category"] as? String)?.trim()?.takeIf { it.isNotEmpty() }
                 ?: DEFAULT_CATEGORY
-            val iconKey = (item["iconKey"] as? String)?.takeIf { it.isNotBlank() }
-                ?: DEFAULT_ICON_KEY
+            val iconKey = resolveIconKey(item["iconKey"] as? String, tagName, autoIcon)
             val color = (item["color"] as? Number)?.toLong() ?: RandomMonetColor.next()
 
             val newId = tagRepository.insert(
@@ -97,7 +105,7 @@ class BatchCreateTagsTool @Inject constructor(
                     isArchived = false,
                 ),
             )
-            created.put(JSONObject().put("id", newId).put("name", tagName))
+            created.put(JSONObject().put("id", newId).put("name", tagName).put("iconKey", iconKey ?: "⁉"))
         }
 
         val result = JSONObject()
@@ -105,6 +113,18 @@ class BatchCreateTagsTool @Inject constructor(
             .put("skipped", skipped)
 
         return ToolResult.Success(this.name, result.toString())
+    }
+
+    private fun resolveIconKey(
+        explicitIconKey: String?,
+        tagName: String,
+        autoIcon: Boolean,
+    ): String? {
+        explicitIconKey?.takeIf { it.isNotBlank() }?.let { return it }
+        if (!autoIcon) return DEFAULT_ICON_KEY
+
+        val matches = IconSearchEngine.searchWithFallback(tagName, limit = 1)
+        return matches.firstOrNull()?.iconKey ?: DEFAULT_ICON_KEY
     }
 
     override fun getDocumentation(): ToolDocumentation = ToolDocumentation(
@@ -115,7 +135,10 @@ class BatchCreateTagsTool @Inject constructor(
         parameters = parameters,
         returnExample = """
             {
-              "created": [{"id": 14, "name": "重要"}, {"id": 15, "name": "紧急"}],
+              "created": [
+                {"id": 14, "name": "重要", "iconKey": "⭐"},
+                {"id": 15, "name": "紧急", "iconKey": "⚡"}
+              ],
               "skipped": [{"name": "吃饭", "reason": "标签已存在"}]
             }
         """.trimIndent(),
@@ -133,7 +156,7 @@ class BatchCreateTagsTool @Inject constructor(
         ),
         usageExamples = listOf(
             """batchCreateTags(tags=[{"name":"重要"},{"name":"紧急"}])""",
-            """batchCreateTags(tags=[{"name":"工作","category":"分类","iconKey":"💼"}])""",
+            """batchCreateTags(tags=[{"name":"工作","category":"分类","iconKey":"💼"}], autoIcon=false)""",
         ),
     )
 
