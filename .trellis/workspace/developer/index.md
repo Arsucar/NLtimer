@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 14
+- **Total Sessions**: 15
 - **Last Active**: 2026-05-20
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~474 | Active |
+| `journal-1.md` | ~507 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 15 | 2026-05-20 | 标签活动双向联动+关键词匹配+UI修复 | `d0d59571` | `dev-v5` |
 | 14 | 2026-05-20 | 标签图标优化：分组iconKey、全局图标开关、图标bug修复 | `1ac0f126`, `2b62d119` | `dev-v5` |
 | 13 | 2026-05-20 | AI对话输入框背景统一与全屏编辑按钮 | `e7562bbb` | `dev-v5` |
 | 12 | 2026-05-20 | 修复6项UI问题(专注卡片/滚轴/AI输入框/标签配置) | `e129d03f` | `dev-v5` |

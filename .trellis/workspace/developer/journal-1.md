@@ -472,3 +472,36 @@ B5 TextField背景色改回透明统一由hazeEffect处理; F1 添加isFocused�
 ### Next Steps
 
 - None - task complete
+
+
+## Session 15: 标签活动双向联动+关键词匹配+UI修复
+
+**Date**: 2026-05-20
+**Task**: 标签活动双向联动+关键词匹配+UI修复
+**Branch**: `dev-v5`
+
+### Summary
+
+R1:标签默认图标hi:Tag01 R2:行为弹窗新增标签分类修复 R3:抽屉强调色 R4:AI侧滑改主抽屉移除菜单图标 R5:活动↔标签双向联动(选活动自动选绑定标签/选标签自动选绑定活动/多标签取最后点击) R6:StartBehaviorTool关键词匹配标签(KeywordMatcher)
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `d0d59571` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
