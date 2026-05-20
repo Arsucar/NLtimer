@@ -1,0 +1,2 @@
+{"file": "docs/agent/04-patterns.md", "reason": "Compose 约定——状态提升、主题使用模式"}
+{"file": "docs/agent/03-module-map.md", "reason": "模块→文件路径映射——定位 ChatInput 文件"}

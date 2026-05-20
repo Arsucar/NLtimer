@@ -1,0 +1,2 @@
+{"file": "docs/agent/04-patterns.md", "reason": "Compose 约定——审查代码是否符合项目约定"}
+{"file": "docs/agent/03-module-map.md", "reason": "模块→文件路径映射——确认修改范围"}
