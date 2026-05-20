@@ -266,12 +266,12 @@ private fun AddBehaviorSheetPreview() {
         Activity(3, "Workout", "💪")
     )
     val sampleTags = listOf(
-        Tag(1, "Work", null, null, null, 0, 0, 0, null, false),
-        Tag(2, "Study", null, null, null, 0, 0, 0, null, false)
+        Tag(1, "Work", null, null, null, null, 0, 0, 0, null, false),
+        Tag(2, "Study", null, null, null, null, 0, 0, 0, null, false)
     )
     val sampleGroups = listOf(
-        ActivityGroup(1, "工作", 0),
-        ActivityGroup(2, "学习", 1),
+        ActivityGroup(1, "工作", null, 0),
+        ActivityGroup(2, "学习", null, 1),
     )
 
     NLtimerTheme {

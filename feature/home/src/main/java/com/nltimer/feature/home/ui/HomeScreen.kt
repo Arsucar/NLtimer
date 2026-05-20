@@ -606,8 +606,8 @@ private fun TextListContent(
 @Composable
 private fun HomeScreenPreview() {
     val sampleTags = listOf(
-        Tag(1, "Tag 1", null, null, null, 0, 0, 0, null, false),
-        Tag(2, "Tag 2", null, null, null, 0, 0, 0, null, false)
+        Tag(1, "Tag 1", null, null, null, null, 0, 0, 0, null, false),
+        Tag(2, "Tag 2", null, null, null, null, 0, 0, 0, null, false)
     )
     val sampleActivities = listOf(
         Activity(1, "Activity 1", "😊"),

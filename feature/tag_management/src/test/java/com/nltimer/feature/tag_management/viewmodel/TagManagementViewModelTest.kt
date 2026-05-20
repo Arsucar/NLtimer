@@ -62,8 +62,8 @@ class TagManagementViewModelTest {
 
     @Test
     fun `loadData combines tags and categories`() = runTest {
-        val workTag = Tag(1L, "工作", null, null, "分类A", 0, 0, 0, null, false)
-        val personalTag = Tag(2L, "个人", null, null, "分类B", 0, 0, 0, null, false)
+        val workTag = Tag(1L, "工作", null, null, "分类A", null, 0, 0, 0, null, false)
+        val personalTag = Tag(2L, "个人", null, null, "分类B", null, 0, 0, 0, null, false)
         tagRepository.emitTags(listOf(workTag, personalTag))
         tagRepository.emitCategories(listOf("分类A", "分类B"))
 
@@ -118,7 +118,7 @@ class TagManagementViewModelTest {
 
     @Test
     fun `updateTag calls repository update`() = runTest {
-        val tag = Tag(1L, "旧名称", null, null, null, 0, 0, 0, null, false)
+        val tag = Tag(1L, "旧名称", null, null, null, null, 0, 0, 0, null, false)
         viewModel.updateTag(tag, null)
         advanceUntilIdle()
 
@@ -128,7 +128,7 @@ class TagManagementViewModelTest {
 
     @Test
     fun `deleteTag calls setArchived`() = runTest {
-        val tag = Tag(1L, "待删除", null, null, null, 0, 0, 0, null, false)
+        val tag = Tag(1L, "待删除", null, null, null, null, 0, 0, 0, null, false)
         viewModel.deleteTag(tag)
         advanceUntilIdle()
 
@@ -147,7 +147,7 @@ class TagManagementViewModelTest {
 
     @Test
     fun `moveTagToCategory updates category`() = runTest {
-        val tag = Tag(1L, "标签", null, null, "旧分类", 0, 0, 0, null, false)
+        val tag = Tag(1L, "标签", null, null, "旧分类", null, 0, 0, 0, null, false)
         tagRepository.tagById = tag
         viewModel.moveTagToCategory(1L, "新分类")
         advanceUntilIdle()
@@ -233,7 +233,7 @@ class TagManagementViewModelTest {
 
     @Test
     fun `showEditTagDialog updates dialogState`() = runTest {
-        val tag = Tag(1L, "标签", null, null, "分类", 0, 0, 0, null, false)
+        val tag = Tag(1L, "标签", null, null, "分类", null, 0, 0, 0, null, false)
         viewModel.showEditTagDialog(tag)
         advanceUntilIdle()
         val state = viewModel.uiState.value.dialogState as? DialogState.EditTag
@@ -243,7 +243,7 @@ class TagManagementViewModelTest {
 
     @Test
     fun `showDeleteTagDialog updates dialogState`() = runTest {
-        val tag = Tag(1L, "待删", null, null, null, 0, 0, 0, null, false)
+        val tag = Tag(1L, "待删", null, null, null, null, 0, 0, 0, null, false)
         viewModel.showDeleteTagDialog(tag)
         val state = viewModel.uiState.value.dialogState as? DialogState.DeleteTag
         assertNotNull(state)
@@ -252,7 +252,7 @@ class TagManagementViewModelTest {
 
     @Test
     fun `showMoveTagDialog updates dialogState with currentCategory`() = runTest {
-        val tag = Tag(1L, "标签", null, null, "旧分类", 0, 0, 0, null, false)
+        val tag = Tag(1L, "标签", null, null, "旧分类", null, 0, 0, 0, null, false)
         viewModel.showMoveTagDialog(tag, "旧分类")
         val state = viewModel.uiState.value.dialogState as? DialogState.MoveTag
         assertNotNull(state)
@@ -283,7 +283,7 @@ class TagManagementViewModelTest {
 
     @Test
     fun `moveTagToCategory with null sets uncategorized`() = runTest {
-        val tag = Tag(1L, "标签", null, null, "旧分类", 0, 0, 0, null, false)
+        val tag = Tag(1L, "标签", null, null, "旧分类", null, 0, 0, 0, null, false)
         tagRepository.tagById = tag
         viewModel.moveTagToCategory(1L, null)
         advanceUntilIdle()
@@ -301,7 +301,7 @@ class TagManagementViewModelTest {
 
     @Test
     fun `updateTag dismisses dialog after update`() = runTest {
-        val tag = Tag(1L, "标签", null, null, null, 0, 0, 0, null, false)
+        val tag = Tag(1L, "标签", null, null, null, null, 0, 0, 0, null, false)
         viewModel.showEditTagDialog(tag)
         viewModel.updateTag(tag, null)
         advanceUntilIdle()
@@ -310,7 +310,7 @@ class TagManagementViewModelTest {
 
     @Test
     fun `deleteTag dismisses dialog after archive`() = runTest {
-        val tag = Tag(1L, "标签", null, null, null, 0, 0, 0, null, false)
+        val tag = Tag(1L, "标签", null, null, null, null, 0, 0, 0, null, false)
         viewModel.showDeleteTagDialog(tag)
         viewModel.deleteTag(tag)
         advanceUntilIdle()

@@ -324,6 +324,7 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
         DisplayColorConfig(
             activityIconColorMode = safeValueOf(prefs[activityIconColorModeKey] ?: DisplayColorMode.NORMAL.name, DisplayColorMode.NORMAL),
             tagDisplayColorMode = safeValueOf(prefs[tagDisplayColorModeKey] ?: DisplayColorMode.NORMAL.name, DisplayColorMode.NORMAL),
+            showTagIcon = prefs[showTagIconKey] != false,
         )
     }
 
@@ -331,6 +332,7 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
         dataStore.edit { prefs ->
             prefs[activityIconColorModeKey] = config.activityIconColorMode.name
             prefs[tagDisplayColorModeKey] = config.tagDisplayColorMode.name
+            prefs[showTagIconKey] = config.showTagIcon
         }
     }
 
@@ -496,6 +498,7 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
         private val textListColumnModeKey = stringPreferencesKey("home_text_column_mode")
         private val activityIconColorModeKey = stringPreferencesKey("activity_icon_color_mode")
         private val tagDisplayColorModeKey = stringPreferencesKey("tag_display_color_mode")
+        private val showTagIconKey = booleanPreferencesKey("show_tag_icon")
         private val globalTagDisplayModeKey = stringPreferencesKey("global_tag_display_mode")
         private val globalTagLayoutModeKey = stringPreferencesKey("global_tag_layout_mode")
         private val globalTagColumnLinesKey = intPreferencesKey("global_tag_column_lines")

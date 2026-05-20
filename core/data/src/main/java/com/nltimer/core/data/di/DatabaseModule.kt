@@ -8,6 +8,7 @@ import com.nltimer.core.data.database.dao.ActivityGroupDao
 import com.nltimer.core.data.database.dao.BehaviorDao
 import com.nltimer.core.data.database.dao.IconSearchMissDao
 import com.nltimer.core.data.database.dao.TagDao
+import com.nltimer.core.data.database.dao.TagGroupDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -53,6 +54,10 @@ object DatabaseModule {
     @Provides
     fun provideTagDao(database: NLtimerDatabase): TagDao =
         database.tagDao()
+
+    @Provides
+    fun provideTagGroupDao(database: NLtimerDatabase): TagGroupDao =
+        database.tagGroupDao()
 
     @Provides
     fun provideBehaviorDao(database: NLtimerDatabase): BehaviorDao =

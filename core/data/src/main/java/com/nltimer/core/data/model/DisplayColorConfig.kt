@@ -7,4 +7,5 @@ import com.nltimer.core.designsystem.theme.DisplayColorMode
 data class DisplayColorConfig(
     val activityIconColorMode: DisplayColorMode = DisplayColorMode.NORMAL,
     val tagDisplayColorMode: DisplayColorMode = DisplayColorMode.NORMAL,
+    val showTagIcon: Boolean = true,
 )

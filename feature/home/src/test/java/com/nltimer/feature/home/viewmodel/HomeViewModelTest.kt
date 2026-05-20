@@ -142,7 +142,7 @@ class HomeViewModelTest {
 
     @Test
     fun `onActivitySelected loads tags`() = runTest {
-        val tags = listOf(Tag(1, "Tag1", null, null, null, 0, 0, 0, null, false))
+        val tags = listOf(Tag(1, "Tag1", null, null, null, null, 0, 0, 0, null, false))
         tagRepository.tagsByActivityId[1L] = tags
         
         val collectJob = launch {

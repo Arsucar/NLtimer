@@ -179,6 +179,7 @@ fun NLtimerScaffold(
                 add(if (mode == DisplayColorMode.BACKGROUND) "✓ 标签：背景色" else "标签：背景色")
                 add(if (mode == DisplayColorMode.TEXT) "✓ 标签：文字色" else "标签：文字色")
                 add(if (mode == DisplayColorMode.NORMAL) "✓ 标签：正常" else "标签：正常")
+                add(if (displayColorConfig.showTagIcon) "✓ 显示图标" else "显示图标")
             }
         }
     }
@@ -226,6 +227,11 @@ fun NLtimerScaffold(
             option == "标签：正常" || option == "✓ 标签：正常" -> scope.launch {
                 settingsPrefs.updateDisplayColorConfig(
                     displayColorConfig.copy(tagDisplayColorMode = DisplayColorMode.NORMAL)
+                )
+            }
+            option == "显示图标" || option == "✓ 显示图标" -> scope.launch {
+                settingsPrefs.updateDisplayColorConfig(
+                    displayColorConfig.copy(showTagIcon = !displayColorConfig.showTagIcon)
                 )
             }
             option == "标签配置" -> showTagDisplayConfigDialog = true

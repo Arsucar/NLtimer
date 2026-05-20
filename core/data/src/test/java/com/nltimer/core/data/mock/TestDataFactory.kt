@@ -23,7 +23,7 @@ object TestDataFactory {
         usageCount: Int = 0,
         sortOrder: Int = 0,
         isArchived: Boolean = false,
-    ) = Tag(id, name, color, iconKey, category, priority, usageCount, sortOrder, null, isArchived)
+    ) = Tag(id, name, color, iconKey, category, null, priority, usageCount, sortOrder, null, isArchived)
 
     fun createBehavior(
         id: Long = Random.nextLong(),

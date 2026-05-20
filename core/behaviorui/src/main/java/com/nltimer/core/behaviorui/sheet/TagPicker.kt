@@ -2,36 +2,36 @@ package com.nltimer.core.behaviorui.sheet
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.Tag
+import com.nltimer.core.designsystem.icon.IconRenderer
 import com.nltimer.core.designsystem.theme.styledAlpha
+import androidx.compose.ui.text.style.TextOverflow
 
-/**
- * 标签多选选择器 Composable。
- * 标签以 FlowRow 排列，选中时高亮显示颜色边框。
- *
- * @param tags 所有可选的标签
- * @param selectedTagIds 当前选中的标签 ID 集合
- * @param onTagToggle 切换标签选中状态回调
- * @param modifier 修饰符
- */
 @Composable
 fun TagPicker(
     tags: List<Tag>,
     selectedTagIds: Set<Long>,
     onTagToggle: (Long) -> Unit,
     modifier: Modifier = Modifier,
+    showIcon: Boolean = true,
 ) {
     if (tags.isEmpty()) return
 
@@ -41,7 +41,6 @@ fun TagPicker(
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         tags.forEach { tag -> key(tag.id) {
-            // 选中状态决定背景色、边框色和文字色
             val isSelected = tag.id in selectedTagIds
             val tagColor = tag.color?.let { Color(it) } ?: MaterialTheme.colorScheme.primary
             val backgroundColor = if (isSelected) {
@@ -58,12 +57,32 @@ fun TagPicker(
                 color = backgroundColor,
                 border = if (isSelected) BorderStroke(1.dp, borderColor) else null,
             ) {
-                Text(
-                    text = tag.name,
-                    color = textColor,
-                    style = MaterialTheme.typography.labelMedium,
+                Row(
                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
-                )
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    if (showIcon && tag.iconKey != null) {
+                        Box(
+                            modifier = Modifier.size(14.dp),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            IconRenderer(
+                                iconKey = tag.iconKey,
+                                defaultEmoji = "hi:Tag01",
+                                iconSize = 14.dp,
+                                tint = textColor,
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(3.dp))
+                    }
+                    Text(
+                        text = tag.name,
+                        color = textColor,
+                        style = MaterialTheme.typography.labelMedium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
             }
         } }
     }

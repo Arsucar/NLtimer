@@ -1,10 +1,10 @@
 package com.nltimer.core.data.model
 
 import androidx.compose.runtime.Immutable
-import com.nltimer.core.data.database.entity.ActivityGroupEntity
+import com.nltimer.core.data.database.entity.TagGroupEntity
 
 @Immutable
-data class ActivityGroup(
+data class TagGroup(
     val id: Long = 0,
     val name: String,
     val iconKey: String? = null,
@@ -12,7 +12,7 @@ data class ActivityGroup(
     val isArchived: Boolean = false,
     val archivedAt: Long? = null,
 ) {
-    fun toEntity() = ActivityGroupEntity(
+    fun toEntity() = TagGroupEntity(
         id = id,
         name = name,
         iconKey = iconKey,
@@ -22,7 +22,7 @@ data class ActivityGroup(
     )
 
     companion object {
-        fun fromEntity(entity: ActivityGroupEntity) = ActivityGroup(
+        fun fromEntity(entity: TagGroupEntity) = TagGroup(
             id = entity.id,
             name = entity.name,
             iconKey = entity.iconKey,

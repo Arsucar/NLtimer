@@ -136,6 +136,7 @@ fun TagManagementScreen(
                             collapsed = false,
                             showDragHandle = false,
                             emptyText = "暂无标签",
+                            showItemIcon = uiState.displayColorConfig.showTagIcon,
                             displayColorMode = uiState.displayColorConfig.tagDisplayColorMode,
                             onItemSelected = { id ->
                                 uiState.uncategorizedTags
@@ -165,6 +166,7 @@ fun TagManagementScreen(
                             collapsed = category.categoryName !in uiState.expandedCategoryNames,
                             showDragHandle = true,
                             emptyText = "暂无标签",
+                            showItemIcon = uiState.displayColorConfig.showTagIcon,
                             displayColorMode = uiState.displayColorConfig.tagDisplayColorMode,
                             isDragging = draggedIndex == index,
                             dragOffsetY = if (draggedIndex == index) dragOffsetY else 0f,

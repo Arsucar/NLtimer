@@ -169,6 +169,7 @@ class KeywordMatchStrategyTest {
             color = null,
             iconKey = null,
             category = null,
+            groupId = null,
             priority = 0,
             usageCount = 0,
             sortOrder = 0,

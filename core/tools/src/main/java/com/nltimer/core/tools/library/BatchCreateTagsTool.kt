@@ -98,6 +98,7 @@ class BatchCreateTagsTool @Inject constructor(
                     color = color,
                     iconKey = iconKey,
                     category = category,
+                    groupId = null,
                     priority = 0,
                     usageCount = 0,
                     sortOrder = 0,

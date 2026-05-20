@@ -27,6 +27,7 @@ class AddTagUseCase @Inject constructor(
             color = color,
             iconKey = iconKey,
             category = category,
+            groupId = null,
             priority = priority,
             usageCount = 0,
             sortOrder = 0,

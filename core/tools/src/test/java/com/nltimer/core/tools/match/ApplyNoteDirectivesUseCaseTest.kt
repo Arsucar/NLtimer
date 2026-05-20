@@ -33,7 +33,7 @@ class ApplyNoteDirectivesUseCaseTest {
         Activity(id = id, name = name, isArchived = archived)
 
     private fun tag(id: Long, name: String, archived: Boolean = false) = Tag(
-        id = id, name = name, color = null, iconKey = null, category = null,
+        id = id, name = name, color = null, iconKey = null, category = null, groupId = null,
         priority = 0, usageCount = 0, sortOrder = 0, keywords = null, isArchived = archived,
     )
 

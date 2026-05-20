@@ -273,15 +273,15 @@ private fun <T : CategorizableItem> ItemChip(
         shape = RoundedCornerShape(6.dp),
         color = containerColor,
     ) {
-        if (showIcon) {
+        if (showIcon && item.iconKey != null) {
             ChipContent(
                 text = item.itemName,
                 textColor = contentColor,
                 iconSlot = {
                     IconRenderer(
                         iconKey = item.iconKey,
-                        defaultEmoji = "❓",
-                        iconSize = 20.dp,
+                        defaultEmoji = "hi:Tag01",
+                        iconSize = 16.dp,
                         tint = iconTint,
                     )
                 },
@@ -332,7 +332,7 @@ private fun ChipContent(
     ) {
         if (iconSlot != null) {
             Box(
-                modifier = Modifier.size(20.dp),
+                modifier = Modifier.size(16.dp),
                 contentAlignment = Alignment.Center,
             ) {
                 iconSlot()

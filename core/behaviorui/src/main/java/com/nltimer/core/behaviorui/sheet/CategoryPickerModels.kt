@@ -50,7 +50,7 @@ data class TagCategorizable(
     override val itemName: String = tag.name
     override val category: String? = tag.category
     override val usageCount: Int = tag.usageCount
-    override val iconKey: String? = null
+    override val iconKey: String? = tag.iconKey
     override val color: Long? = tag.color
 }
 
@@ -62,7 +62,7 @@ data class ActivityGroupCategorizable(
     override val category: String? = null
     override val usageCount: Int = 0
     override val lastUsedTimestamp: Long? = null
-    override val iconKey: String? = null
+    override val iconKey: String? = group.iconKey
     override val color: Long? = null
 }
 
