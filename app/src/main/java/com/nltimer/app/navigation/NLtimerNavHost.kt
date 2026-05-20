@@ -16,6 +16,9 @@ import com.nltimer.feature.management_activities.ui.ActivityManagementRoute
 import com.nltimer.feature.settings.ui.ColorPaletteRoute
 import com.nltimer.feature.settings.ui.DialogConfigRoute
 import com.nltimer.feature.settings.ui.HomeLayoutConfigRoute
+import com.nltimer.feature.settings.ui.IconMissLogRoute
+import com.nltimer.feature.settings.ui.LogListRoute
+import com.nltimer.feature.settings.ui.AdvancedSettingsRoute
 import com.nltimer.feature.settings.ui.SettingsRoute
 import com.nltimer.feature.settings.ui.ThemeSettingsRoute
 import com.nltimer.app.experimental.ai_inter.AiInterRoute
@@ -108,6 +111,7 @@ fun NLtimerNavHost(
                 onNavigateToDataManagement = { navController.navigate(NLtimerRoutes.DATA_MANAGEMENT) },
                 onNavigateToHomeLayoutConfig = { navController.navigate(NLtimerRoutes.HOME_LAYOUT_CONFIG) },
                 onNavigateToColorPalette = { navController.navigate(NLtimerRoutes.COLOR_PALETTE) },
+                onNavigateToAdvancedSettings = { navController.navigate(NLtimerRoutes.ADVANCED_SETTINGS) },
             )
         }
         composable(
@@ -157,6 +161,39 @@ fun NLtimerNavHost(
             popExitTransition = { slideOutHorizontally { it } },
         ) {
             ColorPaletteRoute()
+        }
+        composable(
+            NLtimerRoutes.ADVANCED_SETTINGS,
+            enterTransition = { slideInHorizontally { it } },
+            exitTransition = { slideOutHorizontally { -it } },
+            popEnterTransition = { slideInHorizontally { -it } },
+            popExitTransition = { slideOutHorizontally { it } },
+        ) {
+            AdvancedSettingsRoute(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToLogList = { navController.navigate(NLtimerRoutes.LOG_LIST) },
+            )
+        }
+        composable(
+            NLtimerRoutes.LOG_LIST,
+            enterTransition = { slideInHorizontally { it } },
+            exitTransition = { slideOutHorizontally { -it } },
+            popEnterTransition = { slideInHorizontally { -it } },
+            popExitTransition = { slideOutHorizontally { it } },
+        ) {
+            LogListRoute(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToIconMissLog = { navController.navigate(NLtimerRoutes.ICON_MISS_LOG) },
+            )
+        }
+        composable(
+            NLtimerRoutes.ICON_MISS_LOG,
+            enterTransition = { slideInHorizontally { it } },
+            exitTransition = { slideOutHorizontally { -it } },
+            popEnterTransition = { slideInHorizontally { -it } },
+            popExitTransition = { slideOutHorizontally { it } },
+        ) {
+            IconMissLogRoute(onNavigateBack = { navController.popBackStack() })
         }
         debugRoutes?.invoke(this)
     }

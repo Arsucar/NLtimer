@@ -15,6 +15,9 @@ object NLtimerRoutes {
     const val DATA_MANAGEMENT = "data_management"
     const val HOME_LAYOUT_CONFIG = "home_layout_config"
     const val COLOR_PALETTE = "color_palette"
+    const val ICON_MISS_LOG = "icon_miss_log"
+    const val ADVANCED_SETTINGS = "advanced_settings"
+    const val LOG_LIST = "log_list"
     const val AI_INTER = "ai_inter"
     const val AI_PROVIDER_CONFIG = "ai_provider_config"
     const val AI_TOOLS_LIST = "ai_tools_list"
@@ -30,7 +33,8 @@ object NLtimerRoutes {
     val PRIMARY_ROUTES = setOf(HOME, STATS, CATEGORIES, MANAGEMENT_ACTIVITIES, SETTINGS, AI_ASSISTANT_CHAT)
     val SETTINGS_FULLSCREEN_ROUTES = setOf(
         THEME_SETTINGS, DIALOG_CONFIG, BEHAVIOR_MANAGEMENT, DATA_MANAGEMENT,
-        HOME_LAYOUT_CONFIG, COLOR_PALETTE, CATEGORIES, AI_INTER,
+        HOME_LAYOUT_CONFIG, COLOR_PALETTE, ICON_MISS_LOG, ADVANCED_SETTINGS,
+        LOG_LIST, CATEGORIES, AI_INTER,
         AI_PROVIDER_CONFIG, AI_TOOLS_LIST, AI_CALL_LOGS, AI_PROMPT_CONFIG,
         AI_TEST_CHAT, AI_CALL_LOG_DETAIL_PATTERN
     )

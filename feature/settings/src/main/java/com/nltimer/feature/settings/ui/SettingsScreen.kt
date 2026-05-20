@@ -9,6 +9,7 @@ import androidx.compose.material.icons.filled.ColorLens
 import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Storage
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.ViewCarousel
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -23,6 +24,7 @@ fun SettingsRoute(
     onNavigateToDataManagement: () -> Unit = {},
     onNavigateToHomeLayoutConfig: () -> Unit = {},
     onNavigateToColorPalette: () -> Unit = {},
+    onNavigateToAdvancedSettings: () -> Unit = {},
 ) {
     SettingsScreen(
         onNavigateToThemeSettings = onNavigateToThemeSettings,
@@ -30,6 +32,7 @@ fun SettingsRoute(
         onNavigateToDataManagement = onNavigateToDataManagement,
         onNavigateToHomeLayoutConfig = onNavigateToHomeLayoutConfig,
         onNavigateToColorPalette = onNavigateToColorPalette,
+        onNavigateToAdvancedSettings = onNavigateToAdvancedSettings,
     )
 }
 
@@ -41,6 +44,7 @@ fun SettingsScreen(
     onNavigateToDataManagement: () -> Unit = {},
     onNavigateToHomeLayoutConfig: () -> Unit = {},
     onNavigateToColorPalette: () -> Unit = {},
+    onNavigateToAdvancedSettings: () -> Unit = {},
 ) {
     LazyColumn(
         modifier = modifier.fillMaxSize(),
@@ -89,6 +93,15 @@ fun SettingsScreen(
                 title = "数据管理",
                 subtitle = "导出、导入与迁移应用数据",
                 onClick = onNavigateToDataManagement,
+            )
+        }
+
+        item {
+            SettingsEntryCard(
+                icon = Icons.Default.Tune,
+                title = "高级",
+                subtitle = "日志记录等高级功能",
+                onClick = onNavigateToAdvancedSettings,
             )
         }
     }

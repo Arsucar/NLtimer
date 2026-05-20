@@ -16,7 +16,9 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 @Singleton
-class SearchIconsTool @Inject constructor() : ToolDefinition {
+class SearchIconsTool @Inject constructor(
+    private val missLog: IconSearchMissLog,
+) : ToolDefinition {
 
     override val name: String = "searchIcons"
     override val description: String = "搜索可用图标，支持中英文关键词，返回 iconKey 列表供 createActivity/createTag/bulkUpdateActivities 使用"
@@ -66,7 +68,8 @@ class SearchIconsTool @Inject constructor() : ToolDefinition {
         }
 
         if (results.length() == 0) {
-            return ToolResult.Success(name, """{"matches":[],"suggestion":"未找到匹配图标，请尝试其他关键词或缩短查询"}""")
+            missLog.record(query, library)
+            return ToolResult.Success(name, """{"matches":[],"missLogged":true,"placeholderIconKey":"⁉","placeholderNote":"未找到匹配图标，已记录此需求（累计未满足${missLog.count()}条）。建议先使用 ⁉ 占位，后续版本更新图标库后可批量替换","suggestion":"请尝试其他关键词或缩短查询"}""")
         }
 
         val capped = JSONArray()
