@@ -1,0 +1,3 @@
+{"file": ".trellis/spec/backend/index.md", "reason": "Backend development guidelines"}
+{"file": ".trellis/spec/backend/error-handling.md", "reason": "Error handling patterns for tool implementations"}
+{"file": ".trellis/spec/backend/database-guidelines.md", "reason": "Database patterns for repository layer changes"}
