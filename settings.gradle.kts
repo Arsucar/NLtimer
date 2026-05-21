@@ -30,6 +30,7 @@ include(
     "core:behaviorui",
     "core:debugui",
     "core:tools",
+    "feature:ai",
     "feature:home",
     "feature:sub",
     "feature:stats",

@@ -60,6 +60,7 @@ import com.nltimer.core.designsystem.theme.LocalImmersiveTopPadding
 import com.nltimer.core.designsystem.theme.LocalTheme
 import com.nltimer.core.designsystem.theme.TopBarMode
 import com.nltimer.core.designsystem.theme.toDisplayString
+import com.nltimer.feature.ai.navigation.AiRoutes
 import com.nltimer.feature.home.ui.components.LayoutConfigDialog
 import com.nltimer.feature.home.ui.components.FocusCardConfigDialog
 import com.nltimer.feature.home.ui.components.TagDisplayConfigDialog
@@ -93,8 +94,8 @@ fun NLtimerScaffold(
     val currentRoute = navBackStackEntry?.destination?.route
     val scope = rememberCoroutineScope()
     val isSecondaryPage = currentRoute in NLtimerRoutes.SETTINGS_FULLSCREEN_ROUTES
-    val isAiInter = currentRoute == NLtimerRoutes.AI_INTER
-    val isAiAssistantChat = currentRoute == NLtimerRoutes.AI_ASSISTANT_CHAT
+    val isAiInter = currentRoute == AiRoutes.AI_INTER
+    val isAiAssistantChat = currentRoute == AiRoutes.AI_ASSISTANT_CHAT
     val visibleDateLabelState = remember { mutableStateOf<String?>(null) }
     val isHomePage = currentRoute !in NLtimerRoutes.SETTINGS_FULLSCREEN_ROUTES && currentRoute != NLtimerRoutes.SETTINGS && !isAiInter
     val isDateTitle = isHomePage && visibleDateLabelState.value != null
@@ -104,7 +105,7 @@ fun NLtimerScaffold(
         NLtimerRoutes.DIALOG_CONFIG -> "弹窗配置"
         NLtimerRoutes.BEHAVIOR_MANAGEMENT -> "行为管理"
         NLtimerRoutes.CATEGORIES -> "分类管理"
-        NLtimerRoutes.AI_INTER -> "AI Inter"
+        AiRoutes.AI_INTER -> "AI Inter"
         else -> visibleDateLabelState.value ?: "NLtimer"
     }
     var showLayoutPopup by remember { mutableStateOf(false) }

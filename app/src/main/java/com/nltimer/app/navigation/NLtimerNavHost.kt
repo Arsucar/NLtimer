@@ -10,6 +10,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.nltimer.feature.ai.navigation.aiNavGraph
 import com.nltimer.feature.categories.ui.CategoriesRoute
 import com.nltimer.feature.home.ui.HomeRoute
 import com.nltimer.feature.management_activities.ui.ActivityManagementRoute
@@ -21,14 +22,6 @@ import com.nltimer.feature.settings.ui.LogListRoute
 import com.nltimer.feature.settings.ui.AdvancedSettingsRoute
 import com.nltimer.feature.settings.ui.SettingsRoute
 import com.nltimer.feature.settings.ui.ThemeSettingsRoute
-import com.nltimer.app.experimental.ai_inter.AiInterRoute
-import com.nltimer.app.experimental.ai_inter.AiProviderConfigRoute
-import com.nltimer.app.experimental.ai_inter.AiToolsListRoute
-import com.nltimer.app.experimental.ai_inter.AiCallLogsRoute
-import com.nltimer.app.experimental.ai_inter.AiPromptConfigRoute
-import com.nltimer.app.experimental.ai_inter.AiTestChatRoute
-import com.nltimer.app.experimental.ai_inter.AiLogDetailRoute
-import com.nltimer.app.experimental.ai_inter.chat.AiAssistantChatRoute
 import com.nltimer.feature.stats.ui.StatsRoute
 import com.nltimer.feature.behavior_management.ui.BehaviorManagementRoute
 import com.nltimer.feature.settings.ui.DataManagementRoute
@@ -54,37 +47,7 @@ fun NLtimerNavHost(
         modifier = modifier,
     ) {
         composable(NLtimerRoutes.HOME) { HomeRoute(timeLabelSettingsRequestKey = timeLabelSettingsRequestKey, onTimeLabelSettingsShown = onTimeLabelSettingsShown) }
-        composable(NLtimerRoutes.AI_INTER) { AiInterRoute(navController) }
-        composable(NLtimerRoutes.AI_PROVIDER_CONFIG) { AiProviderConfigRoute() }
-        composable(NLtimerRoutes.AI_TOOLS_LIST) { AiToolsListRoute() }
-        composable(NLtimerRoutes.AI_CALL_LOGS) {
-            AiCallLogsRoute(
-                onNavigateToLogDetail = { logId ->
-                    navController.navigate(NLtimerRoutes.aiCallLogDetail(logId))
-                }
-            )
-        }
-        composable(NLtimerRoutes.AI_PROMPT_CONFIG) { AiPromptConfigRoute() }
-        composable(NLtimerRoutes.AI_TEST_CHAT) { AiTestChatRoute() }
-        composable(
-            NLtimerRoutes.AI_ASSISTANT_CHAT,
-            enterTransition = { slideInHorizontally { it } },
-            exitTransition = { slideOutHorizontally { -it } },
-            popEnterTransition = { slideInHorizontally { -it } },
-            popExitTransition = { slideOutHorizontally { it } },
-        ) {
-            AiAssistantChatRoute(navController = navController)
-        }
-        composable(
-            route = NLtimerRoutes.AI_CALL_LOG_DETAIL_PATTERN,
-            arguments = listOf(navArgument("logId") { type = NavType.LongType })
-        ) { backStackEntry ->
-            val logId = backStackEntry.arguments?.getLong("logId") ?: 0L
-            AiLogDetailRoute(
-                logId = logId,
-                onBackClick = { navController.popBackStack() }
-            )
-        }
+        aiNavGraph(navController)
         composable(NLtimerRoutes.STATS) { StatsRoute() }
         composable(NLtimerRoutes.CATEGORIES) { CategoriesRoute() }
         composable(NLtimerRoutes.MANAGEMENT_ACTIVITIES) { ActivityManagementRoute() }

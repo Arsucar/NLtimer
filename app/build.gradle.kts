@@ -84,6 +84,7 @@ dependencies {
     implementation(projects.core.data)
     implementation(projects.core.tools)
     implementation(projects.core.ai)
+    implementation(projects.feature.ai)
     implementation(projects.feature.home)
     implementation(projects.feature.stats)
     implementation(projects.feature.settings)
