@@ -25,6 +25,7 @@ dependencies {
     implementation(libs.datastore.preferences)
     implementation(libs.okio)
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.kotlinx.collections.immutable)
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.ui)
 

@@ -3,6 +3,7 @@ package com.nltimer.core.data
 import com.nltimer.core.data.model.DialogGridConfig
 import com.nltimer.core.data.model.FocusCardConfig
 import com.nltimer.core.data.model.HomeLayoutConfig
+import com.nltimer.core.data.model.StatsDashboardConfig
 import com.nltimer.core.designsystem.theme.Theme
 import com.nltimer.core.designsystem.theme.TimeLabelConfig
 import kotlinx.coroutines.flow.Flow
@@ -60,4 +61,7 @@ interface SettingsPrefs {
     fun getFocusCardConfigFlow(): Flow<FocusCardConfig>
     /** 更新专注卡片配置并持久化 */
     suspend fun updateFocusCardConfig(config: FocusCardConfig)
+
+    fun getStatsDashboardConfigFlow(): Flow<StatsDashboardConfig>
+    suspend fun updateStatsDashboardConfig(config: StatsDashboardConfig)
 }

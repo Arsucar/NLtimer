@@ -96,8 +96,9 @@ fun NLtimerScaffold(
     val isSecondaryPage = currentRoute in NLtimerRoutes.SETTINGS_FULLSCREEN_ROUTES
     val isAiInter = currentRoute == AiRoutes.AI_INTER
     val isAiAssistantChat = currentRoute == AiRoutes.AI_ASSISTANT_CHAT
+    val isStats = currentRoute == NLtimerRoutes.STATS
     val visibleDateLabelState = remember { mutableStateOf<String?>(null) }
-    val isHomePage = currentRoute !in NLtimerRoutes.SETTINGS_FULLSCREEN_ROUTES && currentRoute != NLtimerRoutes.SETTINGS && !isAiInter
+    val isHomePage = currentRoute !in NLtimerRoutes.SETTINGS_FULLSCREEN_ROUTES && currentRoute != NLtimerRoutes.SETTINGS && !isAiInter && !isStats && !isAiAssistantChat
     val isDateTitle = isHomePage && visibleDateLabelState.value != null
     val topBarTitle = when (currentRoute) {
         NLtimerRoutes.SETTINGS -> "设置"
@@ -106,6 +107,7 @@ fun NLtimerScaffold(
         NLtimerRoutes.BEHAVIOR_MANAGEMENT -> "行为管理"
         NLtimerRoutes.CATEGORIES -> "分类管理"
         AiRoutes.AI_INTER -> "AI Inter"
+        NLtimerRoutes.STATS -> "统计"
         else -> visibleDateLabelState.value ?: "NLtimer"
     }
     var showLayoutPopup by remember { mutableStateOf(false) }
@@ -134,7 +136,7 @@ fun NLtimerScaffold(
         "$filterLabel · $sortLabel"
     } else null
     val layoutLabel = if (isHomePage) theme.homeLayout.toDisplayString() else null
-    val useCollapsed = theme.topBarMode == TopBarMode.COLLAPSED && (!isSecondaryPage || isAiInter)
+    val useCollapsed = theme.topBarMode == TopBarMode.COLLAPSED && (!isSecondaryPage || isAiInter) && !isAiAssistantChat
     val isImmersive = theme.isImmersive && !isSecondaryPage
     val topBarScrollBehavior = if (useCollapsed) {
         TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -269,7 +271,9 @@ fun NLtimerScaffold(
                 ),
                 containerColor = Color.Transparent,
                 topBar = {
-                    if (isSecondaryPage && !isAiInter && !isAiAssistantChat) {
+                    if (isAiAssistantChat) {
+                        // AiAssistantChatRoute has its own Scaffold + TopBar
+                    } else if (isSecondaryPage && !isAiInter) {
                         TopAppBar(
                             title = { Text(topBarTitle) },
                             navigationIcon = {
@@ -281,65 +285,63 @@ fun NLtimerScaffold(
                                 }
                             },
                         )
-                    } else if (!isAiAssistantChat) {
-                        if (topBarScrollBehavior != null) {
-                            AppCollapsedTopAppBar(
-                                title = topBarTitle,
-                                isDateTitle = isDateTitle,
-                                isImmersive = isImmersive,
-                                scrollBehavior = topBarScrollBehavior,
-                                hazeState = if (theme.topBarHaze) topBarHazeState else null,
-                                navigationIcon = if (isAiInter) {
-                                    {
-                                        IconButton(onClick = { navController.popBackStack() }) {
-                                            Icon(
-                                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                                contentDescription = "返回",
-                                            )
-                                        }
+                    } else if (topBarScrollBehavior != null) {
+                        AppCollapsedTopAppBar(
+                            title = topBarTitle,
+                            isDateTitle = isDateTitle,
+                            isImmersive = isImmersive,
+                            scrollBehavior = topBarScrollBehavior,
+                            hazeState = if (theme.topBarHaze) topBarHazeState else null,
+                            navigationIcon = if (isAiInter) {
+                                {
+                                    IconButton(onClick = { navController.popBackStack() }) {
+                                        Icon(
+                                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                            contentDescription = "返回",
+                                        )
                                     }
-                                } else { {} },
-                                layoutLabel = layoutLabel,
-                                onLayoutChange = if (isHomePage) { { themeViewModel.onHomeLayoutChange(it) } } else null,
-                                momentFilterLabel = momentFilterLabel,
-                                momentFilterOptions = MomentFilterOptions,
-                                momentFilterKey = momentFilterKey,
-                                onMomentFilterChange = { momentFilterKey = it },
-                                momentSortOptions = MomentSortOptions,
-                                momentSortKey = momentSortKey,
-                                onMomentSortChange = { momentSortKey = it },
-                            )
-                        } else {
-                            AppTopAppBar(
-                                title = topBarTitle,
-                                isDateTitle = isDateTitle,
-                                isImmersive = isImmersive,
-                                hazeState = if (theme.topBarHaze) topBarHazeState else null,
-                                navigationIcon = if (isAiInter) {
-                                    {
-                                        IconButton(onClick = { navController.popBackStack() }) {
-                                            Icon(
-                                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                                contentDescription = "返回",
-                                            )
-                                        }
+                                }
+                            } else { {} },
+                            layoutLabel = layoutLabel,
+                            onLayoutChange = if (isHomePage) { { themeViewModel.onHomeLayoutChange(it) } } else null,
+                            momentFilterLabel = momentFilterLabel,
+                            momentFilterOptions = MomentFilterOptions,
+                            momentFilterKey = momentFilterKey,
+                            onMomentFilterChange = { momentFilterKey = it },
+                            momentSortOptions = MomentSortOptions,
+                            momentSortKey = momentSortKey,
+                            onMomentSortChange = { momentSortKey = it },
+                        )
+                    } else {
+                        AppTopAppBar(
+                            title = topBarTitle,
+                            isDateTitle = isDateTitle,
+                            isImmersive = isImmersive,
+                            hazeState = if (theme.topBarHaze) topBarHazeState else null,
+                            navigationIcon = if (isAiInter) {
+                                {
+                                    IconButton(onClick = { navController.popBackStack() }) {
+                                        Icon(
+                                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                            contentDescription = "返回",
+                                        )
                                     }
-                                } else { {} },
-                                layoutLabel = layoutLabel,
-                                onLayoutChange = if (isHomePage) { { themeViewModel.onHomeLayoutChange(it) } } else null,
-                                momentFilterLabel = momentFilterLabel,
-                                momentFilterOptions = MomentFilterOptions,
-                                momentFilterKey = momentFilterKey,
-                                onMomentFilterChange = { momentFilterKey = it },
-                                momentSortOptions = MomentSortOptions,
-                                momentSortKey = momentSortKey,
-                                onMomentSortChange = { momentSortKey = it },
-                            )
-                        }
+                                }
+                            } else { {} },
+                            layoutLabel = layoutLabel,
+                            onLayoutChange = if (isHomePage) { { themeViewModel.onHomeLayoutChange(it) } } else null,
+                            momentFilterLabel = momentFilterLabel,
+                            momentFilterOptions = MomentFilterOptions,
+                            momentFilterKey = momentFilterKey,
+                            onMomentFilterChange = { momentFilterKey = it },
+                            momentSortOptions = MomentSortOptions,
+                            momentSortKey = momentSortKey,
+                            onMomentSortChange = { momentSortKey = it },
+                        )
                     }
                 },
             ) { padding ->
-                val immersiveTopPadding = if (isImmersive) padding.calculateTopPadding() else 0.dp
+                val immersiveTopPadding = if (isImmersive || isStats) padding.calculateTopPadding() else 0.dp
                 CompositionLocalProvider(LocalImmersiveTopPadding provides immersiveTopPadding) {
                     NLtimerNavHost(
                         navController = navController,
@@ -350,7 +352,7 @@ fun NLtimerScaffold(
                             .then(if (theme.topBarHaze) Modifier.hazeSource(state = topBarHazeState) else Modifier)
                             .fillMaxSize()
                             .padding(
-                                top = if (isImmersive) 0.dp else if (isAiAssistantChat) 0.dp else padding.calculateTopPadding(),
+                                top = if (isImmersive || isStats) 0.dp else if (isAiAssistantChat) 0.dp else padding.calculateTopPadding(),
                                 bottom = if (isAnyFloating) 0.dp else if (!isSecondaryPage) padding.calculateBottomPadding() else 0.dp,
                             ),
                     )

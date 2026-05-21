@@ -1,0 +1,5 @@
+{"file": "docs/agent/04-patterns.md", "reason": "Project-wide code conventions: MVVM, Route/Screen split, Repository pattern, DI, Compose conventions — implementer must follow these"}
+{"file": "docs/agent/05-data-model.md", "reason": "All entity fields and relationships — needed for StatsQueryUseCase aggregation logic and StatsModels design"}
+{"file": "docs/agent/03-module-map.md", "reason": "Module → class → file path mapping — locate existing code to reuse (BehaviorRepository, ToolRegistry, SettingsPrefs)"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "Stats feature spans core:data + core:tools + feature:stats — guide ensures data flow is consistent across layers"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "Must reuse existing GetDailySummaryTool/GetWeeklySummaryTool aggregation logic in StatsQueryUseCase instead of duplicating"}
