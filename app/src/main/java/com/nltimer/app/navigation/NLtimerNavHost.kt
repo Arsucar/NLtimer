@@ -68,13 +68,7 @@ fun NLtimerNavHost(
         }
         composable(NLtimerRoutes.AI_PROMPT_CONFIG) { AiPromptConfigRoute() }
         composable(NLtimerRoutes.AI_TEST_CHAT) { AiTestChatRoute() }
-        composable(
-            NLtimerRoutes.AI_ASSISTANT_CHAT,
-            enterTransition = { slideInHorizontally { it } },
-            exitTransition = { slideOutHorizontally { -it } },
-            popEnterTransition = { slideInHorizontally { -it } },
-            popExitTransition = { slideOutHorizontally { it } },
-        ) {
+        composable(NLtimerRoutes.AI_ASSISTANT_CHAT) {
             AiAssistantChatRoute(navController = navController, mainDrawerState = drawerState)
         }
         composable(

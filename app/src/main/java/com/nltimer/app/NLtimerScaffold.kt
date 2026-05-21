@@ -97,7 +97,7 @@ fun NLtimerScaffold(
     val isAiAssistantChat = currentRoute == NLtimerRoutes.AI_ASSISTANT_CHAT
     val isStats = currentRoute == NLtimerRoutes.STATS
     val visibleDateLabelState = remember { mutableStateOf<String?>(null) }
-    val isHomePage = currentRoute !in NLtimerRoutes.SETTINGS_FULLSCREEN_ROUTES && currentRoute != NLtimerRoutes.SETTINGS && !isAiInter && !isStats
+    val isHomePage = currentRoute !in NLtimerRoutes.SETTINGS_FULLSCREEN_ROUTES && currentRoute != NLtimerRoutes.SETTINGS && !isAiInter && !isStats && !isAiAssistantChat
     val isDateTitle = isHomePage && visibleDateLabelState.value != null
     val topBarTitle = when (currentRoute) {
         NLtimerRoutes.SETTINGS -> "设置"
@@ -135,7 +135,7 @@ fun NLtimerScaffold(
         "$filterLabel · $sortLabel"
     } else null
     val layoutLabel = if (isHomePage) theme.homeLayout.toDisplayString() else null
-    val useCollapsed = theme.topBarMode == TopBarMode.COLLAPSED && (!isSecondaryPage || isAiInter)
+    val useCollapsed = theme.topBarMode == TopBarMode.COLLAPSED && (!isSecondaryPage || isAiInter) && !isAiAssistantChat
     val isImmersive = theme.isImmersive && !isSecondaryPage
     val topBarScrollBehavior = if (useCollapsed) {
         TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -270,7 +270,9 @@ fun NLtimerScaffold(
                 ),
                 containerColor = Color.Transparent,
                 topBar = {
-                    if (isSecondaryPage && !isAiInter && !isAiAssistantChat) {
+                    if (isAiAssistantChat) {
+                        // AiAssistantChatRoute has its own Scaffold + TopBar
+                    } else if (isSecondaryPage && !isAiInter) {
                         TopAppBar(
                             title = { Text(topBarTitle) },
                             navigationIcon = {
@@ -282,61 +284,59 @@ fun NLtimerScaffold(
                                 }
                             },
                         )
-                    } else if (!isAiAssistantChat) {
-                        if (topBarScrollBehavior != null) {
-                            AppCollapsedTopAppBar(
-                                title = topBarTitle,
-                                isDateTitle = isDateTitle,
-                                isImmersive = isImmersive,
-                                scrollBehavior = topBarScrollBehavior,
-                                hazeState = if (theme.topBarHaze) topBarHazeState else null,
-                                navigationIcon = if (isAiInter) {
-                                    {
-                                        IconButton(onClick = { navController.popBackStack() }) {
-                                            Icon(
-                                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                                contentDescription = "返回",
-                                            )
-                                        }
+                    } else if (topBarScrollBehavior != null) {
+                        AppCollapsedTopAppBar(
+                            title = topBarTitle,
+                            isDateTitle = isDateTitle,
+                            isImmersive = isImmersive,
+                            scrollBehavior = topBarScrollBehavior,
+                            hazeState = if (theme.topBarHaze) topBarHazeState else null,
+                            navigationIcon = if (isAiInter) {
+                                {
+                                    IconButton(onClick = { navController.popBackStack() }) {
+                                        Icon(
+                                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                            contentDescription = "返回",
+                                        )
                                     }
-                                } else { {} },
-                                layoutLabel = layoutLabel,
-                                onLayoutChange = if (isHomePage) { { themeViewModel.onHomeLayoutChange(it) } } else null,
-                                momentFilterLabel = momentFilterLabel,
-                                momentFilterOptions = MomentFilterOptions,
-                                momentFilterKey = momentFilterKey,
-                                onMomentFilterChange = { momentFilterKey = it },
-                                momentSortOptions = MomentSortOptions,
-                                momentSortKey = momentSortKey,
-                                onMomentSortChange = { momentSortKey = it },
-                            )
-                        } else {
-                            AppTopAppBar(
-                                title = topBarTitle,
-                                isDateTitle = isDateTitle,
-                                isImmersive = isImmersive,
-                                hazeState = if (theme.topBarHaze) topBarHazeState else null,
-                                navigationIcon = if (isAiInter) {
-                                    {
-                                        IconButton(onClick = { navController.popBackStack() }) {
-                                            Icon(
-                                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                                contentDescription = "返回",
-                                            )
-                                        }
+                                }
+                            } else { {} },
+                            layoutLabel = layoutLabel,
+                            onLayoutChange = if (isHomePage) { { themeViewModel.onHomeLayoutChange(it) } } else null,
+                            momentFilterLabel = momentFilterLabel,
+                            momentFilterOptions = MomentFilterOptions,
+                            momentFilterKey = momentFilterKey,
+                            onMomentFilterChange = { momentFilterKey = it },
+                            momentSortOptions = MomentSortOptions,
+                            momentSortKey = momentSortKey,
+                            onMomentSortChange = { momentSortKey = it },
+                        )
+                    } else {
+                        AppTopAppBar(
+                            title = topBarTitle,
+                            isDateTitle = isDateTitle,
+                            isImmersive = isImmersive,
+                            hazeState = if (theme.topBarHaze) topBarHazeState else null,
+                            navigationIcon = if (isAiInter) {
+                                {
+                                    IconButton(onClick = { navController.popBackStack() }) {
+                                        Icon(
+                                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                            contentDescription = "返回",
+                                        )
                                     }
-                                } else { {} },
-                                layoutLabel = layoutLabel,
-                                onLayoutChange = if (isHomePage) { { themeViewModel.onHomeLayoutChange(it) } } else null,
-                                momentFilterLabel = momentFilterLabel,
-                                momentFilterOptions = MomentFilterOptions,
-                                momentFilterKey = momentFilterKey,
-                                onMomentFilterChange = { momentFilterKey = it },
-                                momentSortOptions = MomentSortOptions,
-                                momentSortKey = momentSortKey,
-                                onMomentSortChange = { momentSortKey = it },
-                            )
-                        }
+                                }
+                            } else { {} },
+                            layoutLabel = layoutLabel,
+                            onLayoutChange = if (isHomePage) { { themeViewModel.onHomeLayoutChange(it) } } else null,
+                            momentFilterLabel = momentFilterLabel,
+                            momentFilterOptions = MomentFilterOptions,
+                            momentFilterKey = momentFilterKey,
+                            onMomentFilterChange = { momentFilterKey = it },
+                            momentSortOptions = MomentSortOptions,
+                            momentSortKey = momentSortKey,
+                            onMomentSortChange = { momentSortKey = it },
+                        )
                     }
                 },
             ) { padding ->
