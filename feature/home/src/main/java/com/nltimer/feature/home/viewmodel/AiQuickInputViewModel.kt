@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.JsonArray
@@ -60,8 +61,8 @@ class AiQuickInputViewModel @Inject constructor(
         streamJob = viewModelScope.launch {
             _state.value = AiQuickInputState.Streaming("", emptyList())
             try {
-                val cfg = config.value
-                val systemPrompt = buildSystemPrompt()
+                val cfg = configProvider.config.first()
+                val systemPrompt = buildSystemPrompt(cfg)
                 val wireHistory = mutableListOf(
                     buildJsonObject { put("role", "system"); put("content", systemPrompt) },
                     buildJsonObject { put("role", "user"); put("content", text) },
@@ -140,11 +141,11 @@ class AiQuickInputViewModel @Inject constructor(
         _state.value = AiQuickInputState.Idle
     }
 
-    private fun buildSystemPrompt(): String {
+    private fun buildSystemPrompt(cfg: AiInterConfig): String {
         val now = java.time.OffsetDateTime.now()
             .format(java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME)
         val base = AiChatToolHelper.TOOLS_SYSTEM_PROMPT
-        val custom = config.value.promptChat
+        val custom = cfg.promptChat
         return buildString {
             append("当前时间：$now\n\n")
             append(base)

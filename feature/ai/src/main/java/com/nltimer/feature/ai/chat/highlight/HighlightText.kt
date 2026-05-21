@@ -1,5 +1,6 @@
 package com.nltimer.feature.ai.chat.highlight
 
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -129,6 +130,29 @@ data class HighlightTextColorPalette(
     val fallback: Color
 ) {
     companion object {
+        /** Derive all highlight colors from the current [MaterialTheme] so they adapt to any dynamic palette. */
+        @Composable
+        fun fromTheme(): HighlightTextColorPalette {
+            val cs = MaterialTheme.colorScheme
+            return HighlightTextColorPalette(
+                keyword = cs.primary,
+                string = cs.tertiary,
+                number = cs.secondary,
+                comment = cs.onSurfaceVariant,
+                function = cs.primary,
+                operator = cs.primary,
+                punctuation = cs.onSurfaceVariant,
+                className = cs.primary,
+                property = cs.secondary,
+                boolean = cs.secondary,
+                variable = cs.tertiary,
+                tag = cs.error,
+                attrName = cs.onSurfaceVariant,
+                attrValue = cs.tertiary,
+                fallback = cs.onSurfaceVariant,
+            )
+        }
+
         val Default = HighlightTextColorPalette(
             keyword = Color(0xFFCC7832),
             string = Color(0xFF6A8759),
@@ -145,6 +169,24 @@ data class HighlightTextColorPalette(
             attrName = Color(0xFFBABABA),
             attrValue = Color(0xFF6A8759),
             fallback = Color(0xFF808080),
+        )
+
+        val Dark = HighlightTextColorPalette(
+            keyword = Color(0xFFCC7832),
+            string = Color(0xFF6A8759),
+            number = Color(0xFF6897BB),
+            comment = Color(0xFF808080),
+            function = Color(0xFFFFC66D),
+            operator = Color(0xFFCC7832),
+            punctuation = Color(0xFFA9B7C6),
+            className = Color(0xFFCB772F),
+            property = Color(0xFF9876AA),
+            boolean = Color(0xFF6897BB),
+            variable = Color(0xFFA9B7C6),
+            tag = Color(0xFFE8BF6A),
+            attrName = Color(0xFFBABABA),
+            attrValue = Color(0xFFA5C261),
+            fallback = Color(0xFFA9B7C6),
         )
     }
 }

@@ -16,7 +16,6 @@ import com.nltimer.feature.ai.chat.data.ConversationMessageEntity
 import com.nltimer.feature.ai.chat.markdown.MarkdownBlock
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeSource
-import kotlinx.coroutines.delay
 
 @Composable
 fun ChatList(
@@ -37,18 +36,6 @@ fun ChatList(
         val targetIdx = if (isSending) messages.size else (messages.size - 1).coerceAtLeast(0)
         if (messages.isNotEmpty() || isSending) {
             listState.animateScrollToItem(targetIdx)
-        }
-    }
-
-    val scope = rememberCoroutineScope()
-    var recentScroll by remember { mutableStateOf(false) }
-
-    LaunchedEffect(listState.isScrollInProgress) {
-        if (listState.isScrollInProgress) {
-            recentScroll = true
-        } else {
-            delay(1500)
-            recentScroll = false
         }
     }
 
@@ -99,13 +86,6 @@ fun ChatList(
                 }
             }
         }
-
-        MessageJumper(
-            show = recentScroll && !listState.isScrollInProgress && !isSending,
-            state = listState,
-            scope = scope,
-            modifier = Modifier.align(Alignment.CenterEnd).padding(end = 4.dp),
-        )
     }
 }
 

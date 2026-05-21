@@ -41,8 +41,8 @@ fun HighlightCodeBlock(
             emptyList()
         }
     }
-    val colors = remember { HighlightTextColorPalette.Default }
-    val highlighted = remember(tokens) {
+    val colors = HighlightTextColorPalette.fromTheme()
+    val highlighted = remember(tokens, colors) {
         if (tokens.isEmpty()) AnnotatedString(code)
         else buildAnnotatedString {
             tokens.forEach { buildHighlightText(it, colors) }
