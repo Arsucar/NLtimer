@@ -1,0 +1,6 @@
+{"file": "docs/agent/00-index.md", "reason": "Agent 文档索引，按需加载上下文"}
+{"file": "docs/agent/01-project-overview.md", "reason": "项目基本信息、构建注意事项（--no-daemon）"}
+{"file": "docs/agent/02-architecture-digest.md", "reason": "三层架构、数据流、导航结构"}
+{"file": "docs/agent/04-patterns.md", "reason": "设计模式与代码约定，检查代码质量"}
+{"file": ".trellis/spec/backend/index.md", "reason": "后端开发规范索引"}
+{"file": ".trellis/spec/backend/quality-guidelines.md", "reason": "代码质量规范"}
