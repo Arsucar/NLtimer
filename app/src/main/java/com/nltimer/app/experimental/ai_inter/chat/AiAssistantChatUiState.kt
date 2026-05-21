@@ -1,6 +1,6 @@
 package com.nltimer.app.experimental.ai_inter.chat
 
-import com.nltimer.app.experimental.ai_inter.viewmodel.ToolCallRecord
+import com.nltimer.core.ai.toolcall.ToolCallRecord
 
 data class StreamingState(
     val reasoning: String = "",

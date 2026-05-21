@@ -80,12 +80,13 @@ import com.nltimer.feature.home.ui.components.TextListView
 import com.nltimer.feature.home.ui.components.TimeLabelSettingsDialog
 import com.nltimer.feature.home.ui.components.TimeSideBar
 import com.nltimer.feature.home.ui.components.TimelineReverseView
+import com.nltimer.feature.home.ui.components.AiQuickInputSheet
 import java.time.LocalDateTime
 import java.time.LocalTime
 import kotlinx.collections.immutable.persistentListOf
 
-private val DragOptionsWithActive = listOf("完成", "放弃", "特记", "+自定义")
-private val DragOptionsWithoutActive = listOf("完成", "目标", "当前", "+自定义")
+private val DragOptionsWithActive = listOf("完成", "放弃", "特记", "AI", "+自定义")
+private val DragOptionsWithoutActive = listOf("完成", "目标", "当前", "AI", "+自定义")
 
 @Composable
 fun HomeScreen(
@@ -122,6 +123,8 @@ fun HomeScreen(
     onHomeLayoutChange: (HomeLayout) -> Unit = {},
     onMatchNote: (String) -> NoteScanResult = { NoteScanResult(null, emptySet()) },
     onProcessNote: suspend (String) -> NoteProcessOutcome = { NoteProcessOutcome.Empty },
+    onShowAiQuickInput: () -> Unit = {},
+    onHideAiQuickInput: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val theme = LocalTheme.current
@@ -240,6 +243,7 @@ fun HomeScreen(
                     }
                     "当前" -> onShowAddSheet(AddSheetMode.CURRENT)
                     "目标" -> onShowAddSheet(AddSheetMode.TARGET)
+                    "AI" -> onShowAiQuickInput()
                     else -> Toast.makeText(context, "触发功能: $option", Toast.LENGTH_SHORT).show()
                 }
             },
@@ -250,6 +254,12 @@ fun HomeScreen(
                 config = timeLabelConfig,
                 onConfigChange = onTimeLabelConfigChange,
                 onDismiss = { showTimeLabelSettings = false },
+            )
+        }
+
+        if (uiState.showAiQuickInput) {
+            AiQuickInputSheet(
+                onDismiss = onHideAiQuickInput,
             )
         }
     }

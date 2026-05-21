@@ -5,9 +5,12 @@ import androidx.lifecycle.viewModelScope
 import com.nltimer.app.experimental.ai_inter.data.AiCallLogEntity
 import com.nltimer.app.experimental.ai_inter.data.AiInterConfig
 import com.nltimer.app.experimental.ai_inter.data.AiInterRepository
-import com.nltimer.app.experimental.ai_inter.network.AiInterApiClient
-import com.nltimer.app.experimental.ai_inter.network.StreamEvent
-import com.nltimer.app.experimental.ai_inter.network.toOpenAiFunctionJson
+import com.nltimer.core.ai.network.AiInterApiClient
+import com.nltimer.core.ai.network.StreamEvent
+import com.nltimer.core.ai.network.toOpenAiFunctionJson
+import com.nltimer.core.ai.toolcall.AiChatToolHelper
+import com.nltimer.core.ai.toolcall.ToolCallBuffer
+import com.nltimer.core.ai.toolcall.ToolCallRecord
 import com.nltimer.core.tools.ToolConfig
 import com.nltimer.core.tools.ToolDefinition
 import com.nltimer.core.tools.ToolRegistry
@@ -34,16 +37,6 @@ import kotlinx.serialization.json.put
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
-
-/** 工具一次调用的记录，写库与展示共用 */
-data class ToolCallRecord(
-    val id: String,
-    val name: String,
-    val arguments: String,
-    val result: String,
-    val success: Boolean,
-    val durationMs: Long,
-)
 
 data class ChatMessage(
     val role: String,

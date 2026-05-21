@@ -17,7 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.nltimer.app.experimental.ai_inter.chat.data.ConversationMessageEntity
 import com.nltimer.app.experimental.ai_inter.chat.markdown.MarkdownBlock
-import com.nltimer.app.experimental.ai_inter.viewmodel.ToolCallRecord
+import com.nltimer.core.ai.toolcall.ToolCallRecord
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.jsonArray

@@ -18,24 +18,8 @@ data class AiCallLogEntity(
     val requestUrl: String = "",
     val requestTokens: Int = 0,
     val responseTokens: Int = 0,
-    /** 模型推理过程（reasoning_content），可能为空 */
     val reasoning: String = "",
-    /**
-     * 工具调用明细 JSON 数组字符串；空字符串表示当轮未触发工具调用。
-     * 每个元素：{"name":..., "arguments":..., "result":..., "success":..., "durationMs":...}
-     */
     val toolCallsJson: String = ""
 )
 
-data class AiInterConfig(
-    val apiAddress: String = "https://integrate.api.nvidia.com/v1",
-    val apiPath: String = "/chat/completions",
-    val apiKey: String = "",
-    val modelName: String = "openai/gpt-oss-120b",
-    val promptNotes: String = "",
-    val promptTaskGen: String = "",
-    val promptChat: String = "",
-    val promptSystem: String = "",
-    val maxToolRounds: Int = 5,
-    val maxBatchSize: Int = 20,
-)
+typealias AiInterConfig = com.nltimer.core.ai.config.AiInterConfig

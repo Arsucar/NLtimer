@@ -24,6 +24,7 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 include(
     "app",
+    "core:ai",
     "core:designsystem",
     "core:data",
     "core:behaviorui",

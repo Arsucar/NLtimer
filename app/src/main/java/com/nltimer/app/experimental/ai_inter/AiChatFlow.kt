@@ -36,7 +36,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nltimer.app.experimental.ai_inter.viewmodel.ChatMessage
-import com.nltimer.app.experimental.ai_inter.viewmodel.ToolCallRecord
+import com.nltimer.core.ai.toolcall.ToolCallRecord
 import dev.jeziellago.compose.markdowntext.MarkdownText
 
 @Composable

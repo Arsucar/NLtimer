@@ -13,6 +13,7 @@ dependencies {
     implementation(projects.core.data)
     implementation(projects.core.behaviorui)
     implementation(projects.core.tools)
+    implementation(projects.core.ai)
 
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.material3)
@@ -28,6 +29,7 @@ dependencies {
     implementation(libs.lifecycle.viewmodel.compose)
     implementation(libs.lifecycle.runtime.compose)
     implementation(libs.kotlinx.collections.immutable)
+    implementation(libs.kotlinx.serialization.json)
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)

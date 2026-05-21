@@ -91,6 +91,14 @@ fun HomeRoute(
         { layout: com.nltimer.core.designsystem.theme.HomeLayout -> viewModel.onHomeLayoutChange(layout) }
     }
 
+    val onShowAiQuickInput = remember(viewModel) {
+        { viewModel.showAiQuickInput() }
+    }
+
+    val onHideAiQuickInput = remember(viewModel) {
+        { viewModel.hideAiQuickInput() }
+    }
+
     HomeScreen(
         uiState = uiState,
         activities = activities,
@@ -125,5 +133,7 @@ fun HomeRoute(
         onHomeLayoutChange = onHomeLayoutChange,
         onMatchNote = onMatchNote,
         onProcessNote = onProcessNote,
+        onShowAiQuickInput = onShowAiQuickInput,
+        onHideAiQuickInput = onHideAiQuickInput,
     )
 }

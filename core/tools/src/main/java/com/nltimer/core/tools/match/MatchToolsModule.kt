@@ -29,4 +29,8 @@ abstract class MatchToolsModule {
     @Binds
     @IntoSet
     abstract fun bindSelectActivitiesAndTagsTool(impl: SelectActivitiesAndTagsTool): ToolDefinition
+
+    @Binds
+    @IntoSet
+    abstract fun bindProcessNoteTool(impl: ProcessNoteTool): ToolDefinition
 }

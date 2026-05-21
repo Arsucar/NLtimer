@@ -1,4 +1,4 @@
-package com.nltimer.app.experimental.ai_inter.viewmodel
+package com.nltimer.core.ai.toolcall
 
 import com.nltimer.core.tools.ToolError
 import com.nltimer.core.tools.ToolRegistry
@@ -13,12 +13,6 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
 import kotlinx.serialization.json.putJsonObject
-
-class ToolCallBuffer {
-    var id: String? = null
-    var name: String? = null
-    val arguments: StringBuilder = StringBuilder()
-}
 
 object AiChatToolHelper {
 

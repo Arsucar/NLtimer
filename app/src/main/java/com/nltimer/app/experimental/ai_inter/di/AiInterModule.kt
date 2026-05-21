@@ -7,12 +7,22 @@ import com.nltimer.app.experimental.ai_inter.chat.data.ConversationMessageDao
 import com.nltimer.app.experimental.ai_inter.chat.data.MIGRATION_3_4
 import com.nltimer.app.experimental.ai_inter.data.AiCallLogDao
 import com.nltimer.app.experimental.ai_inter.data.AiInterDatabase
+import com.nltimer.app.experimental.ai_inter.data.AiInterRepository
+import com.nltimer.core.ai.config.AiConfigProvider
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
+
+@Module
+@InstallIn(SingletonComponent::class)
+abstract class AiInterBindModule {
+    @Binds
+    abstract fun bindAiConfigProvider(impl: AiInterRepository): AiConfigProvider
+}
 
 @Module
 @InstallIn(SingletonComponent::class)

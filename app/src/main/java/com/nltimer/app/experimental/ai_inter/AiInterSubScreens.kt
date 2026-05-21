@@ -1,7 +1,7 @@
 package com.nltimer.app.experimental.ai_inter
 
 import androidx.compose.foundation.clickable
-import com.nltimer.app.experimental.ai_inter.viewmodel.AiChatToolHelper
+import com.nltimer.core.ai.toolcall.AiChatToolHelper
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -71,7 +71,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.nltimer.app.experimental.ai_inter.viewmodel.AiInterViewModel
 import com.nltimer.app.experimental.ai_inter.viewmodel.ChatMessage
-import com.nltimer.app.experimental.ai_inter.viewmodel.ToolCallRecord
+import com.nltimer.core.ai.toolcall.ToolCallRecord
 import com.nltimer.core.tools.ToolCategory
 import com.nltimer.core.designsystem.component.GroupCard
 import com.nltimer.core.designsystem.component.PlaceholderScreen

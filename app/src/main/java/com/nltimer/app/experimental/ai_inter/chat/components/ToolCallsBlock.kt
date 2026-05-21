@@ -17,7 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import com.nltimer.app.experimental.ai_inter.viewmodel.ToolCallRecord
+import com.nltimer.core.ai.toolcall.ToolCallRecord
 
 @Composable
 fun ToolCallsBlock(toolCalls: List<ToolCallRecord>, defaultExpanded: Boolean = false) {

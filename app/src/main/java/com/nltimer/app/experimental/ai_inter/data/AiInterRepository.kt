@@ -7,6 +7,8 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.nltimer.core.ai.config.AiConfigProvider
+import com.nltimer.core.ai.config.AiInterConfig as CoreAiInterConfig
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -19,7 +21,7 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
 class AiInterRepository @Inject constructor(
     @param:ApplicationContext private val context: Context,
     private val aiCallLogDao: AiCallLogDao
-) {
+) : AiConfigProvider {
     private val API_ADDRESS = stringPreferencesKey("api_address")
     private val API_PATH = stringPreferencesKey("api_path")
     private val API_KEY = stringPreferencesKey("api_key")
@@ -31,7 +33,7 @@ class AiInterRepository @Inject constructor(
     private val MAX_TOOL_ROUNDS = intPreferencesKey("max_tool_rounds")
     private val MAX_BATCH_SIZE = intPreferencesKey("max_batch_size")
 
-    val config: Flow<AiInterConfig> = context.dataStore.data.map { preferences ->
+    override val config: Flow<AiInterConfig> = context.dataStore.data.map { preferences ->
         AiInterConfig(
             apiAddress = preferences[API_ADDRESS] ?: "https://integrate.api.nvidia.com/v1",
             apiPath = preferences[API_PATH] ?: "/chat/completions",
@@ -46,7 +48,7 @@ class AiInterRepository @Inject constructor(
         )
     }
 
-    suspend fun updateConfig(update: (AiInterConfig) -> AiInterConfig) {
+    override suspend fun updateConfig(update: (AiInterConfig) -> AiInterConfig) {
         context.dataStore.edit { preferences ->
             val current = AiInterConfig(
                 apiAddress = preferences[API_ADDRESS] ?: "https://integrate.api.nvidia.com/v1",
