@@ -95,8 +95,9 @@ fun NLtimerScaffold(
     val isSecondaryPage = currentRoute in NLtimerRoutes.SETTINGS_FULLSCREEN_ROUTES
     val isAiInter = currentRoute == NLtimerRoutes.AI_INTER
     val isAiAssistantChat = currentRoute == NLtimerRoutes.AI_ASSISTANT_CHAT
+    val isStats = currentRoute == NLtimerRoutes.STATS
     val visibleDateLabelState = remember { mutableStateOf<String?>(null) }
-    val isHomePage = currentRoute !in NLtimerRoutes.SETTINGS_FULLSCREEN_ROUTES && currentRoute != NLtimerRoutes.SETTINGS && !isAiInter
+    val isHomePage = currentRoute !in NLtimerRoutes.SETTINGS_FULLSCREEN_ROUTES && currentRoute != NLtimerRoutes.SETTINGS && !isAiInter && !isStats
     val isDateTitle = isHomePage && visibleDateLabelState.value != null
     val topBarTitle = when (currentRoute) {
         NLtimerRoutes.SETTINGS -> "设置"
@@ -105,6 +106,7 @@ fun NLtimerScaffold(
         NLtimerRoutes.BEHAVIOR_MANAGEMENT -> "行为管理"
         NLtimerRoutes.CATEGORIES -> "分类管理"
         NLtimerRoutes.AI_INTER -> "AI Inter"
+        NLtimerRoutes.STATS -> "统计"
         else -> visibleDateLabelState.value ?: "NLtimer"
     }
     var showLayoutPopup by remember { mutableStateOf(false) }
@@ -338,7 +340,7 @@ fun NLtimerScaffold(
                     }
                 },
             ) { padding ->
-                val immersiveTopPadding = if (isImmersive) padding.calculateTopPadding() else 0.dp
+                val immersiveTopPadding = if (isImmersive || isStats) padding.calculateTopPadding() else 0.dp
                 CompositionLocalProvider(LocalImmersiveTopPadding provides immersiveTopPadding) {
                     NLtimerNavHost(
                         navController = navController,
@@ -349,7 +351,7 @@ fun NLtimerScaffold(
                             .then(if (theme.topBarHaze) Modifier.hazeSource(state = topBarHazeState) else Modifier)
                             .fillMaxSize()
                             .padding(
-                                top = if (isImmersive) 0.dp else if (isAiAssistantChat) 0.dp else padding.calculateTopPadding(),
+                                top = if (isImmersive || isStats) 0.dp else if (isAiAssistantChat) 0.dp else padding.calculateTopPadding(),
                                 bottom = if (isAnyFloating) 0.dp else if (!isSecondaryPage) padding.calculateBottomPadding() else 0.dp,
                             ),
                     )

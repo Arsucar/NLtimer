@@ -17,6 +17,7 @@ import com.nltimer.core.data.model.FocusCardShadowStyle
 import com.nltimer.core.data.model.HomeLayoutConfig
 import com.nltimer.core.data.model.GridLayoutStyle
 import com.nltimer.core.data.model.LogLayoutStyle
+import com.nltimer.core.data.model.StatsDashboardConfig
 import com.nltimer.core.data.model.TextListFieldConfig
 import com.nltimer.core.data.model.TextListFieldType
 import com.nltimer.core.data.model.TextListFieldColorMode
@@ -27,6 +28,7 @@ import com.nltimer.core.data.model.TimelineLayoutStyle
 import com.nltimer.core.data.model.MomentLayoutStyle
 import com.nltimer.core.data.model.SecondsStrategy
 import com.nltimer.core.data.model.DisplayColorConfig
+import com.nltimer.core.data.model.defaultStatsDashboardConfig
 import com.nltimer.core.data.util.safeValueOf
 import com.nltimer.core.designsystem.theme.AppTheme
 import com.nltimer.core.designsystem.theme.AlphaPreset
@@ -53,6 +55,7 @@ import com.nltimer.core.designsystem.theme.BottomBarMode
 import com.nltimer.core.designsystem.theme.DisplayColorMode
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.serialization.json.Json
 
 /**
  * SettingsPrefsImpl 偏好设置实现类
@@ -381,6 +384,25 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
         }
     }
 
+    override fun getStatsDashboardConfigFlow(): Flow<StatsDashboardConfig> = dataStore.data.map { prefs ->
+        val raw = prefs[statsDashboardConfigKey]
+        if (raw.isNullOrBlank()) {
+            defaultStatsDashboardConfig()
+        } else {
+            try {
+                json.decodeFromString<StatsDashboardConfig>(raw)
+            } catch (_: Exception) {
+                defaultStatsDashboardConfig()
+            }
+        }
+    }
+
+    override suspend fun updateStatsDashboardConfig(config: StatsDashboardConfig) {
+        dataStore.edit { prefs ->
+            prefs[statsDashboardConfigKey] = json.encodeToString(StatsDashboardConfig.serializer(), config)
+        }
+    }
+
     private fun serializeTimeLabelConfig(config: TimeLabelConfig): String {
         return "${config.visible}|${config.style.name}|${config.format.name}"
     }
@@ -513,5 +535,9 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
         private val focusCardCornerStyleKey = stringPreferencesKey("focus_card_corner_style")
         private val focusCardCustomCornerKey = intPreferencesKey("focus_card_custom_corner")
         private val focusCardShadowStyleKey = stringPreferencesKey("focus_card_shadow_style")
+
+        private val statsDashboardConfigKey = stringPreferencesKey("stats_dashboard_config")
+
+        private val json = Json { ignoreUnknownKeys = true }
     }
 }
