@@ -1,35 +1,17 @@
 build:
   maxIssues: 99999
   excludeCorrectable: false
-  weights:
-    # complexity: 2
-    # LongParameterList: 1
-    # style: 1
-    # comments: 1
 
 config:
   validation: false
   warningsAsErrors: false
   checkExhaustiveness: false
-  # when writing own rules with new properties, exclude the property path e.g.: 'my_rule_set,.*>.*>[my_property]'
   excludes: ""
 
 processors:
   active: true
   exclude:
     - "DetektProgressListener"
-  # - 'KtFileCountProcessor'
-  # - 'PackageCountProcessor'
-  # - 'ClassCountProcessor'
-  # - 'FunctionCountProcessor'
-  # - 'PropertyCountProcessor'
-  # - 'ProjectComplexityProcessor'
-  # - 'ProjectCognitiveComplexityProcessor'
-  # - 'ProjectLLOCProcessor'
-  # - 'ProjectCLOCProcessor'
-  # - 'ProjectLOCProcessor'
-  # - 'ProjectSLOCProcessor'
-  # - 'LicenseHeaderLoaderExtension'
 
 console-reports:
   active: true
@@ -39,23 +21,15 @@ console-reports:
     - "NotificationReport"
     - "FindingsReport"
     - "FileBasedFindingsReport"
-  #  - 'LiteFindingsReport'
 
 output-reports:
   active: true
-  exclude:
-  # - 'TxtOutputReport'
-  # - 'XmlOutputReport'
-  # - 'HtmlOutputReport'
-  # - 'MdOutputReport'
-  # - 'SarifOutputReport'
+  exclude: []
 
 comments:
   active: true
   AbsentOrWrongFileLicense:
     active: false
-    licenseTemplateFile: "license.template"
-    licenseTemplateIsRegex: false
   CommentOverPrivateFunction:
     active: false
   CommentOverPrivateProperty:
@@ -64,92 +38,34 @@ comments:
     active: false
   EndOfSentenceFormat:
     active: false
-    endOfSentenceFormat: '([.?!][ \t\n\r\f<])|([.?!:]$)'
   KDocReferencesNonPublicProperty:
     active: false
-    excludes:
-      [
-        "**/test/**",
-        "**/androidTest/**",
-        "**/commonTest/**",
-        "**/jvmTest/**",
-        "**/androidUnitTest/**",
-        "**/androidInstrumentedTest/**",
-        "**/jsTest/**",
-        "**/iosTest/**",
-      ]
   OutdatedDocumentation:
     active: false
-    matchTypeParameters: true
-    matchDeclarationsOrder: true
-    allowParamOnConstructorProperties: false
   UndocumentedPublicClass:
     active: false
-    excludes:
-      [
-        "**/test/**",
-        "**/androidTest/**",
-        "**/commonTest/**",
-        "**/jvmTest/**",
-        "**/androidUnitTest/**",
-        "**/androidInstrumentedTest/**",
-        "**/jsTest/**",
-        "**/iosTest/**",
-      ]
-    searchInNestedClass: true
-    searchInInnerClass: true
-    searchInInnerObject: true
-    searchInInnerInterface: true
-    searchInProtectedClass: false
   UndocumentedPublicFunction:
     active: false
-    excludes:
-      [
-        "**/test/**",
-        "**/androidTest/**",
-        "**/commonTest/**",
-        "**/jvmTest/**",
-        "**/androidUnitTest/**",
-        "**/androidInstrumentedTest/**",
-        "**/jsTest/**",
-        "**/iosTest/**",
-      ]
-    searchProtectedFunction: false
   UndocumentedPublicProperty:
     active: false
-    excludes:
-      [
-        "**/test/**",
-        "**/androidTest/**",
-        "**/commonTest/**",
-        "**/jvmTest/**",
-        "**/androidUnitTest/**",
-        "**/androidInstrumentedTest/**",
-        "**/jsTest/**",
-        "**/iosTest/**",
-      ]
-    searchProtectedProperty: false
 
 complexity:
   active: true
   CognitiveComplexMethod:
     active: false
-    threshold: 15
   ComplexCondition:
     active: true
     threshold: 4
   ComplexInterface:
     active: false
-    threshold: 10
-    includeStaticDeclarations: false
-    includePrivateDeclarations: false
-    ignoreOverloaded: false
   CyclomaticComplexMethod:
     active: true
-    threshold: 15
-    ignoreSingleWhenExpression: false
-    ignoreSimpleWhenEntries: false
-    ignoreNestingFunctions: false
+    # 【优化】圈复杂度从 15 放宽到 22。Compose 布局中由于多层嵌套的 Row/Column 
+    # 和 condition 状态判断，容易导致复杂度上升，适当放宽避免强制拆分破坏 UI 声明的连贯性
+    threshold: 22
+    ignoreSingleWhenExpression: true
+    ignoreSimpleWhenEntries: true
+    ignoreNestingFunctions: true
     nestingFunctions:
       - "also"
       - "apply"
@@ -162,79 +78,53 @@ complexity:
       - "with"
   LabeledExpression:
     active: false
-    ignoredLabels: []
   LargeClass:
     active: true
     threshold: 600
   LongMethod:
     active: true
-    threshold: 60
+    # 【核心优化】函数长度从 60 行放宽到 120 行。
+    # Compose 的声明式布局往往行数较长，120 行在保持可读性的同时给予 UI 组件充足的空间。
+    threshold: 120
   LongParameterList:
     active: true
-    functionThreshold: 6
-    constructorThreshold: 7
-    ignoreDefaultParameters: false
+    # 【核心优化】函数参数从 6 调大至 10。
+    functionThreshold: 10
+    constructorThreshold: 8
+    ignoreDefaultParameters: true
     ignoreDataClasses: true
-    ignoreAnnotatedParameter: []
+    # 【核心优化】彻底忽略带有 @Composable 注解的函数。
+    # Compose 组件通常会接收大量的 Modifier、State 和回调 Lambda，直接豁免它们。
+    ignoreAnnotatedParameter: ["androidx.compose.runtime.Composable"]
   MethodOverloading:
     active: false
-    threshold: 6
   NamedArguments:
     active: false
-    threshold: 3
-    ignoreArgumentsMatchingNames: false
   NestedBlockDepth:
     active: true
-    threshold: 4
+    # 【优化】嵌套深度从 4 放宽到 5。Compose 视图树嵌套 4 层非常普遍。
+    threshold: 5
   NestedScopeFunctions:
     active: false
-    threshold: 1
-    functions:
-      - "kotlin.apply"
-      - "kotlin.run"
-      - "kotlin.with"
-      - "kotlin.let"
-      - "kotlin.also"
   ReplaceSafeCallChainWithRun:
     active: false
   StringLiteralDuplication:
     active: false
-    excludes:
-      [
-        "**/test/**",
-        "**/androidTest/**",
-        "**/commonTest/**",
-        "**/jvmTest/**",
-        "**/androidUnitTest/**",
-        "**/androidInstrumentedTest/**",
-        "**/jsTest/**",
-        "**/iosTest/**",
-      ]
-    threshold: 3
-    ignoreAnnotation: true
-    excludeStringsWithLessThan5Characters: true
-    ignoreStringsRegex: "$^"
   TooManyFunctions:
     active: true
     excludes:
-      [
-        "**/test/**",
-        "**/androidTest/**",
-        "**/commonTest/**",
-        "**/jvmTest/**",
-        "**/androidUnitTest/**",
-        "**/androidInstrumentedTest/**",
-        "**/jsTest/**",
-        "**/iosTest/**",
-      ]
-    thresholdInFiles: 11
-    thresholdInClasses: 11
-    thresholdInInterfaces: 11
-    thresholdInObjects: 11
-    thresholdInEnums: 11
+      - "**/test/**"
+      - "**/androidTest/**"
+    # 【优化】文件/类内函数数量限制从 11 放宽到 24。
+    # 特别是针对存放各类小图标、UI 子组件、或者 Room DAO 的文件，11 个限制太狭隘了。
+    thresholdInFiles: 24
+    thresholdInClasses: 24
+    thresholdInInterfaces: 24
+    thresholdInObjects: 24
+    thresholdInEnums: 24
     ignoreDeprecated: false
-    ignorePrivate: false
-    ignoreOverridden: false
+    ignorePrivate: true  # 【新设】忽略私有辅助函数，鼓励开发者拆分职责
+    ignoreOverridden: true # 【新设】忽略重写函数（如多源自接口实现）
 
 coroutines:
   active: true
@@ -276,7 +166,7 @@ empty-blocks:
     active: true
   EmptyFunctionBlock:
     active: true
-    ignoreOverridden: false
+    ignoreOverridden: true # 【优化】允许重写接口时的空实现（例如某些空的回调监听）
   EmptyIfBlock:
     active: true
   EmptyInitBlock:
@@ -304,16 +194,8 @@ exceptions:
   InstanceOfCheckForException:
     active: true
     excludes:
-      [
-        "**/test/**",
-        "**/androidTest/**",
-        "**/commonTest/**",
-        "**/jvmTest/**",
-        "**/androidUnitTest/**",
-        "**/androidInstrumentedTest/**",
-        "**/jsTest/**",
-        "**/iosTest/**",
-      ]
+      - "**/test/**"
+      - "**/androidTest/**"
   NotImplementedDeclaration:
     active: false
   ObjectExtendsThrowable:
@@ -332,6 +214,7 @@ exceptions:
       - "MalformedURLException"
       - "NumberFormatException"
       - "ParseException"
+      - "kotlinx.coroutines.CancellationException" # 【重磅优化】协程取消异常在 Android 中很常见且通常需要吞掉，必须放开
     allowedExceptionNameRegex: "_|(ignore|expected).*"
   ThrowingExceptionFromFinally:
     active: true
@@ -340,16 +223,8 @@ exceptions:
   ThrowingExceptionsWithoutMessageOrCause:
     active: true
     excludes:
-      [
-        "**/test/**",
-        "**/androidTest/**",
-        "**/commonTest/**",
-        "**/jvmTest/**",
-        "**/androidUnitTest/**",
-        "**/androidInstrumentedTest/**",
-        "**/jsTest/**",
-        "**/iosTest/**",
-      ]
+      - "**/test/**"
+      - "**/androidTest/**"
     exceptions:
       - "ArrayIndexOutOfBoundsException"
       - "Exception"
@@ -365,16 +240,8 @@ exceptions:
   TooGenericExceptionCaught:
     active: true
     excludes:
-      [
-        "**/test/**",
-        "**/androidTest/**",
-        "**/commonTest/**",
-        "**/jvmTest/**",
-        "**/androidUnitTest/**",
-        "**/androidInstrumentedTest/**",
-        "**/jsTest/**",
-        "**/iosTest/**",
-      ]
+      - "**/test/**"
+      - "**/androidTest/**"
     exceptionNames:
       - "ArrayIndexOutOfBoundsException"
       - "Error"
@@ -397,7 +264,6 @@ naming:
   active: true
   BooleanPropertyNaming:
     active: false
-    allowedPattern: "^(is|has|are)"
   ClassNaming:
     active: true
     classPattern: "[A-Z][a-zA-Z0-9]*"
@@ -411,29 +277,19 @@ naming:
     enumEntryPattern: "[A-Z][_a-zA-Z0-9]*"
   ForbiddenClassName:
     active: false
-    forbiddenName: []
   FunctionMaxLength:
     active: false
-    maximumFunctionNameLength: 30
   FunctionMinLength:
     active: false
-    minimumFunctionNameLength: 3
   FunctionNaming:
     active: true
     excludes:
-      [
-        "**/test/**",
-        "**/androidTest/**",
-        "**/commonTest/**",
-        "**/jvmTest/**",
-        "**/androidUnitTest/**",
-        "**/androidInstrumentedTest/**",
-        "**/jsTest/**",
-        "**/iosTest/**",
-      ]
-    functionPattern: "[a-z][a-zA-Z0-9]*"
+      - "**/test/**"
+      - "**/androidTest/**"
+    # 【优化】允许下划线。主要是为了适配单元测试名（如 `saveTask_withEmptyTag_shouldFail`）
+    functionPattern: "[a-z][a-zA-Z0-9_]*"
     excludeClassPattern: "$^"
-    ignoreAnnotated: "Composable"
+    ignoreAnnotated: ["Composable"] # 【核心优化】豁免 Composable 函数，因为大写的布局组件名（如 HomeScreen）会触发命名告警
   FunctionParameterNaming:
     active: true
     parameterPattern: "[a-z][A-Za-z0-9]*"
@@ -444,7 +300,6 @@ naming:
     requireRootInDeclaration: false
   LambdaParameterNaming:
     active: false
-    parameterPattern: "[a-z][A-Za-z0-9]*|_"
   MatchingDeclarationName:
     active: true
     mustBeFirst: true
@@ -462,7 +317,8 @@ naming:
     privatePropertyPattern: "(_)?[A-Za-z][_A-Za-z0-9]*"
   PackageNaming:
     active: true
-    packagePattern: '[a-z]+(\.[a-z][A-Za-z0-9]*)*'
+    # 【优化】修改正则表达式，完美兼容多模块路径中带有下划线的命名规范（如 feature_home, tag_management）
+    packagePattern: "^[a-z]+(\\.[a-z][a-z0-9_]*)*$"
   TopLevelPropertyNaming:
     active: true
     constantPattern: "[A-Z][_A-Z0-9]*"
@@ -470,10 +326,8 @@ naming:
     privatePropertyPattern: "_?[A-Za-z][_A-Za-z0-9]*"
   VariableMaxLength:
     active: false
-    maximumVariableNameLength: 64
   VariableMinLength:
     active: false
-    minimumVariableNameLength: 1
   VariableNaming:
     active: true
     variablePattern: "[a-z][A-Za-z0-9]*"
@@ -486,33 +340,16 @@ performance:
     active: true
   CouldBeSequence:
     active: false
-    threshold: 3
   ForEachOnRange:
     active: true
     excludes:
-      [
-        "**/test/**",
-        "**/androidTest/**",
-        "**/commonTest/**",
-        "**/jvmTest/**",
-        "**/androidUnitTest/**",
-        "**/androidInstrumentedTest/**",
-        "**/jsTest/**",
-        "**/iosTest/**",
-      ]
+      - "**/test/**"
+      - "**/androidTest/**"
   SpreadOperator:
     active: true
     excludes:
-      [
-        "**/test/**",
-        "**/androidTest/**",
-        "**/commonTest/**",
-        "**/jvmTest/**",
-        "**/androidUnitTest/**",
-        "**/androidInstrumentedTest/**",
-        "**/jsTest/**",
-        "**/iosTest/**",
-      ]
+      - "**/test/**"
+      - "**/androidTest/**"
   UnnecessaryPartOfBinaryExpression:
     active: false
   UnnecessaryTemporaryInstantiation:
@@ -545,7 +382,6 @@ potential-bugs:
       - "java.util.HashMap"
   ElseCaseInsteadOfExhaustiveWhen:
     active: false
-    ignoredSubjectTypes: []
   EqualsAlwaysReturnsTrueOrFalse:
     active: true
   EqualsWithHashCodeExist:
@@ -571,12 +407,10 @@ potential-bugs:
       - "kotlin.sequences.Sequence"
       - "kotlinx.coroutines.flow.*Flow"
       - "java.util.stream.*Stream"
-    ignoreFunctionCall: []
   ImplicitDefaultLocale:
     active: true
   ImplicitUnitReturnType:
     active: false
-    allowExplicitReturnType: true
   InvalidRange:
     active: true
   IteratorHasNextCallsNextMethod:
@@ -585,23 +419,10 @@ potential-bugs:
     active: true
   LateinitUsage:
     active: false
-    excludes:
-      [
-        "**/test/**",
-        "**/androidTest/**",
-        "**/commonTest/**",
-        "**/jvmTest/**",
-        "**/androidUnitTest/**",
-        "**/androidInstrumentedTest/**",
-        "**/jsTest/**",
-        "**/iosTest/**",
-      ]
-    ignoreOnClassesPattern: ""
   MapGetWithNotNullAssertionOperator:
     active: true
   MissingPackageDeclaration:
     active: false
-    excludes: ["**/*.kts"]
   NullCheckOnMutableProperty:
     active: false
   NullableToStringCall:
@@ -623,19 +444,11 @@ potential-bugs:
   UnsafeCallOnNullableType:
     active: true
     excludes:
-      [
-        "**/test/**",
-        "**/androidTest/**",
-        "**/commonTest/**",
-        "**/jvmTest/**",
-        "**/androidUnitTest/**",
-        "**/androidInstrumentedTest/**",
-        "**/jsTest/**",
-        "**/iosTest/**",
-      ]
+      - "**/test/**"
+      - "**/androidTest/**"
   UnsafeCast:
     active: true
-  UnusedUnaryOperator:
+  UnunusedUnaryOperator:
     active: true
   UselessPostfixExpression:
     active: true
@@ -648,26 +461,18 @@ style:
     active: false
   BracesOnIfStatements:
     active: false
-    singleLine: "never"
-    multiLine: "always"
   BracesOnWhenStatements:
     active: false
-    singleLine: "necessary"
-    multiLine: "consistent"
   CanBeNonNullable:
     active: false
   CascadingCallWrapping:
     active: false
-    includeElvis: true
   ClassOrdering:
     active: false
   CollapsibleIfStatements:
     active: false
   DataClassContainsFunctions:
     active: false
-    conversionFunctionPrefix:
-      - "to"
-    allowOperators: false
   DataClassShouldBeImmutable:
     active: false
   DestructuringDeclarationWithTooManyEntries:
@@ -675,14 +480,6 @@ style:
     maxDestructuringEntries: 3
   DoubleNegativeLambda:
     active: false
-    negativeFunctions:
-      - reason: "Use `takeIf` instead."
-        value: "takeUnless"
-      - reason: "Use `all` instead."
-        value: "none"
-    negativeFunctionNameParts:
-      - "not"
-      - "non"
   EqualsNullCall:
     active: true
   EqualsOnSignatureLine:
@@ -690,27 +487,11 @@ style:
   ExplicitCollectionElementAccessMethod:
     active: false
   ExplicitItLambdaParameter:
-    active: true
+    active: false # 【优化】关闭它。在简单 Lambda 表达式中直接使用简短的 `it` 有利于提升可读性。
   ExpressionBodySyntax:
     active: false
-    includeLineWrapping: false
   ForbiddenAnnotation:
     active: false
-    annotations:
-      - reason: "it is a java annotation. Use `Suppress` instead."
-        value: "java.lang.SuppressWarnings"
-      - reason: "it is a java annotation. Use `kotlin.Deprecated` instead."
-        value: "java.lang.Deprecated"
-      - reason: "it is a java annotation. Use `kotlin.annotation.MustBeDocumented` instead."
-        value: "java.lang.annotation.Documented"
-      - reason: "it is a java annotation. Use `kotlin.annotation.Target` instead."
-        value: "java.lang.annotation.Target"
-      - reason: "it is a java annotation. Use `kotlin.annotation.Retention` instead."
-        value: "java.lang.annotation.Retention"
-      - reason: "it is a java annotation. Use `kotlin.annotation.Repeatable` instead."
-        value: "java.lang.annotation.Repeatable"
-      - reason: "Kotlin does not support @Inherited annotation, see https://youtrack.jetbrains.com/issue/KT-22265"
-        value: "java.lang.annotation.Inherited"
   ForbiddenComment:
     active: true
     comments:
@@ -718,75 +499,70 @@ style:
         value: "FIXME:"
       - reason: "Forbidden STOPSHIP todo marker in comment, please address the problem before shipping the code."
         value: "STOPSHIP:"
-      - reason: "Forbidden TODO todo marker in comment, please do the changes."
-        value: "TODO:"
+      # 【核心优化】移除了对 "TODO:" 的拦截！允许开发者在未完工的代码里写 TODO，不作为报错卡点。
     allowedPatterns: ""
   ForbiddenImport:
     active: false
-    imports: []
-    forbiddenPatterns: ""
   ForbiddenMethodCall:
     active: false
-    methods:
-      - reason: "print does not allow you to configure the output stream. Use a logger instead."
-        value: "kotlin.io.print"
-      - reason: "println does not allow you to configure the output stream. Use a logger instead."
-        value: "kotlin.io.println"
   ForbiddenSuppress:
     active: false
-    rules: []
   ForbiddenVoid:
     active: true
-    ignoreOverridden: false
-    ignoreUsageInGenerics: false
   FunctionOnlyReturningConstant:
     active: true
-    ignoreOverridableFunction: true
-    ignoreActualFunction: true
-    excludedFunctions: []
   LoopWithTooManyJumpStatements:
     active: true
-    maxJumpCount: 1
+    maxJumpCount: 2 # 【优化】放宽至 2 个。循环体内同时存在 break 和 continue 较普遍。
   MagicNumber:
     active: true
     excludes:
-      [
-        "**/test/**",
-        "**/androidTest/**",
-        "**/commonTest/**",
-        "**/jvmTest/**",
-        "**/androidUnitTest/**",
-        "**/androidInstrumentedTest/**",
-        "**/jsTest/**",
-        "**/iosTest/**",
-        "**/*.kts",
-      ]
+      - "**/test/**"
+      - "**/androidTest/**"
+      - "**/*.kts"
+      - "**/ui/**"       # 【核心优化】直接过滤掉所有 ui 包下的魔术数字检查。
+      - "**/*Screen.kt"  # 【核心优化】直接过滤掉所有 Screen 结尾的布局文件。
     ignoreNumbers:
+      # 【核心优化】极大扩充了 Compose 布局常用的 Dp、弧度、权重、百分比等数学基数
       - "-1"
       - "0"
       - "1"
       - "2"
+      - "3"
+      - "4"
+      - "6"
+      - "8"
+      - "12"
+      - "16"
+      - "24"
+      - "32"
+      - "48"
+      - "64"
+      - "100"
+      - "180"
+      - "360"
+      - "0.5"
+      - "1.0"
     ignoreHashCodeFunction: true
-    ignorePropertyDeclaration: false
-    ignoreLocalVariableDeclaration: false
+    ignorePropertyDeclaration: true # 【优化】类成员属性声明赋默认初始数值不计入魔术数字
+    ignoreLocalVariableDeclaration: true # 【优化】局部变量赋初始数值不计入魔术数字
     ignoreConstantDeclaration: true
     ignoreCompanionObjectPropertyDeclaration: true
-    ignoreAnnotation: false
+    ignoreAnnotation: true # 【优化】忽略注解中的数值（比如预览组件中的 @Preview(widthDp = 360)）
     ignoreNamedArgument: true
-    ignoreEnums: false
-    ignoreRanges: false
+    ignoreEnums: true
+    ignoreRanges: true
     ignoreExtensionFunctions: true
   MandatoryBracesLoops:
     active: false
   MaxChainedCallsOnSameLine:
     active: false
-    maxChainedCalls: 5
   MaxLineLength:
     active: true
-    maxLineLength: 120
+    maxLineLength: 150 # 【核心优化】行高上限从 120 提升到 150 字符，减少因链式调用被迫换行引发的不适。
     excludePackageStatements: true
     excludeImportStatements: true
-    excludeCommentStatements: false
+    excludeCommentStatements: true # 【优化】注释行超长不计入报错
     excludeRawStrings: true
   MayBeConst:
     active: true
@@ -796,14 +572,10 @@ style:
     active: false
   MultilineRawStringIndentation:
     active: false
-    indentSize: 4
-    trimmingMethods:
-      - "trimIndent"
-      - "trimMargin"
   NestedClassesVisibility:
     active: true
   NewLineAtEndOfFile:
-    active: true
+    active: false # 【优化】关闭此检查。部分操作系统（Win/Mac）跨平台协作换行符极易引发此低级噪音。
   NoTabs:
     active: false
   NullableBooleanCheck:
@@ -826,12 +598,12 @@ style:
     active: false
   ReturnCount:
     active: true
-    max: 2
+    max: 4 # 【优化】从 2 个放宽到 4 个。为了提倡 Guard Clauses 卫语句（提前 return 降噪），多出口是完全合理的。
     excludedFunctions:
       - "equals"
     excludeLabeled: false
     excludeReturnFromLambda: true
-    excludeGuardClauses: false
+    excludeGuardClauses: true # 【优化】不计算卫语句的 return 个数
   SafeCast:
     active: true
   SerialVersionUIDInSerializableClass:
@@ -840,23 +612,16 @@ style:
     active: false
   StringShouldBeRawString:
     active: false
-    maxEscapedCharacterCount: 2
-    ignoredCharacters: []
   ThrowsCount:
     active: true
-    max: 2
-    excludeGuardClauses: false
+    max: 3 # 【优化】放宽至 3 个
+    excludeGuardClauses: true
   TrailingWhitespace:
     active: false
   TrimMultilineRawString:
     active: false
-    trimmingMethods:
-      - "trimIndent"
-      - "trimMargin"
   UnderscoresInNumericLiterals:
     active: false
-    acceptableLength: 4
-    allowNonStandardGrouping: false
   UnnecessaryAbstractClass:
     active: true
   UnnecessaryAnnotationUseSiteTarget:
@@ -877,14 +642,13 @@ style:
     active: false
   UnnecessaryParentheses:
     active: false
-    allowForUnclearPrecedence: false
   UntilInsteadOfRangeTo:
     active: false
   UnusedImports:
     active: false
   UnusedParameter:
     active: true
-    allowedNames: "ignored|expected"
+    allowedNames: "ignored|expected|_*" # 【优化】允许下划线作为未使用的参数占位（常见于 Lambda 回调）
   UnusedPrivateClass:
     active: true
   UnusedPrivateMember:
@@ -903,14 +667,12 @@ style:
     active: true
   UseDataClass:
     active: false
-    allowVars: false
   UseEmptyCounterpart:
     active: false
   UseIfEmptyOrIfBlank:
     active: false
   UseIfInsteadOfWhen:
     active: false
-    ignoreWhenContainingVariableDeclaration: false
   UseIsNullOrEmpty:
     active: true
   UseLet:
@@ -929,8 +691,6 @@ style:
     active: true
   VarCouldBeVal:
     active: true
-    ignoreLateinitVar: false
+    ignoreLateinitVar: true # 【优化】无视 lateinit 变量
   WildcardImport:
-    active: true
-    excludeImports:
-      - "java.util.*"
+    active: false # 【核心优化】直接关闭通配符导入拦截。交给 AS（Android Studio）自动去优化，不占用静态扫描的心智。

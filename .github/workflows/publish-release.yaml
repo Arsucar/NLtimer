@@ -54,6 +54,10 @@ jobs:
           org.gradle.workers.max=4
           EOF
 
+      - name: Run detekt
+        if: "!startsWith(github.ref, 'refs/tags/')"
+        run: ./gradlew detekt --stacktrace
+
       # 普通分支/PR 只检查编译，不打包
       - name: Compile Debug Sources
         if: "!startsWith(github.ref, 'refs/tags/')"
