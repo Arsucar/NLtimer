@@ -38,3 +38,38 @@
 ### Next Steps
 
 - None - task complete
+
+
+## Session 2: 修复AI功能bug + 夜间模式适配
+
+**Date**: 2026-05-21
+**Task**: 修复AI功能bug + 夜间模式适配
+**Branch**: `keen-narwhal`
+
+### Summary
+
+修复主页AI配置读取过期初始值问题; AI对话界面夜间模式适配(动态色替换硬编码Color); 删除MessageJumper定位按钮; SelectionContainer/MarkdownBlock颜色回退修复
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `f0e590e2` | (see git log) |
+| `5d72083e` | (see git log) |
+| `ea6acd7e` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
