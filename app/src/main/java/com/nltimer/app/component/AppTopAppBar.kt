@@ -227,7 +227,10 @@ fun AppTopAppBar(
                                 fontSize = 14.sp,
                             )
                         } else {
-                            MaterialTheme.typography.titleLarge
+                            MaterialTheme.typography.titleLarge.copy(
+                                fontFamily = font,
+                                fontWeight = FontWeight.W800,
+                            )
                         }
                     },
                     layoutLabel = layoutLabel,
@@ -288,6 +291,8 @@ fun AppCollapsedTopAppBar(
                             )
                         } else {
                             MaterialTheme.typography.headlineMedium.copy(
+                                fontFamily = font,
+                                fontWeight = FontWeight.W800,
                                 fontSize = 32.sp,
                                 lineHeight = 32.sp,
                             )

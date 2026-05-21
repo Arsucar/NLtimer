@@ -7,13 +7,16 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
@@ -211,39 +214,40 @@ fun StatsScreen(
             }
         }
 
-        if (uiState.isEditMode) {
-            Surface(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth(),
-                color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                shadowElevation = 8.dp,
-            ) {
-                Row(
+            if (uiState.isEditMode) {
+                Surface(
                     modifier = Modifier
+                        .align(Alignment.BottomCenter)
                         .fillMaxWidth()
-                        .padding(horizontal = ContentHorizontalPadding, vertical = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        .navigationBarsPadding(),
+                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    shadowElevation = 8.dp,
                 ) {
-                    FilledTonalButton(
-                        onClick = { showAddPanelDialog = true },
-                        modifier = Modifier.weight(1f),
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = ContentHorizontalPadding, vertical = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
-                        Text("添加面板")
-                    }
-                    FilledTonalButton(
-                        onClick = onResetToDefault,
-                        modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.filledTonalButtonColors(
-                            containerColor = MaterialTheme.colorScheme.errorContainer,
-                            contentColor = MaterialTheme.colorScheme.onErrorContainer,
-                        ),
-                    ) {
-                        Text("恢复默认")
+                        FilledTonalButton(
+                            onClick = { showAddPanelDialog = true },
+                            modifier = Modifier.weight(1f),
+                        ) {
+                            Text("添加面板")
+                        }
+                        FilledTonalButton(
+                            onClick = onResetToDefault,
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.filledTonalButtonColors(
+                                containerColor = MaterialTheme.colorScheme.errorContainer,
+                                contentColor = MaterialTheme.colorScheme.onErrorContainer,
+                            ),
+                        ) {
+                            Text("恢复默认")
+                        }
                     }
                 }
             }
-        }
     }
 }
 
@@ -440,39 +444,44 @@ private fun AddPanelDialog(
         onDismissRequest = onDismiss,
         title = { Text("添加面板") },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Column(
+                modifier = Modifier
+                    .verticalScroll(rememberScrollState())
+                    .fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
                 StatsPanelType.entries.forEach { type ->
-                    val label = PanelTypeLabels[type] ?: type.name
-                    val implemented = type in ImplementedPanelTypes
-                    Surface(
-                        onClick = { if (implemented) onAdd(type) },
-                        shape = RoundedCornerShape(12.dp),
-                        color = if (implemented) MaterialTheme.colorScheme.surfaceContainerHigh
-                            else MaterialTheme.colorScheme.surfaceContainerLow,
-                        modifier = Modifier.fillMaxWidth(),
+                val label = PanelTypeLabels[type] ?: type.name
+                val implemented = type in ImplementedPanelTypes
+                Surface(
+                    onClick = { if (implemented) onAdd(type) },
+                    shape = RoundedCornerShape(12.dp),
+                    color = if (implemented) MaterialTheme.colorScheme.surfaceContainerHigh
+                    else MaterialTheme.colorScheme.surfaceContainerLow,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 12.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
+                        Text(
+                            text = label,
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.weight(1f),
+                            color = if (implemented) MaterialTheme.colorScheme.onSurface
+                            else MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        if (!implemented) {
                             Text(
-                                text = label,
-                                style = MaterialTheme.typography.bodyLarge,
-                                modifier = Modifier.weight(1f),
-                                color = if (implemented) MaterialTheme.colorScheme.onSurface
-                                    else MaterialTheme.colorScheme.onSurfaceVariant,
+                                text = "即将支持",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.outline,
                             )
-                            if (!implemented) {
-                                Text(
-                                    text = "即将支持",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.outline,
-                                )
-                            }
                         }
                     }
+                }
                 }
             }
         },
