@@ -91,26 +91,28 @@ fun ChatList(
 
 @Composable
 private fun StreamingBubble(streaming: StreamingState) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-        if (streaming.reasoning.isNotBlank()) {
-            ReasoningBlock(reasoning = streaming.reasoning, defaultExpanded = true)
-        }
-        if (streaming.toolCalls.isNotEmpty()) {
-            ToolCallsBlock(toolCalls = streaming.toolCalls, defaultExpanded = false)
-        }
-        if (streaming.content.isNotBlank()) {
-            MarkdownBlock(content = streaming.content, modifier = Modifier.fillMaxWidth())
-        }
-        if (streaming.isEmpty) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
-                Text("正在生成…", style = MaterialTheme.typography.bodyMedium)
+    CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface) {
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+            if (streaming.reasoning.isNotBlank()) {
+                ReasoningBlock(reasoning = streaming.reasoning, defaultExpanded = true)
             }
+            if (streaming.toolCalls.isNotEmpty()) {
+                ToolCallsBlock(toolCalls = streaming.toolCalls, defaultExpanded = false)
+            }
+            if (streaming.content.isNotBlank()) {
+                MarkdownBlock(content = streaming.content, modifier = Modifier.fillMaxWidth())
+            }
+            if (streaming.isEmpty) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                    Text("正在生成…", style = MaterialTheme.typography.bodyMedium)
+                }
+            }
+            StreamingIndicator(streaming = streaming)
         }
-        StreamingIndicator(streaming = streaming)
     }
 }
 

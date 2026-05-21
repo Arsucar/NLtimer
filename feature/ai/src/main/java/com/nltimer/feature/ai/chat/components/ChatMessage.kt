@@ -12,6 +12,8 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -45,35 +47,57 @@ fun ChatMessage(
                 shape = RoundedCornerShape(16.dp),
                 modifier = Modifier.widthIn(max = 340.dp),
             ) {
-                SelectionContainer {
-                    Box(Modifier.padding(horizontal = 10.dp, vertical = 8.dp)) {
-                        MarkdownBlock(content = msg.content)
+                CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onPrimaryContainer) {
+                    SelectionContainer {
+                        Box(Modifier.padding(horizontal = 10.dp, vertical = 8.dp)) {
+                            MarkdownBlock(content = msg.content)
+                        }
                     }
                 }
             }
         } else {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-                if (msg.reasoning.isNotBlank()) {
-                    ReasoningBlock(reasoning = msg.reasoning, defaultExpanded = false)
+            CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                    if (msg.reasoning.isNotBlank()) {
+                        ReasoningBlock(reasoning = msg.reasoning, defaultExpanded = false)
+                    }
+                    val tools = parseToolCalls(msg.toolCallsJson)
+                    if (tools.isNotEmpty()) {
+                        ToolCallsBlock(toolCalls = tools, defaultExpanded = false)
+                    }
+                    SelectionContainer {
+                        MarkdownBlock(content = msg.content, modifier = Modifier.fillMaxWidth())
+                    }
+                    MessageMetadata(msg = msg)
                 }
-                val tools = parseToolCalls(msg.toolCallsJson)
-                if (tools.isNotEmpty()) {
-                    ToolCallsBlock(toolCalls = tools, defaultExpanded = false)
-                }
-                SelectionContainer {
-                    MarkdownBlock(content = msg.content, modifier = Modifier.fillMaxWidth())
-                }
-                MessageMetadata(msg = msg)
             }
         }
 
         AnimatedVisibility(visible = showActions, enter = fadeIn(), exit = fadeOut()) {
             Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                IconButton(onClick = onCopy) { Icon(Icons.Default.ContentCopy, "复制", Modifier.size(18.dp)) }
-                if (!isUser) {
-                    IconButton(onClick = onRegenerate) { Icon(Icons.Default.Refresh, "重生成", Modifier.size(18.dp)) }
+                IconButton(onClick = onCopy) {
+                    Icon(
+                        Icons.Default.ContentCopy, "复制",
+                        Modifier.size(18.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
-                IconButton(onClick = onDelete) { Icon(Icons.Default.Delete, "删除", Modifier.size(18.dp)) }
+                if (!isUser) {
+                    IconButton(onClick = onRegenerate) {
+                        Icon(
+                            Icons.Default.Refresh, "重生成",
+                            Modifier.size(18.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+                IconButton(onClick = onDelete) {
+                    Icon(
+                        Icons.Default.Delete, "删除",
+                        Modifier.size(18.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
         }
     }

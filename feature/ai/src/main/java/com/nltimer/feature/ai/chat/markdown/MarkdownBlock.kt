@@ -3,10 +3,12 @@ package com.nltimer.feature.ai.chat.markdown
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEach
@@ -52,7 +54,10 @@ fun MarkdownBlock(
         runCatching { Jsoup.parse(html) }.getOrElse { Jsoup.parse("") }
     }
 
-    ProvideTextStyle(style) {
+    val resolvedStyle = if (style.color != Color.Unspecified) style
+        else style.copy(color = MaterialTheme.colorScheme.onSurface)
+
+    ProvideTextStyle(resolvedStyle) {
         Column(modifier = modifier.padding(start = 4.dp)) {
             document.body().childNodes().fastForEach { node ->
                 HtmlBodyNode(node = node, onClickCitation = onClickCitation)
