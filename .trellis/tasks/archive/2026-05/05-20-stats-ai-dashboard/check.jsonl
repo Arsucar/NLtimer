@@ -1,0 +1,4 @@
+{"file": "docs/agent/04-patterns.md", "reason": "Verify code follows project conventions: naming, file organization, DI, Compose patterns"}
+{"file": "docs/agent/05-data-model.md", "reason": "Cross-check that StatsModels align with actual entity fields and relationships"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "Verify data flow consistency across core:data → feature:stats → UI layers"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "Verify no duplicated aggregation logic — StatsQueryUseCase should share code with existing Tool implementations"}
