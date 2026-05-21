@@ -44,7 +44,7 @@ object TestDataFactory {
         id: Long = Random.nextLong(),
         name: String = "分组_${Random.nextInt()}",
         sortOrder: Int = 0,
-    ) = ActivityGroup(id, name, sortOrder)
+    ) = ActivityGroup(id = id, name = name, sortOrder = sortOrder)
 
     fun createActivityList(size: Int = 5) = (1..size).map { createActivity(id = it.toLong()) }
     fun createTagList(size: Int = 5) = (1..size).map { createTag(id = it.toLong()) }

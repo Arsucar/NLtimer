@@ -55,6 +55,9 @@ class ActivityRepositoryImplTest {
         override suspend fun getById(id: Long): ActivityEntity? =
             activityEntities.find { it.id == id }
 
+        override suspend fun getByIds(ids: List<Long>): List<ActivityEntity> =
+            activityEntities.filter { it.id in ids }
+
         override suspend fun getByName(name: String): ActivityEntity? =
             activityEntities.find { it.name == name }
 

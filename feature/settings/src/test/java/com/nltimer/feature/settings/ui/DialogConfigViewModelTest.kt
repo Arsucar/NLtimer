@@ -143,5 +143,11 @@ class DialogConfigViewModelTest {
         override suspend fun updateHomeLayoutConfig(config: com.nltimer.core.data.model.HomeLayoutConfig) {}
         override fun getHasSeenIntroFlow(): Flow<Boolean> = flowOf(false)
         override suspend fun setHasSeenIntro(seen: Boolean) {}
+        override fun getDisplayColorConfigFlow(): Flow<com.nltimer.core.data.model.DisplayColorConfig> = flowOf(com.nltimer.core.data.model.DisplayColorConfig())
+        override suspend fun updateDisplayColorConfig(config: com.nltimer.core.data.model.DisplayColorConfig) {}
+        override fun getTagDisplayConfigFlow(): Flow<com.nltimer.core.data.model.TagDisplayConfig> = flowOf(com.nltimer.core.data.model.TagDisplayConfig())
+        override suspend fun updateTagDisplayConfig(config: com.nltimer.core.data.model.TagDisplayConfig) {}
+        override fun getFocusCardConfigFlow(): Flow<com.nltimer.core.data.model.FocusCardConfig> = flowOf(com.nltimer.core.data.model.FocusCardConfig())
+        override suspend fun updateFocusCardConfig(config: com.nltimer.core.data.model.FocusCardConfig) {}
     }
 }

@@ -23,12 +23,12 @@ class SettingsPrefsImplTest {
         assertEquals(GridLayoutMode.Horizontal, config.activityLayoutMode)
         assertEquals(2, config.activityColumnLines)
         assertEquals(2, config.activityHorizontalLines)
-        assertTrue(config.displayColorConfig.activityUseColorForText)
+        assertTrue(config.activityUseColorForText)
         assertEquals(ChipDisplayMode.Filled, config.tagDisplayMode)
         assertEquals(GridLayoutMode.Horizontal, config.tagLayoutMode)
         assertEquals(2, config.tagColumnLines)
         assertEquals(2, config.tagHorizontalLines)
-        assertTrue(config.displayColorConfig.tagUseColorForText)
+        assertTrue(config.tagUseColorForText)
         assertTrue(config.showBehaviorNature)
         assertEquals(PathDrawMode.StartToEnd, config.pathDrawMode)
         assertEquals(false, config.autoMatchNote)
@@ -70,10 +70,8 @@ class SettingsPrefsImplTest {
             activityLayoutMode = GridLayoutMode.Vertical,
             activityColumnLines = 3,
             activityHorizontalLines = 4,
-            displayColorConfig = com.nltimer.core.data.model.DisplayColorConfig(
-                activityUseColorForText = false,
-                tagUseColorForText = false,
-            ),
+            activityUseColorForText = false,
+            tagUseColorForText = false,
             tagDisplayMode = ChipDisplayMode.Underline,
             tagLayoutMode = GridLayoutMode.Vertical,
             tagColumnLines = 3,
@@ -86,7 +84,7 @@ class SettingsPrefsImplTest {
         assertEquals(GridLayoutMode.Vertical, config.activityLayoutMode)
         assertEquals(3, config.activityColumnLines)
         assertEquals(4, config.activityHorizontalLines)
-        assertEquals(false, config.displayColorConfig.activityUseColorForText)
+        assertEquals(false, config.activityUseColorForText)
         assertEquals(PathDrawMode.BothSidesToMiddle, config.pathDrawMode)
         assertEquals(false, config.showBehaviorNature)
         assertEquals(true, config.autoMatchNote)

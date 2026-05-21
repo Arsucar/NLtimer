@@ -991,4 +991,5 @@ private fun categoryDisplayName(category: ToolCategory): String = when (category
     ToolCategory.CATEGORY -> "分类"
     ToolCategory.DATA -> "数据"
     ToolCategory.SEARCH -> "搜索"
+    ToolCategory.STATISTICS -> "统计"
 }

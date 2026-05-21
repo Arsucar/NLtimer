@@ -34,6 +34,7 @@ class ActivityManagementViewModelTest {
 
     private lateinit var repository: FakeActivityManagementRepository
     private lateinit var tagRepository: FakeTagRepository
+    private lateinit var settingsPrefs: FakeSettingsPrefs
     private lateinit var viewModel: ActivityManagementViewModel
 
     @Before
@@ -41,7 +42,8 @@ class ActivityManagementViewModelTest {
         Dispatchers.setMain(testDispatcher)
         repository = FakeActivityManagementRepository()
         tagRepository = FakeTagRepository()
-        viewModel = ActivityManagementViewModel(repository, AddActivityUseCase(repository), tagRepository)
+        settingsPrefs = FakeSettingsPrefs()
+        viewModel = ActivityManagementViewModel(repository, AddActivityUseCase(repository), tagRepository, settingsPrefs)
     }
 
     @After
@@ -350,6 +352,29 @@ class ActivityManagementViewModelTest {
         override suspend fun resetCategory(category: String) {}
         override suspend fun getActivityIdsForTag(tagId: Long): List<Long> = emptyList()
         override suspend fun setActivityTagBindings(tagId: Long, activityIds: List<Long>) {}
+    }
+
+    private class FakeSettingsPrefs : com.nltimer.core.data.SettingsPrefs {
+        override fun getThemeFlow(): Flow<com.nltimer.core.designsystem.theme.Theme> = flowOf(com.nltimer.core.designsystem.theme.Theme())
+        override suspend fun updateTheme(theme: com.nltimer.core.designsystem.theme.Theme) {}
+        override fun getSavedTagCategories(): Flow<Set<String>> = flowOf(emptySet())
+        override fun getSavedTagCategoriesOrder(): Flow<List<String>> = flowOf(emptyList())
+        override suspend fun saveTagCategories(categories: Set<String>) {}
+        override suspend fun saveTagCategoriesOrder(categories: List<String>) {}
+        override fun getDialogConfigFlow(): Flow<com.nltimer.core.data.model.DialogGridConfig> = flowOf(com.nltimer.core.data.model.DialogGridConfig())
+        override suspend fun updateDialogConfig(config: com.nltimer.core.data.model.DialogGridConfig) {}
+        override fun getTimeLabelConfigFlow(): Flow<com.nltimer.core.designsystem.theme.TimeLabelConfig> = flowOf(com.nltimer.core.designsystem.theme.TimeLabelConfig())
+        override suspend fun updateTimeLabelConfig(config: com.nltimer.core.designsystem.theme.TimeLabelConfig) {}
+        override fun getHomeLayoutConfigFlow(): Flow<com.nltimer.core.data.model.HomeLayoutConfig> = flowOf(com.nltimer.core.data.model.HomeLayoutConfig())
+        override suspend fun updateHomeLayoutConfig(config: com.nltimer.core.data.model.HomeLayoutConfig) {}
+        override fun getDisplayColorConfigFlow(): Flow<com.nltimer.core.data.model.DisplayColorConfig> = flowOf(com.nltimer.core.data.model.DisplayColorConfig())
+        override suspend fun updateDisplayColorConfig(config: com.nltimer.core.data.model.DisplayColorConfig) {}
+        override fun getTagDisplayConfigFlow(): Flow<com.nltimer.core.data.model.TagDisplayConfig> = flowOf(com.nltimer.core.data.model.TagDisplayConfig())
+        override suspend fun updateTagDisplayConfig(config: com.nltimer.core.data.model.TagDisplayConfig) {}
+        override fun getFocusCardConfigFlow(): Flow<com.nltimer.core.data.model.FocusCardConfig> = flowOf(com.nltimer.core.data.model.FocusCardConfig())
+        override suspend fun updateFocusCardConfig(config: com.nltimer.core.data.model.FocusCardConfig) {}
+        override fun getHasSeenIntroFlow(): Flow<Boolean> = flowOf(false)
+        override suspend fun setHasSeenIntro(seen: Boolean) {}
     }
 
     @Test

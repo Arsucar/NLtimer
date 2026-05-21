@@ -11,8 +11,8 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import okio.Path.Companion.toPath
 import javax.inject.Singleton
+import okio.Path.Companion.toPath
 
 /**
  * Hilt 设置依赖注入模块

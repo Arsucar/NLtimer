@@ -662,6 +662,7 @@ class BehaviorRepositoryImplTest {
         override fun getAllActive(): Flow<List<ActivityEntity>> = flowOf(activities)
         override fun getAll(): Flow<List<ActivityEntity>> = flowOf(activities)
         override suspend fun getById(id: Long): ActivityEntity? = activities.find { it.id == id }
+        override suspend fun getByIds(ids: List<Long>): List<ActivityEntity> = activities.filter { it.id in ids }
         override suspend fun getByName(name: String): ActivityEntity? = null
         override suspend fun setArchived(id: Long, archived: Boolean) {}
         override fun search(query: String): Flow<List<ActivityEntity>> = flowOf(emptyList())

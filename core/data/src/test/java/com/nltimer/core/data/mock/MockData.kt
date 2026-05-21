@@ -18,6 +18,7 @@ object MockData {
         color = 0xFF00FF00,
         iconKey = null,
         category = "工作",
+        groupId = null,
         priority = 1,
         usageCount = 0,
         sortOrder = 0,

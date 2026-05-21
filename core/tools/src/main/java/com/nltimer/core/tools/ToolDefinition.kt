@@ -100,6 +100,9 @@ enum class ToolCategory {
 
     /** 搜索匹配：活动与标签搜索 */
     SEARCH,
+
+    /** 统计数据 */
+    STATISTICS,
 }
 
 /**
