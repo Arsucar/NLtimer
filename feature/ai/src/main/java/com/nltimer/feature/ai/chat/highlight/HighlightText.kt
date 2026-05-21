@@ -34,7 +34,7 @@ fun HighlightText(
     code: String,
     language: String,
     modifier: Modifier = Modifier,
-    colors: HighlightTextColorPalette = HighlightTextColorPalette.Default,
+    colors: HighlightTextColorPalette = HighlightTextColorPalette.fromTheme(),
     fontSize: TextUnit = 12.sp,
     fontFamily: FontFamily = FontFamily.Monospace,
     fontStyle: FontStyle = FontStyle.Normal,
