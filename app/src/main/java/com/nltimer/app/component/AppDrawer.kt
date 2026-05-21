@@ -51,6 +51,7 @@ import com.nltimer.core.designsystem.theme.styledCorner
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.nltimer.app.navigation.NLtimerRoutes
+import com.nltimer.feature.ai.navigation.AiRoutes
 import java.util.concurrent.CopyOnWriteArrayList
 
 private val MIN_DRAWER_WIDTH = 280.dp
@@ -62,7 +63,7 @@ internal data class DrawerMenuItem(
 )
 
 internal val drawerMenuItems = CopyOnWriteArrayList(listOf(
-    DrawerMenuItem(NLtimerRoutes.AI_INTER, "AI Inter", Icons.Default.AutoAwesome),
+    DrawerMenuItem(AiRoutes.AI_INTER, "AI Inter", Icons.Default.AutoAwesome),
     DrawerMenuItem(NLtimerRoutes.THEME_SETTINGS, "主题配置", Icons.Default.Brightness5),
     DrawerMenuItem(NLtimerRoutes.SETTINGS, "设置", Icons.Default.Settings),
 ))

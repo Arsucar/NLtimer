@@ -56,6 +56,7 @@ import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import com.nltimer.app.navigation.NLtimerRoutes
+import com.nltimer.feature.ai.navigation.AiRoutes
 import com.nltimer.core.designsystem.component.DragMenuState
 import com.nltimer.core.designsystem.component.DraggableMenuAnchor
 import com.nltimer.core.designsystem.component.LocalNavBarWidth
@@ -74,7 +75,7 @@ internal data class NavItem(
 internal val navItems = listOf(
     NavItem(NLtimerRoutes.HOME, "主页", Icons.Default.Home),
     NavItem(NLtimerRoutes.STATS, "统计", Icons.Default.BarChart),
-    NavItem(NLtimerRoutes.AI_ASSISTANT_CHAT, "AI 助手", Icons.Default.AutoAwesome),
+    NavItem(AiRoutes.AI_ASSISTANT_CHAT, "AI 助手", Icons.Default.AutoAwesome),
     NavItem(NLtimerRoutes.SETTINGS, "设置", Icons.Default.Settings),
 )
 

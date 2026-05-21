@@ -1,0 +1,4 @@
+{"file": "docs/agent/04-patterns.md", "reason": "设计模式与代码约定 — 代码审查时对照约定"}
+{"file": "docs/agent/02-architecture-digest.md", "reason": "架构摘要 — 验证修改不破坏整体架构"}
+{"file": "docs/agent/03-module-map.md", "reason": "模块映射表 — 确认文件路径正确"}
+{"file": "docs/agent/06-common-bug.md", "reason": "常见 Bug 规避 — 检查是否引入已知坑"}

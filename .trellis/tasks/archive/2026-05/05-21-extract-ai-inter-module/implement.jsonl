@@ -1,0 +1,8 @@
+{"file": "docs/agent/00-index.md", "reason": "Agent 文档索引，按需加载上下文"}
+{"file": "docs/agent/01-project-overview.md", "reason": "项目基本信息、构建注意事项（--no-daemon）"}
+{"file": "docs/agent/02-architecture-digest.md", "reason": "三层架构、数据流、导航结构"}
+{"file": "docs/agent/03-module-map.md", "reason": "模块→关键类→文件路径映射"}
+{"file": "docs/agent/04-patterns.md", "reason": "设计模式与代码约定"}
+{"file": ".trellis/spec/backend/index.md", "reason": "后端开发规范索引"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "跨层思考指南，模块提取涉及多层"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "代码复用思考指南，本次任务核心目标"}

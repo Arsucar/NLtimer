@@ -35,4 +35,5 @@ data class HomeUiState(
     val editInitialActivityId: Long? = null,
     val editInitialTagIds: PersistentList<Long> = persistentListOf(),
     val editInitialNote: String? = null,
+    val showAiQuickInput: Boolean = false,
 )

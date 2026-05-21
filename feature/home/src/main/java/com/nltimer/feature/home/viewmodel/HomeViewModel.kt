@@ -29,6 +29,7 @@ import com.nltimer.core.tools.match.NoteDirectiveParser
 import com.nltimer.core.tools.match.NoteMatcher
 import com.nltimer.core.tools.match.NoteProcessOutcome
 import com.nltimer.core.tools.match.NoteScanResult
+import com.nltimer.core.tools.event.ToolEventBus
 import com.nltimer.feature.home.match.MatchStrategy
 import com.nltimer.feature.home.model.AddSheetMode
 import com.nltimer.feature.home.model.GridCellUiState
@@ -71,6 +72,7 @@ class HomeViewModel @Inject constructor(
     private val addActivityUseCase: AddActivityUseCase,
     private val applyNoteDirectivesUseCase: ApplyNoteDirectivesUseCase,
     private val clockService: ClockService,
+    private val toolEventBus: ToolEventBus,
 ) : ViewModel() {
 
     private val uiStateBuilder = HomeUiStateBuilder()
@@ -131,6 +133,13 @@ class HomeViewModel @Inject constructor(
         loadActivitiesAndGroups()
         loadAllTags()
         loadLastUsedMaps()
+        viewModelScope.launch {
+            toolEventBus.events.collect {
+                // Room Flow subscriptions in loadHomeBehaviors / loadActivitiesAndGroups /
+                // loadAllTags already auto-refresh on DAO writes. This collector exists so
+                // future category-specific side-effects (e.g. haptic, toast) can be added.
+            }
+        }
     }
 
     private fun loadActivitiesAndGroups() {
@@ -427,6 +436,14 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             settingsPrefs.updateHomeLayoutConfig(config)
         }
+    }
+
+    fun showAiQuickInput() {
+        _uiState.update { it.copy(showAiQuickInput = true) }
+    }
+
+    fun hideAiQuickInput() {
+        _uiState.update { it.copy(showAiQuickInput = false) }
     }
 
     fun loadMore() {

@@ -16,29 +16,97 @@ Questions to answer:
 - What code review standards apply?
 -->
 
-(To be filled by the team)
+Documented from `extract-ai-inter-module` task (2026-05-21).
 
 ---
 
 ## Forbidden Patterns
 
-<!-- Patterns that should never be used and why -->
+### Don't: Keep experimental code in app/experimental/ long-term
 
-(To be filled by the team)
+**Problem**: `app/experimental/` is a staging area, not a permanent home. Code here creates tight coupling with the app module.
+
+**Why it's bad**: Other modules can't reuse the code; app module grows unbounded; navigation constants pollute `NLtimerRoutes`.
+
+**Instead**: Extract into `feature:<name>` module once the code is stable.
+
+---
+
+### Don't: Duplicate network/config code in feature modules
+
+**Problem**: Feature module creates its own `network/` files when `core:ai` already has them.
+
+**Why it's bad**: Two copies diverge; bugs fixed in one copy persist in the other; dependency graph becomes unclear.
+
+**Instead**: Delete feature-level network files; import from `core:ai.network` directly.
+
+---
+
+### Don't: Reference feature routes from NLtimerRoutes constants
+
+**Problem**: `NLtimerRoutes` contains AI-specific constants like `AI_INTER`, `AI_ASSISTANT_CHAT`.
+
+**Why it's bad**: `NLtimerRoutes` becomes a god object; app module has compile-time dependency on feature internals.
+
+**Instead**: Feature defines its own `<Name>Routes` object; `NLtimerRoutes` references `AiRoutes.AI_INTER` etc.
 
 ---
 
 ## Required Patterns
 
-<!-- Patterns that must always be used -->
+### Pattern: Feature Module Structure
 
-(To be filled by the team)
+Every feature module must follow this structure:
+
+```
+feature/<name>/
+├── build.gradle.kts          # nltimer.android.library + nltimer.android.hilt
+├── src/main/
+│   ├── AndroidManifest.xml   # Empty manifest
+│   └── java/com/nltimer/feature/<name>/
+│       ├── navigation/       # <Name>Routes.kt + <Name>NavGraph.kt
+│       ├── di/               # Hilt Module
+│       ├── data/             # Repository, Database, DAO
+│       ├── viewmodel/        # ViewModel
+│       └── <Name>Screen.kt   # UI
+```
+
+**build.gradle.kts** must use:
+```kotlin
+plugins {
+    id("nltimer.android.library")
+    id("nltimer.android.hilt")
+}
+```
+
+**navigation/** must contain:
+- `<Name>Routes.kt` — route constants as `object`
+- `<Name>NavGraph.kt` — `NavGraphBuilder.<name>NavGraph()` extension (if module has navigation)
+
+### Pattern: Navigation Extraction
+
+When extracting routes from `NLtimerRoutes`:
+
+1. Create `<Name>Routes.kt` in feature module with all route constants
+2. Create `<Name>NavGraph.kt` with `NavGraphBuilder` extension function
+3. In `NLtimerRoutes`, replace constant definitions with imports from `<Name>Routes`
+4. In `NLtimerNavHost`, replace inline `composable()` calls with single `include` call
+5. Update `PRIMARY_ROUTES` and `SETTINGS_FULLSCREEN_ROUTES` to reference `<Name>Routes.CONSTANT`
+
+### Pattern: Gradle Build Verification
+
+After any module extraction, always verify:
+
+```bash
+./gradlew :feature:<name>:compileDebugKotlin --no-daemon
+./gradlew :app:compileDebugKotlin --no-daemon
+```
+
+Both must pass before committing.
 
 ---
 
 ## Testing Requirements
-
-<!-- What level of testing is expected -->
 
 (To be filled by the team)
 
@@ -46,6 +114,14 @@ Questions to answer:
 
 ## Code Review Checklist
 
-<!-- What reviewers should check -->
+### Module Extraction Review
 
-(To be filled by the team)
+- [ ] No `experimental/` references remain in app module
+- [ ] Feature module compiles independently
+- [ ] App module compiles with feature dependency
+- [ ] No duplicate network/config code (deleted, not just moved)
+- [ ] Route constants extracted to feature's own `<Name>Routes`
+- [ ] NavHost uses feature's `<name>NavGraph()` extension
+- [ ] DI module covers all injected dependencies
+- [ ] `settings.gradle.kts` includes new module
+- [ ] `app/build.gradle.kts` includes new module dependency

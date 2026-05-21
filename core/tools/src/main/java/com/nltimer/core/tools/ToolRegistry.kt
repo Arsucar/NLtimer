@@ -1,6 +1,8 @@
 package com.nltimer.core.tools
 
 import android.util.Log
+import com.nltimer.core.tools.event.ToolEventBus
+import com.nltimer.core.tools.event.ToolExecutedEvent
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -17,6 +19,7 @@ import kotlinx.coroutines.withTimeoutOrNull
 @Singleton
 class ToolRegistry @Inject constructor(
     initialTools: @JvmSuppressWildcards Set<ToolDefinition>,
+    private val toolEventBus: ToolEventBus,
 ) {
 
     private val tools: MutableMap<String, ToolDefinition> = ConcurrentHashMap()
@@ -70,31 +73,44 @@ class ToolRegistry @Inject constructor(
         args: Map<String, Any?>,
         timeoutMillis: Long = DEFAULT_TIMEOUT_MS,
     ): ToolResult {
-        val tool = getTool(toolName) ?: return ToolResult.Error(
-            name = toolName,
-            error = ToolError.NotFound("Tool not found: $toolName"),
-        )
+        val tool = getTool(toolName)
+        if (tool == null) {
+            val error = ToolResult.Error(
+                name = toolName,
+                error = ToolError.NotFound("Tool not found: $toolName"),
+            )
+            toolEventBus.emit(ToolExecutedEvent(toolName, ToolCategory.SEARCH, error))
+            return error
+        }
 
         return try {
             validateParameters(tool, args)
-            withTimeoutOrNull(timeoutMillis) { tool.execute(args) }
+            val result = withTimeoutOrNull(timeoutMillis) { tool.execute(args) }
                 ?: ToolResult.Error(
                     name = toolName,
                     error = ToolError.TimeoutError(
                         "Tool execution timeout after ${timeoutMillis}ms",
                     ),
                 )
+            toolEventBus.emit(ToolExecutedEvent(toolName, tool.category, result))
+            result
         } catch (e: IllegalArgumentException) {
-            ToolResult.Error(
+            val error = ToolResult.Error(
                 name = toolName,
                 error = ToolError.ValidationError(e.message ?: "Invalid arguments"),
             )
+            toolEventBus.emit(ToolExecutedEvent(toolName, tool.category, error))
+            error
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
         } catch (e: Exception) {
             Log.e(TAG, "Tool execution failed: $toolName", e)
-            ToolResult.Error(
+            val error = ToolResult.Error(
                 name = toolName,
                 error = ToolError.InternalError(e.message ?: "Unknown error"),
             )
+            toolEventBus.emit(ToolExecutedEvent(toolName, tool.category, error))
+            error
         }
     }
 
