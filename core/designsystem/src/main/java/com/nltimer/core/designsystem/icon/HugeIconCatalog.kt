@@ -8,6 +8,8 @@ import me.rerere.hugeicons.stroke.Add01
 import me.rerere.hugeicons.stroke.AddCircle
 import me.rerere.hugeicons.stroke.Airplane01
 import me.rerere.hugeicons.stroke.AlarmClock
+import me.rerere.hugeicons.stroke.Alert01
+import me.rerere.hugeicons.stroke.AlertCircle
 import me.rerere.hugeicons.stroke.Archive
 import me.rerere.hugeicons.stroke.Award01
 import me.rerere.hugeicons.stroke.BatteryCharging01
@@ -33,7 +35,10 @@ import me.rerere.hugeicons.stroke.CancelCircle
 import me.rerere.hugeicons.stroke.Car01
 import me.rerere.hugeicons.stroke.Chart
 import me.rerere.hugeicons.stroke.Chat
+import me.rerere.hugeicons.stroke.Chef
+import me.rerere.hugeicons.stroke.ChefHat
 import me.rerere.hugeicons.stroke.CheckList
+import me.rerere.hugeicons.stroke.CheckmarkBadge01
 import me.rerere.hugeicons.stroke.CheckmarkCircle01
 import me.rerere.hugeicons.stroke.CheckmarkSquare01
 import me.rerere.hugeicons.stroke.ArrowDownBig
@@ -206,7 +211,8 @@ object HugeIconCatalog {
         HugeIconEntry("Tick01", HugeIconCategory.GENERAL, { HugeIcons.Tick01 }, listOf("tick", "check", "done", "完成", "勾")),
         HugeIconEntry("CheckmarkCircle01", HugeIconCategory.GENERAL, { HugeIcons.CheckmarkCircle01 }, listOf("check", "circle", "success", "成功", "确认")),
         HugeIconEntry("CheckmarkSquare01", HugeIconCategory.GENERAL, { HugeIcons.CheckmarkSquare01 }, listOf("check", "square", "确认")),
-        HugeIconEntry("CheckList", HugeIconCategory.GENERAL, { HugeIcons.CheckList }, listOf("checklist", "list", "清单", "待办")),
+        HugeIconEntry("CheckmarkBadge01", HugeIconCategory.GENERAL, { HugeIcons.CheckmarkBadge01 }, listOf("badge", "review", "assessment", "评审", "审核", "评估", "review", "approval")),
+        HugeIconEntry("CheckList", HugeIconCategory.GENERAL, { HugeIcons.CheckList }, listOf("checklist", "list", "清单", "待办", "checklist")),
         HugeIconEntry("Cancel01", HugeIconCategory.GENERAL, { HugeIcons.Cancel01 }, listOf("cancel", "close", "x", "取消", "关闭")),
         HugeIconEntry("CancelCircle", HugeIconCategory.GENERAL, { HugeIcons.CancelCircle }, listOf("cancel", "circle", "取消")),
         HugeIconEntry("Delete01", HugeIconCategory.GENERAL, { HugeIcons.Delete01 }, listOf("delete", "remove", "trash", "删除")),
@@ -227,6 +233,8 @@ object HugeIconCatalog {
         HugeIconEntry("Question", HugeIconCategory.GENERAL, { HugeIcons.Question }, listOf("question", "help", "帮助", "问号")),
         HugeIconEntry("MagicWand01", HugeIconCategory.GENERAL, { HugeIcons.MagicWand01 }, listOf("magic", "wand", "auto", "魔法", "自动")),
         HugeIconEntry("Megaphone01", HugeIconCategory.GENERAL, { HugeIcons.Megaphone01 }, listOf("megaphone", "announce", "喇叭", "广播")),
+        HugeIconEntry("Alert01", HugeIconCategory.GENERAL, { HugeIcons.Alert01 }, listOf("alert", "warning", "urgent", "告警", "警告", "紧急", "重要")),
+        HugeIconEntry("AlertCircle", HugeIconCategory.GENERAL, { HugeIcons.AlertCircle }, listOf("alert", "warning", "circle", "urgent", "告警", "警告", "紧急")),
         HugeIconEntry("Crown", HugeIconCategory.GENERAL, { HugeIcons.Crown }, listOf("crown", "king", "vip", "皇冠")),
         HugeIconEntry("Award01", HugeIconCategory.GENERAL, { HugeIcons.Award01 }, listOf("award", "prize", "奖", "奖励")),
         HugeIconEntry("Medal01", HugeIconCategory.GENERAL, { HugeIcons.Medal01 }, listOf("medal", "prize", "奖章")),
@@ -254,7 +262,7 @@ object HugeIconCatalog {
         HugeIconEntry("Chat", HugeIconCategory.COMMUNICATION, { HugeIcons.Chat }, listOf("chat", "message", "聊天", "消息")),
         HugeIconEntry("Message01", HugeIconCategory.COMMUNICATION, { HugeIcons.Message01 }, listOf("message", "chat", "消息", "信息")),
         HugeIconEntry("Mail01", HugeIconCategory.COMMUNICATION, { HugeIcons.Mail01 }, listOf("mail", "email", "邮件", "邮箱")),
-        HugeIconEntry("Notification01", HugeIconCategory.COMMUNICATION, { HugeIcons.Notification01 }, listOf("notification", "bell", "通知", "提醒")),
+        HugeIconEntry("Notification01", HugeIconCategory.COMMUNICATION, { HugeIcons.Notification01 }, listOf("notification", "bell", "通知", "提醒", "urgent", "紧急")),
         HugeIconEntry("Notification03", HugeIconCategory.COMMUNICATION, { HugeIcons.Notification03 }, listOf("notification", "通知")),
         HugeIconEntry("PhoneArrowDown", HugeIconCategory.COMMUNICATION, { HugeIcons.PhoneArrowDown }, listOf("phone", "电话", "下载")),
 
@@ -276,6 +284,8 @@ object HugeIconCatalog {
         HugeIconEntry("Tv01", HugeIconCategory.MEDIA, { HugeIcons.Tv01 }, listOf("tv", "television", "电视")),
         HugeIconEntry("ColorPicker", HugeIconCategory.MEDIA, { HugeIcons.ColorPicker }, listOf("color", "picker", "颜色", "取色")),
         HugeIconEntry("Brush", HugeIconCategory.MEDIA, { HugeIcons.Brush }, listOf("brush", "paint", "画笔", "涂画")),
+        HugeIconEntry("ChefHat", HugeIconCategory.GENERAL, { HugeIcons.ChefHat }, listOf("chef", "hat", "cooking", "kitchen", "cooking", "厨师帽", "烹饪", "做饭", "厨房")),
+        HugeIconEntry("Chef", HugeIconCategory.GENERAL, { HugeIcons.Chef }, listOf("chef", "cook", "cooking", "kitchen", "cooking", "厨师", "做饭", "厨房")),
         HugeIconEntry("PaintBrush01", HugeIconCategory.MEDIA, { HugeIcons.PaintBrush01 }, listOf("paint", "brush", "画笔")),
 
         HugeIconEntry("File01", HugeIconCategory.FILES, { HugeIcons.File01 }, listOf("file", "document", "文件", "文档")),
@@ -317,7 +327,7 @@ object HugeIconCatalog {
         HugeIconEntry("Clock01", HugeIconCategory.DATETIME, { HugeIcons.Clock01 }, listOf("clock", "time", "时钟", "时间")),
         HugeIconEntry("Timer01", HugeIconCategory.DATETIME, { HugeIcons.Timer01 }, listOf("timer", "countdown", "计时器", "倒计时")),
         HugeIconEntry("StopWatch", HugeIconCategory.DATETIME, { HugeIcons.StopWatch }, listOf("stopwatch", "秒表")),
-        HugeIconEntry("AlarmClock", HugeIconCategory.DATETIME, { HugeIcons.AlarmClock }, listOf("alarm", "clock", "闹钟")),
+        HugeIconEntry("AlarmClock", HugeIconCategory.DATETIME, { HugeIcons.AlarmClock }, listOf("alarm", "clock", "闹钟", "urgent", "紧急", "重要")),
         HugeIconEntry("Calendar01", HugeIconCategory.DATETIME, { HugeIcons.Calendar01 }, listOf("calendar", "date", "日历", "日期")),
         HugeIconEntry("CalendarAdd01", HugeIconCategory.DATETIME, { HugeIcons.CalendarAdd01 }, listOf("calendar", "add", "新建日历")),
         HugeIconEntry("Hourglass", HugeIconCategory.DATETIME, { HugeIcons.Hourglass }, listOf("hourglass", "沙漏")),
@@ -344,7 +354,7 @@ object HugeIconCatalog {
         HugeIconEntry("Location01", HugeIconCategory.MAPS, { HugeIcons.Location01 }, listOf("location", "pin", "位置", "定位")),
         HugeIconEntry("PinLocation01", HugeIconCategory.MAPS, { HugeIcons.PinLocation01 }, listOf("pin", "location", "定位")),
         HugeIconEntry("Compass", HugeIconCategory.MAPS, { HugeIcons.Compass }, listOf("compass", "direction", "指南针", "方向")),
-        HugeIconEntry("Flag01", HugeIconCategory.MAPS, { HugeIcons.Flag01 }, listOf("flag", "标记", "旗帜")),
+        HugeIconEntry("Flag01", HugeIconCategory.MAPS, { HugeIcons.Flag01 }, listOf("flag", "标记", "旗帜", "urgent", "紧急", "优先级")),
         HugeIconEntry("Road", HugeIconCategory.MAPS, { HugeIcons.Road }, listOf("road", "location", "道路")),
         HugeIconEntry("Home01", HugeIconCategory.MAPS, { HugeIcons.Home01 }, listOf("home", "house", "家", "首页")),
         HugeIconEntry("Car01", HugeIconCategory.MAPS, { HugeIcons.Car01 }, listOf("car", "auto", "汽车", "车")),
