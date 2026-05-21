@@ -9,18 +9,20 @@ val APP_VERSION_CODE: String by project
 val APP_ID: String by project
 
 fun String.toApplicationIdSegment(): String {
-    val segment = lowercase()
-        .replace(Regex("[^a-z0-9_]"), "_")
-        .trim('_')
-        .take(20)
-        .trim('_')
-        .ifBlank { "worktree" }
+    val segment =
+        lowercase()
+            .replace(Regex("[^a-z0-9_]"), "_")
+            .trim('_')
+            .take(20)
+            .trim('_')
+            .ifBlank { "worktree" }
     return if (segment.first() in 'a'..'z') segment else "wt_$segment"
 }
 
-val worktreeSuffix = rootDir.name
-    .toApplicationIdSegment()
-    .let { if (it == rootProject.name.toApplicationIdSegment()) "" else ".$it" }
+val worktreeSuffix =
+    rootDir.name
+        .toApplicationIdSegment()
+        .let { if (it == rootProject.name.toApplicationIdSegment()) "" else ".$it" }
 
 android {
     namespace = APP_ID
@@ -50,23 +52,23 @@ android {
         getByName("release") {
             isMinifyEnabled = true
             isShrinkResources = true
-            signingConfig = if (releaseKeystorePath.isNotBlank()) {
-                signingConfigs.create("release") {
-                    storeFile = file(releaseKeystorePath)
-                    storePassword = releaseKeystorePassword
-                    keyAlias = releaseKeyAlias
-                    keyPassword = releaseKeyPassword
+            signingConfig =
+                if (releaseKeystorePath.isNotBlank()) {
+                    signingConfigs.create("release") {
+                        storeFile = file(releaseKeystorePath)
+                        storePassword = releaseKeystorePassword
+                        keyAlias = releaseKeyAlias
+                        keyPassword = releaseKeyPassword
+                    }
+                } else {
+                    signingConfigs.getByName("debug")
                 }
-            } else {
-                signingConfigs.getByName("debug")
-            }
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
         }
     }
-
 }
 
 //  请将这段代码粘在最外层（不要放进 android { ... } 闭包内）

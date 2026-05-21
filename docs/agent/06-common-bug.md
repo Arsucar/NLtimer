@@ -51,3 +51,9 @@
 **检查清单**：
 - [ ] `iconKey` 是否从领域模型传递而非硬编码
 - [ ] 若源对象无 iconKey，`CategoryGroupCard.ItemChip` 会自动跳过图标（`showIcon && item.iconKey != null`）
+
+## 4. 缺失sdk
+**典型场景**
+- 编译构建
+**若已有报错则参考修复方式**：
+- 请手动指定文件 `local.properties` 中添加 `sdk.dir=D\:\\por\\10_Library\\App_AndroidStudio_sdk`

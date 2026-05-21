@@ -40,3 +40,4 @@ Agent 快速上下文文档位于 `docs/agent/`，按需加载：
 2. 必须加载 `docs\agent\00-index.md` 和`docs\agent\01-project-overview.md` 。
 3. gradlew的构建命令必须添加参数 `--no-daemon` 。
 4. 严格遵守 `docs\agent\00-index.md` 的 维护说明。
+5. 出现任何报错，以及用户要求修复bug，先去查看 [text](docs/agent/06-common-bug.md)
