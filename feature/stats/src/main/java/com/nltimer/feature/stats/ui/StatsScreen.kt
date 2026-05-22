@@ -76,15 +76,6 @@ private val ImplementedPanelTypes = setOf(
     StatsPanelType.COMPARISON,
 )
 
-private val MetricKindLabels = mapOf(
-    StatsMetricKind.TOTAL_HOURS to "总时长",
-    StatsMetricKind.COMPLETED_COUNT to "完成数",
-    StatsMetricKind.COMPLETION_RATE to "完成率",
-    StatsMetricKind.PLAN_ADHERENCE to "计划达成",
-    StatsMetricKind.ACTIVE_COUNT to "进行中",
-    StatsMetricKind.PENDING_COUNT to "待处理",
-)
-
 private val PanelTypeLabels = mapOf(
     StatsPanelType.SUMMARY_CARD to "概览卡片",
     StatsPanelType.METRIC_CARD to "指标卡片",

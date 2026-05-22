@@ -18,7 +18,7 @@ fun CategoriesRoute(
         renameConflict = renameConflict,
         onShowAddCategory = viewModel::showAddCategoryDialog,
         onRenameCategory = viewModel::showRenameCategoryDialog,
-        onDeleteCategory = viewModel::showDeleteCategoryDialog,
+        _onDeleteCategory = viewModel::showDeleteCategoryDialog,
         onToggleGroupExpand = viewModel::toggleGroupExpand,
         onSetAllGroupsExpanded = viewModel::setAllGroupsExpanded,
         onDismissDialog = viewModel::dismissDialog,

@@ -19,7 +19,7 @@ fun AdvancedSettingsRoute(
     onNavigateToLogList: () -> Unit,
 ) {
     AdvancedSettingsScreen(
-        onNavigateBack = onNavigateBack,
+        _onNavigateBack = onNavigateBack,
         onNavigateToLogList = onNavigateToLogList,
     )
 }
@@ -27,7 +27,7 @@ fun AdvancedSettingsRoute(
 @Composable
 fun AdvancedSettingsScreen(
     modifier: Modifier = Modifier,
-    onNavigateBack: () -> Unit = {},
+    _onNavigateBack: () -> Unit = {},
     onNavigateToLogList: () -> Unit = {},
 ) {
     SettingsSubpageContainer(modifier = modifier) {

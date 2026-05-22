@@ -36,7 +36,7 @@ import com.nltimer.feature.home.ui.components.SlideActionPill
 internal fun PendingCard(
     cell: GridCellUiState,
     onStart: () -> Unit,
-    momentStyle: MomentLayoutStyle = MomentLayoutStyle(),
+    _momentStyle: MomentLayoutStyle = MomentLayoutStyle(),
     focusCardConfig: FocusCardConfig = FocusCardConfig(),
     tagDisplayConfig: com.nltimer.core.data.model.TagDisplayConfig = com.nltimer.core.data.model.TagDisplayConfig(),
     modifier: Modifier = Modifier,

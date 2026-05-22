@@ -46,9 +46,7 @@ object NoteDirectiveParser {
                     i++
                     continue
                 }
-                val name = if (rawName.length > MAX_NAME_LENGTH) {
-                    rawName.substring(0, MAX_NAME_LENGTH)
-                } else rawName
+                val name = rawName.take(MAX_NAME_LENGTH)
                 directives += Directive(ch, name, i..(nameEnd - 1))
                 cleaned.append(rawName)
                 i = nameEnd
@@ -72,10 +70,8 @@ object NoteDirectiveParser {
     }
 
     private fun isBoundary(c: Char): Boolean {
-        if (c.isWhitespace()) return true
-        if (c == '@' || c == '#') return true
-        if (c in ",.!?:;'\"()[]{}<>/\\|") return true
-        if (c in "，。、！？：；“”‘’「」《》（）【】〈〉") return true
-        return false
+        return c.isWhitespace() || c == '@' || c == '#' ||
+            c in ",.!?:;'\"()[]{}<>/\\|" ||
+            c in "，。、！？：；\u201C\u201D\u2018\u2019「」《》（）【】〈〉"
     }
 }

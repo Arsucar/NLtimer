@@ -130,7 +130,7 @@ fun AiAssistantChatRoute(
                         onExport = { showExport = true },
                         onNavigateToAiInter = { navController.navigate(AiRoutes.AI_INTER) },
                         scrollBehavior = topBarScrollBehavior,
-                        isImmersive = isImmersive,
+                        _isImmersive = isImmersive,
                         hazeState = if (topBarHaze) hazeState else null,
                     )
                 },

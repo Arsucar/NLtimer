@@ -97,21 +97,18 @@ class GetDailySummaryTool @Inject constructor(
                 }
                 val durationMinutes = (durationMs / 60_000).toInt().coerceAtLeast(0)
 
-                val existing = groupedStats[b.activityId]
-                if (existing != null) {
-                    groupedStats[b.activityId] = existing.copy(
-                        durationMinutes = existing.durationMinutes + durationMinutes,
-                        behaviorCount = existing.behaviorCount + 1,
-                    )
-                } else {
-                    groupedStats[b.activityId] = ActivityStats(
-                        activityId = b.activityId,
-                        activityName = bwd.activity.name,
-                        iconKey = bwd.activity.iconKey,
-                        durationMinutes = durationMinutes,
-                        behaviorCount = 1,
-                    )
-                }
+        groupedStats[b.activityId] = groupedStats[b.activityId]?.let {
+            it.copy(
+                durationMinutes = it.durationMinutes + durationMinutes,
+                behaviorCount = it.behaviorCount + 1,
+            )
+        } ?: ActivityStats(
+            activityId = b.activityId,
+            activityName = bwd.activity.name,
+            iconKey = bwd.activity.iconKey,
+            durationMinutes = durationMinutes,
+            behaviorCount = 1,
+        )
             }
 
             // 构建 JSON
@@ -130,25 +127,27 @@ class GetDailySummaryTool @Inject constructor(
                 totalDurationMinutes += stat.durationMinutes
             }
 
-            val result = JSONObject()
-            result.put("date", date.toString())
-            result.put("totalDurationMinutes", totalDurationMinutes)
-            result.put("activities", activitiesArr)
+            val result = JSONObject().apply {
+                put("date", date.toString())
+                put("totalDurationMinutes", totalDurationMinutes)
+                put("activities", activitiesArr)
+            }
 
             // 添加当前活跃行为
             if (activeWithDetails != null) {
                 val ab = activeWithDetails.behavior
                 val activeDurationMinutes = ((now - ab.startTime) / 60_000).toInt().coerceAtLeast(0)
-                val activeObj = JSONObject()
-                activeObj.put("id", ab.id)
-                activeObj.put("activityId", ab.activityId)
-                activeObj.put("activityName", activeWithDetails.activity.name)
-                activeObj.put("startTime", TimeUtils.formatIso(ab.startTime))
-                activeObj.put("durationMinutes", activeDurationMinutes)
-                activeObj.put("note", ab.note ?: JSONObject.NULL)
-                val tagsArr = JSONArray()
-                activeWithDetails.tags.forEach { tag -> tagsArr.put(tag.name) }
-                activeObj.put("tags", tagsArr)
+                val activeObj = JSONObject().apply {
+                    put("id", ab.id)
+                    put("activityId", ab.activityId)
+                    put("activityName", activeWithDetails.activity.name)
+                    put("startTime", TimeUtils.formatIso(ab.startTime))
+                    put("durationMinutes", activeDurationMinutes)
+                    put("note", ab.note ?: JSONObject.NULL)
+                    val tagsArr = JSONArray()
+                    activeWithDetails.tags.forEach { tag -> tagsArr.put(tag.name) }
+                    put("tags", tagsArr)
+                }
                 result.put("activeBehavior", activeObj)
             }
 

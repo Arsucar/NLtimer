@@ -359,12 +359,7 @@ class DataExportImportRepositoryImpl @Inject constructor(
 
     private suspend fun importCategoriesSmart(categories: List<String>): ImportResult {
         val existing = tagDao.getDistinctCategoriesSync().toSet()
-        var imported = 0
-        for (category in categories) {
-            if (category !in existing) {
-                imported++
-            }
-        }
+        val imported = categories.count { it !in existing }
         return ImportResult.Success(tagCategoriesImported = imported)
     }
 

@@ -126,8 +126,10 @@ fun TagManagementScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     item {
-                        val items = uiState.uncategorizedTags.map { tag ->
-                            ManagementTagItem(tag)
+                        val items = remember(uiState.uncategorizedTags) {
+                            uiState.uncategorizedTags.map { tag ->
+                                ManagementTagItem(tag)
+                            }
                         }
                         CategoryGroupCard(
                             index = 0,
@@ -156,8 +158,10 @@ fun TagManagementScreen(
                         items = reorderedCategories,
                         key = { _, category -> category.categoryName },
                     ) { index, category ->
-                        val items = category.tags.map { tag ->
-                            ManagementTagItem(tag)
+                        val items = remember(category.tags) {
+                            category.tags.map { tag ->
+                                ManagementTagItem(tag)
+                            }
                         }
                         CategoryGroupCard(
                             index = index,

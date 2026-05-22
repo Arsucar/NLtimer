@@ -117,14 +117,14 @@ class ToolRegistry @Inject constructor(
     /**
      * 参数验证
      *
-     * 抛 [IllegalArgumentException] 时由 [executeTool] 自动转换为 [ToolError.ValidationError]
+     * 抛 [IllegalArgumentException]（via `require`）时由 [executeTool] 自动转换为 [ToolError.ValidationError]
      * 暴露为 internal 便于单元测试与子类复用
      */
     internal fun validateParameters(tool: ToolDefinition, args: Map<String, Any?>) {
         for (param in tool.parameters) {
             val present = args.containsKey(param.name) && args[param.name] != null
-            if (param.required && !present) {
-                throw IllegalArgumentException("Missing required parameter: ${param.name}")
+            if (param.required) {
+                require(present) { "Missing required parameter: ${param.name}" }
             }
             val value = args[param.name] ?: continue
             val constraints = param.constraints ?: continue

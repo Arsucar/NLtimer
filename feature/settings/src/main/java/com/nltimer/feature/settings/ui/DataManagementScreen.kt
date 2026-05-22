@@ -37,7 +37,7 @@ import com.nltimer.core.designsystem.component.SettingsEntryCard
 
 @Composable
 fun DataManagementRoute(
-    onNavigateBack: () -> Unit,
+    _onNavigateBack: () -> Unit,
     onNavigateToBehaviorManagement: () -> Unit,
     viewModel: DataManagementViewModel = hiltViewModel(),
 ) {
@@ -93,8 +93,8 @@ fun DataManagementRoute(
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { padding ->
         DataManagementScreen(
-            isExporting = uiState.isExporting,
-            isImporting = uiState.isImporting,
+            _isExporting = uiState.isExporting,
+            _isImporting = uiState.isImporting,
             onExport = { scope -> viewModel.exportData(scope) },
             onImport = { scope ->
                 viewModel.triggerImport(scope)
@@ -110,8 +110,8 @@ fun DataManagementRoute(
 
 @Composable
 fun DataManagementScreen(
-    isExporting: Boolean,
-    isImporting: Boolean,
+    _isExporting: Boolean,
+    _isImporting: Boolean,
     onExport: (ExportScope) -> Unit,
     onImport: (ImportScope) -> Unit,
     onExportToClipboard: (ExportScope) -> Unit,

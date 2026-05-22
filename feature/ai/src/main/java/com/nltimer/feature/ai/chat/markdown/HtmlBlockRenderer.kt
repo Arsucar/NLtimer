@@ -439,7 +439,6 @@ private fun HtmlTable(element: Element, onClickCitation: (String) -> Unit) {
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
                     cells.forEach { cell ->
-                        val isHeader = cell.tagName().lowercase() == "th" || rowIdx == 0
                         val weight = 1f / cells.size.coerceAtLeast(1)
                         Box(
                             modifier = Modifier

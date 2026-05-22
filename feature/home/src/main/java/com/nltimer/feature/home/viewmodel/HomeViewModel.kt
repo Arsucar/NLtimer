@@ -30,7 +30,6 @@ import com.nltimer.core.tools.match.NoteMatcher
 import com.nltimer.core.tools.match.NoteProcessOutcome
 import com.nltimer.core.tools.match.NoteScanResult
 import com.nltimer.core.tools.event.ToolEventBus
-import com.nltimer.feature.home.match.MatchStrategy
 import com.nltimer.feature.home.model.AddSheetMode
 import com.nltimer.feature.home.model.GridCellUiState
 import com.nltimer.feature.home.model.HomeUiState
@@ -65,7 +64,6 @@ class HomeViewModel @Inject constructor(
     private val activityManagementRepository: ActivityManagementRepository,
     private val tagRepository: TagRepository,
     private val settingsPrefs: SettingsPrefs,
-    private val matchStrategy: MatchStrategy,
     private val noteMatcher: NoteMatcher,
     private val addBehaviorUseCase: AddBehaviorUseCase,
     private val addTagUseCase: AddTagUseCase,

@@ -1,5 +1,6 @@
 package com.nltimer.core.tools
 
+import com.nltimer.core.tools.event.ToolEventBus
 import kotlin.reflect.KClass
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.runTest
@@ -54,7 +55,7 @@ class ToolRegistryTest {
 
     @Test
     fun `registers tools provided via constructor`() {
-        val registry = ToolRegistry(setOf(fakeTool("foo")))
+        val registry = ToolRegistry(setOf(fakeTool("foo")), ToolEventBus())
 
         assertNotNull(registry.getTool("foo"))
         assertNull(registry.getTool("bar"))
@@ -68,6 +69,7 @@ class ToolRegistryTest {
                 fakeTool("a", ToolCategory.TIMING),
                 fakeTool("b", ToolCategory.STATISTICS),
             ),
+            ToolEventBus(),
         )
 
         val timing = registry.getToolsByCategory(ToolCategory.TIMING)
@@ -83,6 +85,7 @@ class ToolRegistryTest {
                 fakeTool("w", accessLevel = AccessLevel.WRITE),
                 fakeTool("f", accessLevel = AccessLevel.FULL),
             ),
+            ToolEventBus(),
         )
 
         val available = registry.getAvailableTools(AccessLevel.WRITE).map { it.name }.toSet()
@@ -91,7 +94,7 @@ class ToolRegistryTest {
 
     @Test
     fun `executeTool returns NotFound for unknown tool`() = runTest {
-        val registry = ToolRegistry(emptySet())
+        val registry = ToolRegistry(emptySet(), ToolEventBus())
 
         val result = registry.executeTool("unknown", emptyMap())
 
@@ -112,7 +115,7 @@ class ToolRegistryTest {
                 ),
             ),
         )
-        val registry = ToolRegistry(setOf(tool))
+        val registry = ToolRegistry(setOf(tool), ToolEventBus())
 
         val result = registry.executeTool("needsId", emptyMap())
 
@@ -136,7 +139,7 @@ class ToolRegistryTest {
                 ),
             ),
         )
-        val registry = ToolRegistry(setOf(tool))
+        val registry = ToolRegistry(setOf(tool), ToolEventBus())
 
         val result = registry.executeTool("minLen", mapOf("code" to "ab"))
 
@@ -150,7 +153,7 @@ class ToolRegistryTest {
             delay(60_000)
             ToolResult.Success("slow", "should not reach")
         }
-        val registry = ToolRegistry(setOf(tool))
+        val registry = ToolRegistry(setOf(tool), ToolEventBus())
 
         val result = registry.executeTool("slow", emptyMap(), timeoutMillis = 50)
 
@@ -161,7 +164,7 @@ class ToolRegistryTest {
     @Test
     fun `executeTool wraps unexpected exceptions as InternalError`() = runTest {
         val tool = fakeTool("boom") { throw IllegalStateException("kaboom") }
-        val registry = ToolRegistry(setOf(tool))
+        val registry = ToolRegistry(setOf(tool), ToolEventBus())
 
         val result = registry.executeTool("boom", emptyMap())
 
@@ -175,7 +178,7 @@ class ToolRegistryTest {
     fun `register overwrites existing tool with same name`() {
         val v1 = fakeTool("dup", category = ToolCategory.TIMING)
         val v2 = fakeTool("dup", category = ToolCategory.STATISTICS)
-        val registry = ToolRegistry(setOf(v1))
+        val registry = ToolRegistry(setOf(v1), ToolEventBus())
 
         registry.register(v2)
 

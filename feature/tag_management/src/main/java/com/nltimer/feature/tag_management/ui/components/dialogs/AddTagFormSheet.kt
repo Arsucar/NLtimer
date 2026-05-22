@@ -34,7 +34,6 @@ fun AddTagFormSheet(
 
     val activityName = allActivities.find { it.id == selectedActivityId }?.name
     val activityText = activityName ?: "+ 增加"
-    val activityItems = listOf(null to "未关联") + allActivities.map { it.id to it.name }
 
     // DIFF: 复杂多字段变更，无法用 withUpdatedLabelAction 简化
     val specWithCategory = ActivityFormSpecs.createTag.copy(

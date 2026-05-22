@@ -12,7 +12,6 @@ dependencies {
     implementation(projects.core.data)
     implementation(projects.core.debugui)
     implementation(projects.core.tools)
-    implementation(projects.feature.home)
     implementation(projects.core.behaviorui)
 
     implementation(platform(libs.compose.bom))

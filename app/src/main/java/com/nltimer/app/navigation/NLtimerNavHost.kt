@@ -53,7 +53,7 @@ fun NLtimerNavHost(
         composable(NLtimerRoutes.MANAGEMENT_ACTIVITIES) { ActivityManagementRoute() }
         composable(NLtimerRoutes.TAG_MANAGEMENT) {
             TagManagementRoute(
-                onNavigateBack = { navController.popBackStack() },
+                _onNavigateBack = { navController.popBackStack() },
             )
         }
         composable(
@@ -64,7 +64,7 @@ fun NLtimerNavHost(
             popExitTransition = { slideOutHorizontally { it } },
         ) {
             BehaviorManagementRoute(
-                onNavigateBack = { navController.popBackStack() },
+                _onNavigateBack = { navController.popBackStack() },
             )
         }
         composable(NLtimerRoutes.SETTINGS) {
@@ -103,7 +103,7 @@ fun NLtimerNavHost(
             popExitTransition = { slideOutHorizontally { it } },
         ) {
             DataManagementRoute(
-                onNavigateBack = { navController.popBackStack() },
+                _onNavigateBack = { navController.popBackStack() },
                 onNavigateToBehaviorManagement = { navController.navigate(NLtimerRoutes.BEHAVIOR_MANAGEMENT) },
             )
         }

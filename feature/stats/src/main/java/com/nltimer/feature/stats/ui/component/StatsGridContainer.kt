@@ -40,7 +40,7 @@ import androidx.compose.ui.zIndex
 import com.nltimer.core.data.model.StatsPanelConfig
 import kotlinx.coroutines.launch
 
-internal val GridColumns = 4
+internal const val GridColumns = 4
 
 @Composable
 internal fun StatsGridContainer(

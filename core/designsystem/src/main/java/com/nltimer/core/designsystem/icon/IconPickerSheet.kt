@@ -253,7 +253,7 @@ fun IconPickerSheet(
                     )
                     2 -> EmojiTab(
                         currentIconKey = currentIconKey,
-                        defaultEmoji = defaultEmoji,
+                        _defaultEmoji = defaultEmoji,
                         searchQuery = searchQuery,
                         onIconSelected = {
                             onIconSelected(it)
@@ -268,7 +268,7 @@ fun IconPickerSheet(
 @Composable
 private fun EmojiTab(
     currentIconKey: String?,
-    defaultEmoji: String,
+    _defaultEmoji: String,
     searchQuery: String,
     onIconSelected: (String?) -> Unit,
 ) {

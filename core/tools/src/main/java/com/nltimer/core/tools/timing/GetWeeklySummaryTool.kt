@@ -70,21 +70,18 @@ class GetWeeklySummaryTool @Inject constructor(
                 dailyMap.getOrPut(day) { mutableListOf() }
                     .add(DayBehavior(b.activityId, bwd.activity.name, bwd.activity.iconKey, durationMinutes))
 
-                val existing = activityTotals[b.activityId]
-                if (existing != null) {
-                    activityTotals[b.activityId] = existing.copy(
-                        durationMinutes = existing.durationMinutes + durationMinutes,
-                        count = existing.count + 1,
-                    )
-                } else {
-                    activityTotals[b.activityId] = ActivityTotal(
-                        activityId = b.activityId,
-                        activityName = bwd.activity.name,
-                        iconKey = bwd.activity.iconKey,
-                        durationMinutes = durationMinutes,
-                        count = 1,
-                    )
-                }
+        activityTotals[b.activityId] = activityTotals[b.activityId]?.let {
+            it.copy(
+                durationMinutes = it.durationMinutes + durationMinutes,
+                count = it.count + 1,
+            )
+        } ?: ActivityTotal(
+            activityId = b.activityId,
+            activityName = bwd.activity.name,
+            iconKey = bwd.activity.iconKey,
+            durationMinutes = durationMinutes,
+            count = 1,
+        )
             }
 
             val daysArr = JSONArray()

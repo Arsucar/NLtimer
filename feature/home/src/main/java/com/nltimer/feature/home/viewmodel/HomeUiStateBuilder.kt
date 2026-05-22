@@ -218,7 +218,6 @@ class HomeUiStateBuilder {
                     .toLocalDateTime()
             }
 
-            val isPlatinum = behavior.wasPlanned && behavior.status == BehaviorNature.COMPLETED
             val platinumStrength = behavior.achievementLevel?.let { it / 100f } ?: 0f
             val duration = if (isActive && behavior.startTime > 0) {
                 currentTimeMs - behavior.startTime

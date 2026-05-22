@@ -242,13 +242,7 @@ class HomeViewModelTest {
         }
     }
 
-    private fun getTodayAt(hour: Int, minute: Int): Long {
-        return java.time.LocalDate.now()
-            .atTime(hour, minute)
-            .atZone(java.time.ZoneId.systemDefault())
-            .toInstant()
-            .toEpochMilli()
-    }
+
 
     @Test
     fun `completeBehavior calls repository`() = runTest {

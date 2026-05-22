@@ -85,7 +85,7 @@ class DataManagementViewModel @Inject constructor(
             try {
                 val content = context.contentResolver.openInputStream(uri)?.use { inputStream ->
                     inputStream.readBytes().decodeToString()
-                } ?: throw IllegalStateException("无法读取文件")
+                } ?: error("无法读取文件")
                 val data = json.decodeFromString(ExportData.serializer(), content)
                 _uiState.update { it.copy(pendingImportData = data) }
             } catch (e: Exception) {
@@ -152,7 +152,7 @@ class DataManagementViewModel @Inject constructor(
             try {
                 val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                 val content = clipboard.primaryClip?.getItemAt(0)?.text?.toString()
-                    ?: throw IllegalStateException("剪贴板为空")
+                    ?: error("剪贴板为空")
                 val data = json.decodeFromString(ExportData.serializer(), content)
                 _uiState.update { it.copy(pendingImportData = data) }
             } catch (e: Exception) {
@@ -173,6 +173,6 @@ class DataManagementViewModel @Inject constructor(
         if (result.tagsImported > 0) parts.add("${result.tagsImported} 条标签")
         if (result.activityGroupsImported > 0) parts.add("${result.activityGroupsImported} 个分组")
         if (result.tagCategoriesImported > 0) parts.add("${result.tagCategoriesImported} 个标签分类")
-        return if (parts.isEmpty()) "无新数据导入" else "已导入 " + parts.joinToString("、")
+        return if (parts.isEmpty()) "无新数据导入" else "已导入 ${parts.joinToString("、")}"
     }
 }

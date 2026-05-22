@@ -1,7 +1,6 @@
 package com.nltimer.core.tools.timing
 
 import com.nltimer.core.data.model.BehaviorNature
-import com.nltimer.core.data.repository.ActivityRepository
 import com.nltimer.core.data.repository.BehaviorRepository
 import com.nltimer.core.tools.AccessLevel
 import com.nltimer.core.tools.ErrorExample
@@ -22,7 +21,6 @@ import org.json.JSONObject
 @Singleton
 class UpdateBehaviorTool @Inject constructor(
     private val behaviorRepository: BehaviorRepository,
-    private val activityRepository: ActivityRepository,
 ) : ToolDefinition {
 
     override val name: String = "updateBehavior"

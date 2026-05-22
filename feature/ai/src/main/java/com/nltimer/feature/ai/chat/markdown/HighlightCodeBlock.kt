@@ -30,7 +30,7 @@ fun HighlightCodeBlock(
     code: String,
     language: String,
     modifier: Modifier = Modifier,
-    completeCodeBlock: Boolean = true,
+    _completeCodeBlock: Boolean = true,
 ) {
     val context = LocalContext.current
     val highlighter = remember { Highlighter(context) }

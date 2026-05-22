@@ -20,8 +20,8 @@ import androidx.compose.ui.unit.sp
 fun ActivityNoteComponent(
     onLabelClick: () -> Unit = {},
     onHistoryClick: () -> Unit = {},
-    onContinueAddClick: () -> Unit = {},
-    onAddClick: () -> Unit = {}
+    _onContinueAddClick: () -> Unit = {},
+    _onAddClick: () -> Unit = {}
 ) {
     var noteText by remember { mutableStateOf("") }
     val maxCharLimit = 5000
@@ -29,7 +29,6 @@ fun ActivityNoteComponent(
     // MD3 风格颜色定义
     val backgroundColor =  MaterialTheme.colorScheme.surface
     val primaryBlue = MaterialTheme.colorScheme.primary
-    val labelBgColor = MaterialTheme.colorScheme.primaryContainer
 
     Column(
         modifier = Modifier

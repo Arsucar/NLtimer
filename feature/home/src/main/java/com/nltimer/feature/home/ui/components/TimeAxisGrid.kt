@@ -44,7 +44,7 @@ fun TimeAxisGrid(
     onLoadMore: () -> Unit = {},
     isLoadingMore: Boolean = false,
     hasReachedEarliest: Boolean = false,
-    currentHour: Int = 0,
+    _currentHour: Int = 0,
     showTimeSideBar: Boolean = false,
     timeLabelConfig: TimeLabelConfig = TimeLabelConfig(),
     gridStyle: GridLayoutStyle = GridLayoutStyle(),

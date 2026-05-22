@@ -97,7 +97,7 @@ private fun StreamingBubble(streaming: StreamingState) {
                 ReasoningBlock(reasoning = streaming.reasoning, defaultExpanded = true)
             }
             if (streaming.toolCalls.isNotEmpty()) {
-                ToolCallsBlock(toolCalls = streaming.toolCalls, defaultExpanded = false)
+                ToolCallsBlock(toolCalls = streaming.toolCalls, _defaultExpanded = false)
             }
             if (streaming.content.isNotBlank()) {
                 MarkdownBlock(content = streaming.content, modifier = Modifier.fillMaxWidth())

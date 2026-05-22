@@ -104,12 +104,12 @@ enum class MomentSortMode(val label: String) {
 @Composable
 fun MomentView(
     cells: List<GridCellUiState>,
-    hasActiveBehavior: Boolean,
-    activeBehaviorId: Long?,
-    onCompleteBehavior: (Long) -> Unit,
-    onStartNextPending: () -> Unit,
-    onStartBehavior: (Long) -> Unit,
-    onEmptyCellClick: (idleStart: LocalDateTime?, idleEnd: LocalDateTime?) -> Unit,
+    _hasActiveBehavior: Boolean,
+    _activeBehaviorId: Long?,
+    _onCompleteBehavior: (Long) -> Unit,
+    _onStartNextPending: () -> Unit,
+    _onStartBehavior: (Long) -> Unit,
+    _onEmptyCellClick: (idleStart: LocalDateTime?, idleEnd: LocalDateTime?) -> Unit,
     onCellLongClick: (GridCellUiState) -> Unit,
     onLoadMore: () -> Unit = {},
     isLoadingMore: Boolean = false,
@@ -133,15 +133,6 @@ fun MomentView(
             "DURATION" -> MomentSortMode.DURATION
             else -> MomentSortMode.TIME_DESC
         }
-    }
-
-    val activeCell = remember(cells) {
-        cells.firstOrNull {
-            it.isCurrent && it.behaviorId != null && it.status == BehaviorNature.ACTIVE
-        }
-    }
-    val nextPendingCell = remember(cells) {
-        cells.firstOrNull { it.behaviorId != null && it.status == BehaviorNature.PENDING }
     }
 
     var detailCell by remember { mutableStateOf<GridCellUiState?>(null) }

@@ -136,7 +136,7 @@ fun HomeRoute(
         timeLabelSettingsRequestKey = timeLabelSettingsRequestKey,
         onTimeLabelSettingsShown = onTimeLabelSettingsShown,
         onTimeLabelConfigChange = onTimeLabelConfigChange,
-        onHomeLayoutConfigChange = onHomeLayoutConfigChange,
+        _onHomeLayoutConfigChange = onHomeLayoutConfigChange,
         onHomeLayoutChange = onHomeLayoutChange,
         onMatchNote = onMatchNote,
         onProcessNote = onProcessNote,

@@ -50,7 +50,7 @@ internal fun formRowRenderer(
             onValueChange = { formState[row.key] = it },
         )
         is FormRow.IconColor -> iconColorRenderer(
-            row = row,
+            _row = row,
             emoji = formState[row.iconKey] ?: row.initialEmoji,
             colorValue = formState[row.colorKey] ?: "",
             onEmojiChange = { formState[row.iconKey] = it },
@@ -122,7 +122,7 @@ internal fun textInputRenderer(
 @Suppress("ComposableNaming")
 @Composable
 internal fun iconColorRenderer(
-    row: FormRow.IconColor,
+    _row: FormRow.IconColor,
     emoji: String,
     colorValue: String,
     onEmojiChange: (String) -> Unit,

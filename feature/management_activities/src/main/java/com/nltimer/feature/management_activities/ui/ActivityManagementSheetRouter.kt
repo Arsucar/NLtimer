@@ -109,7 +109,7 @@ fun ActivityManagementSheetRouter(
             ActivityDetailSheet(
                 activity = dialog.activity,
                 stats = stats,
-                allGroups = uiState.allGroups,
+                _allGroups = uiState.allGroups,
                 onDismiss = { viewModel.dismissDialog() },
                 onEdit = { viewModel.showEditActivityDialog(it) },
                 onDelete = { viewModel.showDeleteActivityDialog(dialog.activity) },

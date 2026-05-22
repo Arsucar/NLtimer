@@ -66,6 +66,10 @@ internal fun HomeSheetRouter(
         }
     }
 
+    val nonActiveBehaviors by remember(existingBehaviors) {
+        derivedStateOf { existingBehaviors.filter { it.status != BehaviorNature.ACTIVE } }
+    }
+
     when (uiState.addSheetMode) {
         AddSheetMode.COMPLETED -> AddBehaviorSheet(
             activities = activities,
@@ -104,7 +108,7 @@ internal fun HomeSheetRouter(
             initialTagIds = uiState.editInitialTagIds,
             initialNote = uiState.editInitialNote,
             editBehaviorId = uiState.editBehaviorId,
-            existingBehaviors = existingBehaviors.filter { it.status != BehaviorNature.ACTIVE },
+            existingBehaviors = nonActiveBehaviors,
             activityLastUsedMap = activityLastUsedMap,
             tagLastUsedMap = tagLastUsedMap,
             tagCategoryOrder = tagCategoryOrder,

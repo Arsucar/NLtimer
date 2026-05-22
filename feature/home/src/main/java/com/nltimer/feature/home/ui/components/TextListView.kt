@@ -219,12 +219,22 @@ private fun TextListFlowRow(
 ) {
     val baseFontSize = MaterialTheme.typography.bodySmall.fontSize * style.globalFontScale
     val onSurfaceColor = MaterialTheme.colorScheme.onSurface
-    val colorMap = TextListFieldColorMode.entries.associateWith { resolveFieldColor(it, onSurfaceColor) }
+    val primaryColor = MaterialTheme.colorScheme.primary
+    val secondaryColor = MaterialTheme.colorScheme.secondary
+    val tertiaryColor = MaterialTheme.colorScheme.tertiary
+    val errorColor = MaterialTheme.colorScheme.error
 
     val visibleFields = remember(style.fieldConfigs) { style.fieldConfigs.filter { it.visible } }
     val iconField = remember(visibleFields) { visibleFields.find { it.field == TextListFieldType.ICON } }
     val textFields = remember(visibleFields) { visibleFields.filter { it.field != TextListFieldType.ICON } }
-    val annotatedText = remember(cell, textFields, baseFontSize, colorMap, style.separator) {
+    val annotatedText = remember(cell, textFields, baseFontSize, onSurfaceColor, primaryColor, secondaryColor, tertiaryColor, errorColor, style.separator) {
+        val colorMap = mapOf(
+            TextListFieldColorMode.DEFAULT to onSurfaceColor,
+            TextListFieldColorMode.PRIMARY to primaryColor,
+            TextListFieldColorMode.SECONDARY to secondaryColor,
+            TextListFieldColorMode.TERTIARY to tertiaryColor,
+            TextListFieldColorMode.ERROR to errorColor,
+        )
         buildFlowAnnotatedString(cell, textFields, baseFontSize, colorMap, style.separator)
     }
 

@@ -31,7 +31,7 @@ import com.nltimer.core.designsystem.theme.styledAlpha
 @Composable
 internal fun EmptyCard(
     onClick: () -> Unit,
-    momentStyle: MomentLayoutStyle = MomentLayoutStyle(),
+    _momentStyle: MomentLayoutStyle = MomentLayoutStyle(),
     focusCardConfig: FocusCardConfig = FocusCardConfig(),
     modifier: Modifier = Modifier,
 ) {

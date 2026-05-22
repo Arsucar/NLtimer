@@ -14,7 +14,7 @@ fun MomentFocusCard(
     activeCell: GridCellUiState?,
     nextPendingCell: GridCellUiState?,
     onCompleteBehavior: (Long) -> Unit,
-    onStartNextPending: () -> Unit,
+    _onStartNextPending: () -> Unit,
     onStartBehavior: (Long) -> Unit,
     onEmptyCellClick: () -> Unit,
     momentStyle: MomentLayoutStyle = MomentLayoutStyle(),
@@ -25,20 +25,20 @@ fun MomentFocusCard(
         activeCell != null -> ActiveCard(
             cell = activeCell,
             onComplete = { activeCell.behaviorId?.let(onCompleteBehavior) },
-            momentStyle = momentStyle,
+            _momentStyle = momentStyle,
             focusCardConfig = focusCardConfig,
             modifier = modifier,
         )
         nextPendingCell != null -> PendingCard(
             cell = nextPendingCell,
             onStart = { nextPendingCell.behaviorId?.let(onStartBehavior) },
-            momentStyle = momentStyle,
+            _momentStyle = momentStyle,
             focusCardConfig = focusCardConfig,
             modifier = modifier,
         )
         else -> EmptyCard(
             onClick = onEmptyCellClick,
-            momentStyle = momentStyle,
+            _momentStyle = momentStyle,
             focusCardConfig = focusCardConfig,
             modifier = modifier,
         )

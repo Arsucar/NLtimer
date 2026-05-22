@@ -14,7 +14,7 @@ import com.nltimer.feature.tag_management.viewmodel.TagManagementViewModel
  */
 @Composable
 fun TagManagementRoute(
-    onNavigateBack: () -> Unit,
+    _onNavigateBack: () -> Unit,
     viewModel: TagManagementViewModel = hiltViewModel(),
 ) {
     TagManagementScreen(

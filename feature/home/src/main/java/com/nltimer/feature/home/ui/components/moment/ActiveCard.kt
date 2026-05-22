@@ -47,7 +47,7 @@ import com.nltimer.feature.home.ui.components.SlideActionPill
 internal fun ActiveCard(
     cell: GridCellUiState,
     onComplete: () -> Unit,
-    momentStyle: MomentLayoutStyle = MomentLayoutStyle(),
+    _momentStyle: MomentLayoutStyle = MomentLayoutStyle(),
     focusCardConfig: FocusCardConfig = FocusCardConfig(),
     tagDisplayConfig: com.nltimer.core.data.model.TagDisplayConfig = com.nltimer.core.data.model.TagDisplayConfig(),
     modifier: Modifier = Modifier,

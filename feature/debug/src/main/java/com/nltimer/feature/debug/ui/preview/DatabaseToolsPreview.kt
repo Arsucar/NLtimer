@@ -159,7 +159,7 @@ fun DatabaseToolsPreview() {
 
         tableCards.forEach { (tableName, displayName, count) ->
             TableOperationCard(
-                tableName = tableName,
+                _tableName = tableName,
                 displayName = displayName,
                 recordCount = count,
                 onInsert = {
@@ -339,7 +339,7 @@ fun DatabaseToolsPreview() {
  */
 @Composable
 private fun TableOperationCard(
-    tableName: String,
+    _tableName: String,
     displayName: String,
     recordCount: Int,
     onInsert: () -> Unit,

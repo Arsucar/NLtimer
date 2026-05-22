@@ -55,7 +55,7 @@ fun CategoriesScreen(
     renameConflict: String?,
     onShowAddCategory: (SectionType) -> Unit,
     onRenameCategory: (SectionType, String) -> Unit,
-    onDeleteCategory: (SectionType, String) -> Unit,
+    _onDeleteCategory: (SectionType, String) -> Unit,
     onToggleGroupExpand: (Long) -> Unit,
     onSetAllGroupsExpanded: (Boolean) -> Unit,
     onDismissDialog: () -> Unit,
@@ -97,8 +97,10 @@ fun CategoriesScreen(
                         items = uiState.groups,
                         key = { _, group -> group.id },
                     ) { _, group ->
-                        val items = group.items.mapIndexed { index, item ->
-                            CategoryCategorizableItem(index, item.name)
+                        val items = remember(group.items) {
+                            group.items.mapIndexed { index, item ->
+                                CategoryCategorizableItem(index, item.name)
+                            }
                         }
                         CategoryGroupCard(
                             index = 0,

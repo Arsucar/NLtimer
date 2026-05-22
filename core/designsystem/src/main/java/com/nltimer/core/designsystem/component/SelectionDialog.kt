@@ -81,9 +81,6 @@ enum class ItemPosition {
     BOTTOM,
 }
 
-/** 动画时长 (ms) */
-private const val ANIMATION_DURATION = 350
-
 /** 首末项圆角半径 */
 private const val END_RADIUS = 24
 

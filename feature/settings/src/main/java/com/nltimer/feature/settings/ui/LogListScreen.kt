@@ -20,7 +20,7 @@ fun LogListRoute(
     onNavigateToIconMissLog: () -> Unit,
 ) {
     LogListScreen(
-        onNavigateBack = onNavigateBack,
+        _onNavigateBack = onNavigateBack,
         onNavigateToIconMissLog = onNavigateToIconMissLog,
     )
 }
@@ -28,7 +28,7 @@ fun LogListRoute(
 @Composable
 fun LogListScreen(
     modifier: Modifier = Modifier,
-    onNavigateBack: () -> Unit = {},
+    _onNavigateBack: () -> Unit = {},
     onNavigateToIconMissLog: () -> Unit = {},
 ) {
     SettingsSubpageContainer(modifier = modifier) {

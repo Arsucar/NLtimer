@@ -200,7 +200,7 @@ fun ThemeSettingsScreen(
     ) {
         ThemeSettingsContent(
             theme = theme,
-            onSeedColorChange = onSeedColorChange,
+            _onSeedColorChange = onSeedColorChange,
             onThemeSwitch = onThemeSwitch,
             onAmoledSwitch = onAmoledSwitch,
             onPaletteChange = onPaletteChange,
@@ -223,7 +223,7 @@ fun ThemeSettingsScreen(
             onBottomBarModeChange = onBottomBarModeChange,
             onImmersiveToggle = onImmersiveToggle,
             onTopBarHazeToggle = onTopBarHazeToggle,
-            showColorPicker = showColorPicker,
+            _showColorPicker = showColorPicker,
             onShowColorPicker = { showColorPicker = it },
         )
     }
@@ -231,7 +231,7 @@ fun ThemeSettingsScreen(
 
 private fun LazyListScope.ThemeSettingsContent(
     theme: Theme,
-    onSeedColorChange: (Color) -> Unit,
+    _onSeedColorChange: (Color) -> Unit,
     onThemeSwitch: (AppTheme) -> Unit,
     onAmoledSwitch: (Boolean) -> Unit,
     onPaletteChange: (PaletteStyle) -> Unit,
@@ -254,7 +254,7 @@ private fun LazyListScope.ThemeSettingsContent(
     onBottomBarModeChange: (BottomBarMode) -> Unit,
     onImmersiveToggle: (Boolean) -> Unit,
     onTopBarHazeToggle: (Boolean) -> Unit,
-    showColorPicker: Boolean,
+    _showColorPicker: Boolean,
     onShowColorPicker: (Boolean) -> Unit,
 ) {
     item {

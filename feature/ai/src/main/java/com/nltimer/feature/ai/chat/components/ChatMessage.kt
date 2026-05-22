@@ -63,7 +63,7 @@ fun ChatMessage(
                     }
                     val tools = parseToolCalls(msg.toolCallsJson)
                     if (tools.isNotEmpty()) {
-                        ToolCallsBlock(toolCalls = tools, defaultExpanded = false)
+                        ToolCallsBlock(toolCalls = tools, _defaultExpanded = false)
                     }
                     SelectionContainer {
                         MarkdownBlock(content = msg.content, modifier = Modifier.fillMaxWidth())

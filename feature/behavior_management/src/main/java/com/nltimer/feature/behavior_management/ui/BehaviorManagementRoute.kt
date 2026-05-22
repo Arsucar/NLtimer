@@ -12,7 +12,7 @@ import com.nltimer.feature.behavior_management.viewmodel.BehaviorManagementViewM
 
 @Composable
 fun BehaviorManagementRoute(
-    onNavigateBack: () -> Unit,
+    _onNavigateBack: () -> Unit,
     viewModel: BehaviorManagementViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()

@@ -138,8 +138,10 @@ fun BehaviorManagementScreen(
                 }
             }
 
+            val activityGroupNames = remember(activityGroups) { activityGroups.map { it.name } }
+
             FilterBar(
-                activityGroups = activityGroups.map { it.name },
+                activityGroups = activityGroupNames,
                 tagCategories = tagCategories,
                 selectedActivityGroup = uiState.selectedActivityGroup,
                 selectedTagCategory = uiState.selectedTagCategory,
@@ -234,9 +236,14 @@ fun BehaviorManagementScreen(
         }
     }
 
-    editBehavior?.let { bwd ->
-        val initialStartTime = bwd.behavior.startTime.epochToLocalDateTime()
-        val initialEndTime = bwd.behavior.endTime?.epochToLocalDateTime()
+    val existingBehaviorList = remember(uiState.behaviors) {
+        uiState.behaviors.map { it.behavior }
+    }
+
+editBehavior?.let { bwd ->
+    val initialStartTime = bwd.behavior.startTime.epochToLocalDateTime()
+    val initialEndTime = bwd.behavior.endTime?.epochToLocalDateTime()
+    val initialTagIds = bwd.tags.map { it.id }
 
         AddBehaviorSheet(
             activities = activities,
@@ -245,10 +252,10 @@ fun BehaviorManagementScreen(
             initialStartTime = initialStartTime,
             initialEndTime = initialEndTime,
             initialActivityId = bwd.activity.id,
-            initialTagIds = bwd.tags.map { it.id },
+            initialTagIds = initialTagIds,
             initialNote = bwd.behavior.note,
             editBehaviorId = bwd.behavior.id,
-            existingBehaviors = uiState.behaviors.map { it.behavior },
+            existingBehaviors = existingBehaviorList,
             activityLastUsedMap = activityLastUsedMap,
             tagLastUsedMap = tagLastUsedMap,
             tagCategoryOrder = tagCategoryOrder,
@@ -334,12 +341,17 @@ private fun SummaryBar(
     modifier: Modifier = Modifier,
 ) {
     val totalCount = behaviors.size
-    val completedCount = behaviors.count { it.behavior.status == BehaviorNature.COMPLETED }
-    val totalDurationMinutes = behaviors
-        .filter { it.behavior.endTime != null }
-        .sumOf { bwd ->
-            (bwd.behavior.endTime!! - bwd.behavior.startTime) / 60_000
-        }
+    val summaryData = remember(behaviors) {
+        val completed = behaviors.count { it.behavior.status == BehaviorNature.COMPLETED }
+        val minutes = behaviors
+            .filter { it.behavior.endTime != null }
+            .sumOf { bwd ->
+                (bwd.behavior.endTime!! - bwd.behavior.startTime) / 60_000
+            }
+        completed to minutes
+    }
+    val completedCount = summaryData.first
+    val totalDurationMinutes = summaryData.second
     val durationText = formatDurationCompactHm(totalDurationMinutes * 60_000)
 
     Row(

@@ -77,12 +77,8 @@ class NoteMatcher @Inject constructor() {
             return null
         }
 
-        var earliest = -1
-        for (c in candidates) {
-            val pos = noteLower.indexOf(c.lowercase())
-            if (pos < 0) continue
-            if (earliest < 0 || pos < earliest) earliest = pos
-        }
-        return if (earliest < 0) null else earliest
+        return candidates
+            .mapNotNull { c -> noteLower.indexOf(c.lowercase()).takeIf { it >= 0 } }
+            .minOrNull()
     }
 }

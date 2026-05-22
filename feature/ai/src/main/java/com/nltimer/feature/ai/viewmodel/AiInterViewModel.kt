@@ -26,7 +26,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
@@ -63,9 +62,7 @@ class AiInterViewModel @Inject constructor(
     private val apiClient: AiInterApiClient,
     private val toolRegistry: ToolRegistry,
     private val toolConfig: ToolConfig,
-) : ViewModel() {
-
-    private val json = Json { ignoreUnknownKeys = true }
+    ) : ViewModel() {
 
     val config: StateFlow<AiInterConfig> = repository.config.stateIn(
         scope = viewModelScope,

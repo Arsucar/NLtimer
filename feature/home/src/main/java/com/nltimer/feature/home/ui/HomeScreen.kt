@@ -119,7 +119,7 @@ fun HomeScreen(
     timeLabelSettingsRequestKey: Int = 0,
     onTimeLabelSettingsShown: () -> Unit = {},
     onTimeLabelConfigChange: (TimeLabelConfig) -> Unit = {},
-    onHomeLayoutConfigChange: (HomeLayoutConfig) -> Unit = {},
+    _onHomeLayoutConfigChange: (HomeLayoutConfig) -> Unit = {},
     onHomeLayoutChange: (HomeLayout) -> Unit = {},
     onMatchNote: (String) -> NoteScanResult = { NoteScanResult(null, emptySet()) },
     onProcessNote: suspend (String) -> NoteProcessOutcome = { NoteProcessOutcome.Empty },
@@ -365,7 +365,7 @@ private fun HomeLayoutContent(
                 activeCell = activeCell,
                 nextPendingCell = nextPendingCell,
                 onCompleteBehavior = onCompleteBehavior,
-                onStartNextPending = onStartNextPending,
+                _onStartNextPending = onStartNextPending,
                 onStartBehavior = onStartBehavior,
                 onEmptyCellClick = { onEmptyCellClick(null, null) },
                 momentStyle = homeLayoutConfig.moment,
@@ -433,7 +433,7 @@ private fun HomeLayoutContent(
             HomeLayout.MOMENT -> MomentContent(
                 uiState = uiState,
                 activeCell = activeCell,
-                nextPendingCell = nextPendingCell,
+                _nextPendingCell = nextPendingCell,
                 onEmptyCellClick = onEmptyCellClick,
                 onCellLongClick = onCellLongClick,
                 onCompleteBehavior = onCompleteBehavior,
@@ -482,7 +482,7 @@ private fun GridContent(
             onLoadMore = onLoadMore,
             isLoadingMore = uiState.isLoadingMore,
             hasReachedEarliest = uiState.hasReachedEarliest,
-            currentHour = uiState.selectedTimeHour,
+            _currentHour = uiState.selectedTimeHour,
             showTimeSideBar = showSideBar,
             timeLabelConfig = timeLabelConfig,
             gridStyle = gridStyle,
@@ -491,7 +491,7 @@ private fun GridContent(
             modifier = Modifier.weight(1f),
         )
         if (showSideBar) {
-            val activeHours by remember {
+            val activeHours by remember(uiState.gridSections) {
                 derivedStateOf {
                     uiState.gridSections.firstOrNull()?.rows.orEmpty()
                         .filter { it.cells.any { cell -> cell.behaviorId != null } || it.isCurrentRow }
@@ -560,7 +560,7 @@ private fun LogContent(
 private fun MomentContent(
     uiState: HomeUiState,
     activeCell: GridCellUiState?,
-    nextPendingCell: GridCellUiState?,
+    _nextPendingCell: GridCellUiState?,
     onEmptyCellClick: (idleStart: LocalDateTime?, idleEnd: LocalDateTime?) -> Unit,
     onCellLongClick: (GridCellUiState) -> Unit,
     onCompleteBehavior: (Long) -> Unit,
@@ -576,12 +576,12 @@ private fun MomentContent(
 ) {
     MomentView(
         cells = uiState.momentCells,
-        hasActiveBehavior = uiState.hasActiveBehavior,
-        activeBehaviorId = activeCell?.behaviorId,
-        onCompleteBehavior = onCompleteBehavior,
-        onStartNextPending = onStartNextPending,
-        onStartBehavior = onStartBehavior,
-        onEmptyCellClick = onEmptyCellClick,
+        _hasActiveBehavior = uiState.hasActiveBehavior,
+        _activeBehaviorId = activeCell?.behaviorId,
+        _onCompleteBehavior = onCompleteBehavior,
+        _onStartNextPending = onStartNextPending,
+        _onStartBehavior = onStartBehavior,
+        _onEmptyCellClick = onEmptyCellClick,
         onCellLongClick = onCellLongClick,
         onLoadMore = onLoadMore,
         isLoadingMore = isLoadingMore,
@@ -616,6 +616,7 @@ private fun TextListContent(
     )
 }
 
+@Suppress("UnusedPrivateMember")
 @Preview(showBackground = true)
 @Composable
 private fun HomeScreenPreview() {

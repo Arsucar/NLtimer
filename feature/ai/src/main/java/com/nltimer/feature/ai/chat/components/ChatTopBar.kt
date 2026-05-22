@@ -39,7 +39,7 @@ fun ChatTopBar(
     onExport: () -> Unit,
     onNavigateToAiInter: () -> Unit,
     scrollBehavior: TopAppBarScrollBehavior? = null,
-    isImmersive: Boolean = false,
+    _isImmersive: Boolean = false,
     hazeState: HazeState? = null,
 ) {
     var menuOpen by remember { mutableStateOf(false) }

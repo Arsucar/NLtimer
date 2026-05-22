@@ -51,9 +51,7 @@ class DebugDatabaseHelper @Inject constructor(
             val activityIdRead = activityDao.insert(ActivityEntity(name = "阅读", iconKey = "📖", groupId = groupIdLife))
             val activityIdCode = activityDao.insert(ActivityEntity(name = "编程", iconKey = "💻", groupId = groupIdWork))
             val activityIdMeeting = activityDao.insert(ActivityEntity(name = "会议", iconKey = "📋", groupId = groupIdWork))
-            val activityIdMeditate = activityDao.insert(ActivityEntity(name = "冥想", iconKey = "🧘", groupId = groupIdLife))
 
-            val tagIdImportant = tagDao.insert(TagEntity(name = "重要", color = 0xFFFF4444, category = "优先级", priority = 3))
             val tagIdUrgent = tagDao.insert(TagEntity(name = "紧急", color = 0xFFFF9800, category = "优先级", priority = 2))
             val tagIdDaily = tagDao.insert(TagEntity(name = "日常", color = 0xFF2196F3, category = "类型", priority = 1))
             val tagIdFocus = tagDao.insert(TagEntity(name = "专注", color = 0xFF4CAF50, category = "类型", priority = 1))
@@ -61,7 +59,8 @@ class DebugDatabaseHelper @Inject constructor(
             val now = System.currentTimeMillis()
             val behaviorIdRun = behaviorDao.insert(BehaviorEntity(activityId = activityIdRun, startTime = now - 3600000, endTime = now - 1800000, status = "completed", note = "晨跑30分钟"))
             val behaviorIdRead = behaviorDao.insert(BehaviorEntity(activityId = activityIdRead, startTime = now - 7200000, endTime = null, status = "active", note = "正在阅读"))
-            val behaviorIdCode = behaviorDao.insert(BehaviorEntity(activityId = activityIdCode, startTime = 0, endTime = null, status = "pending", note = "待开始编程"))
+
+            behaviorDao.insert(BehaviorEntity(activityId = activityIdCode, startTime = 0, endTime = null, status = "pending", note = "待开始编程"))
 
             behaviorDao.insertActivityTagBindings(
                 listOf(

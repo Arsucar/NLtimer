@@ -44,8 +44,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.designsystem.theme.appOutlinedTextFieldColors
 
-private const val ANIMATION_DURATION = 350
-
 /**
  * 添加分类对话框 — 复刻 Mindful-strong 弹窗样式
  *

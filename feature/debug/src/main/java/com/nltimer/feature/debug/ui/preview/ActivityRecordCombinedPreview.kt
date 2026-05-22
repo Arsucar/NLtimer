@@ -880,13 +880,3 @@ private fun horizontalLines(config: GridConfig): Int {
     return if (v == 0) Int.MAX_VALUE else v
 }
 
-@Composable
-private fun CombinedTimeAdjustment(
-    currentTime: LocalDateTime,
-    onTimeChanged: (LocalDateTime) -> Unit,
-) {
-    TimeAdjustmentComponent(
-        currentTime = currentTime,
-        onTimeChanged = onTimeChanged,
-    )
-}

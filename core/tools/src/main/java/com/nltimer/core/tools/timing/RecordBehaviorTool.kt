@@ -150,17 +150,18 @@ class RecordBehaviorTool @Inject constructor(
         }
         val arr = JSONArray()
         items.forEach { item ->
-            val obj = JSONObject()
-            obj.put("id", item.id)
-            obj.put("activityId", item.activityId)
-            obj.put("activityName", item.activityName)
-            obj.put("startTime", item.startTimeIso)
-            obj.put("endTime", item.endTimeIso)
-            arr.put(obj)
+            arr.put(JSONObject().apply {
+                put("id", item.id)
+                put("activityId", item.activityId)
+                put("activityName", item.activityName)
+                put("startTime", item.startTimeIso)
+                put("endTime", item.endTimeIso)
+            })
         }
-        val payload = JSONObject()
-        payload.put("code", "CONFLICT")
-        payload.put("conflicts", arr)
+        val payload = JSONObject().apply {
+            put("code", "CONFLICT")
+            put("conflicts", arr)
+        }
         return ToolResult.Error(
             name = name,
             error = ToolError.ValidationError(payload.toString()),

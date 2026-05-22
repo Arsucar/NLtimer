@@ -136,8 +136,10 @@ fun ActivityManagementScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     item {
-                        val items = uiState.uncategorizedActivities.map { activity ->
-                            ManagementActivityItem(activity)
+                        val items = remember(uiState.uncategorizedActivities) {
+                            uiState.uncategorizedActivities.map { activity ->
+                                ManagementActivityItem(activity)
+                            }
                         }
                         CategoryGroupCard(
                             index = 0,
@@ -165,8 +167,10 @@ fun ActivityManagementScreen(
                         items = reorderedGroups,
                         key = { _, groupWithActivities -> groupWithActivities.group.id },
                     ) { index, groupWithActivities ->
-                        val items = groupWithActivities.activities.map { activity ->
-                            ManagementActivityItem(activity)
+                        val items = remember(groupWithActivities.activities) {
+                            groupWithActivities.activities.map { activity ->
+                                ManagementActivityItem(activity)
+                            }
                         }
                         CategoryGroupCard(
                             index = index,

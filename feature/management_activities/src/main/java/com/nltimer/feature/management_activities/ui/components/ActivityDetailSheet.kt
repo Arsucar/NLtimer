@@ -48,7 +48,7 @@ import com.nltimer.core.debugui.toJsonString
 fun ActivityDetailSheet(
     activity: Activity,
     stats: ActivityStats,
-    allGroups: List<ActivityGroup>,
+    _allGroups: List<ActivityGroup>,
     onDismiss: () -> Unit,
     onEdit: (Activity) -> Unit,
     onDelete: () -> Unit,

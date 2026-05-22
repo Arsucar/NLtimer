@@ -32,7 +32,7 @@ import com.nltimer.core.designsystem.form.FormRow
 @Suppress("ComposableNaming")
 @Composable
 internal fun iconColorRenderer(
-    row: FormRow.IconColor,
+    _row: FormRow.IconColor,
     emoji: String,
     colorValue: String,
     onEmojiChange: (String) -> Unit,

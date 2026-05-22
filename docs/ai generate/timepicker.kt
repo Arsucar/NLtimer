@@ -220,7 +220,6 @@ fun <T> WheelPicker(
     val listState = rememberLazyListState()
     val flingBehavior = rememberSnapFlingBehavior(lazyListState = listState)
     val density = LocalDensity.current
-    val itemHeightPx = with(density) { itemHeight.toPx() }
 
     // Add empty items at the top and bottom to allow centering the first and last items
     val paddingCount = visibleItemsCount / 2

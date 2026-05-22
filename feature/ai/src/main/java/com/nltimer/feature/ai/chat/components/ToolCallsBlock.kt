@@ -20,7 +20,7 @@ import androidx.compose.ui.window.Dialog
 import com.nltimer.core.ai.toolcall.ToolCallRecord
 
 @Composable
-fun ToolCallsBlock(toolCalls: List<ToolCallRecord>, defaultExpanded: Boolean = false) {
+fun ToolCallsBlock(toolCalls: List<ToolCallRecord>, _defaultExpanded: Boolean = false) {
     var showDialog by remember { mutableStateOf(false) }
 
     Surface(
