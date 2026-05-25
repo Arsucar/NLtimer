@@ -505,3 +505,36 @@ R1:标签默认图标hi:Tag01 R2:行为弹窗新增标签分类修复 R3:抽屉�
 ### Next Steps
 
 - None - task complete
+
+
+## Session 16: 添加 Node.js 工具链支持
+
+**Date**: 2026-05-25
+**Task**: 添加 Node.js 工具链支持
+**Branch**: `dev-v5`
+
+### Summary
+
+添加 @openchamber/web Node.js 依赖、配置 package.json/lockfile、gitignore 忽略 node_modules、修正发布命令描述。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `4adbdeae` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
