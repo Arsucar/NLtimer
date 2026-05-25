@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 16
+- **Total Sessions**: 17
 - **Last Active**: 2026-05-25
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~540 | Active |
+| `journal-1.md` | ~573 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 17 | 2026-05-25 | cherry-pick noble-raccoon + 工作树清理规划 | `6cf787e9` | `dev-v5` |
 | 16 | 2026-05-25 | 添加 Node.js 工具链支持 | `4adbdeae` | `dev-v5` |
 | 15 | 2026-05-20 | 标签活动双向联动+关键词匹配+UI修复 | `d0d59571` | `dev-v5` |
 | 14 | 2026-05-20 | 标签图标优化：分组iconKey、全局图标开关、图标bug修复 | `1ac0f126`, `2b62d119` | `dev-v5` |

@@ -538,3 +538,36 @@ R1:标签默认图标hi:Tag01 R2:行为弹窗新增标签分类修复 R3:抽屉�
 ### Next Steps
 
 - None - task complete
+
+
+## Session 17: cherry-pick noble-raccoon + 工作树清理规划
+
+**Date**: 2026-05-25
+**Task**: cherry-pick noble-raccoon + 工作树清理规划
+**Branch**: `dev-v5`
+
+### Summary
+
+cherry-pick noble-raccoon 分支的 overnight refactor 提交到 dev-v5，补上 tools/数据层优化（60 文件，470+/235-）。分析 5 个工作树状态，确认 keen-walrus/sharp-jackal 可清理，noble-raccoon 未提交改动待决策。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `6cf787e9` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
