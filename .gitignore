@@ -331,3 +331,6 @@ docs/reference/
 .aider*
 .env
 .trellis/scripts/common/__pycache__
+
+# Node.js — dev tooling
+node_modules/

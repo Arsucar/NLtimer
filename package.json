@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@openchamber/web": "^1.11.4"
+  }
+}
