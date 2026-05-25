@@ -46,11 +46,14 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 
 /**
@@ -126,7 +129,10 @@ class HomeViewModel @Inject constructor(
     private val _earliestRecord = MutableStateFlow<LocalDate?>(null)
     private val _isLoadingMore = MutableStateFlow(false)
 
+    private val _todayRefreshTrigger = MutableStateFlow(0L)
+
     init {
+        startMidnightTimer()
         loadHomeBehaviors()
         loadActivitiesAndGroups()
         loadAllTags()
@@ -136,6 +142,18 @@ class HomeViewModel @Inject constructor(
                 // Room Flow subscriptions in loadHomeBehaviors / loadActivitiesAndGroups /
                 // loadAllTags already auto-refresh on DAO writes. This collector exists so
                 // future category-specific side-effects (e.g. haptic, toast) can be added.
+            }
+        }
+    }
+
+    private fun startMidnightTimer() {
+        viewModelScope.launch {
+            while (isActive) {
+                val now = LocalDateTime.now()
+                val nextMidnight = now.toLocalDate().plusDays(1).atStartOfDay()
+                val delayMs = ChronoUnit.MILLIS.between(now, nextMidnight) + 1000L
+                delay(delayMs)
+                _todayRefreshTrigger.value = System.currentTimeMillis()
             }
         }
     }
@@ -186,12 +204,13 @@ class HomeViewModel @Inject constructor(
         }
         viewModelScope.launch {
             combine(
-                _loadedEarliest.flatMapLatest { earliest ->
-                    behaviorRepository.getHomeBehaviors(
-                        earliest.startOfDayMillis(),
-                        today().endOfDayMillis()
-                    )
-                },
+                combine(_loadedEarliest, _todayRefreshTrigger) { earliest, _ -> earliest }
+                    .flatMapLatest { earliest ->
+                        behaviorRepository.getHomeBehaviors(
+                            earliest.startOfDayMillis(),
+                            today().endOfDayMillis()
+                        )
+                    },
                 homeLayoutConfig,
                 _isLoadingMore,
                 _loadedEarliest,
