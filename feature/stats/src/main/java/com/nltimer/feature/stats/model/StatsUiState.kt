@@ -1,5 +1,6 @@
 package com.nltimer.feature.stats.model
 
+import com.nltimer.core.data.model.ActivityStat
 import com.nltimer.core.data.model.StatsDashboardConfig
 import com.nltimer.core.data.model.StatsResult
 import com.nltimer.core.data.model.StatsTimeRange
@@ -12,4 +13,5 @@ data class StatsUiState(
     val isLoading: Boolean = false,
     val currentTimeRange: StatsTimeRange = StatsTimeRange(StatsTimeRangeType.WEEK),
     val isEditMode: Boolean = false,
+    val selectedActivity: ActivityStat? = null,
 )

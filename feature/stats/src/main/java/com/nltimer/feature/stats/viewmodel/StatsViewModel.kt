@@ -3,6 +3,7 @@ package com.nltimer.feature.stats.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nltimer.core.data.SettingsPrefs
+import com.nltimer.core.data.model.ActivityStat
 import com.nltimer.core.data.model.StatsDashboardConfig
 import com.nltimer.core.data.model.StatsPanelConfig
 import com.nltimer.core.data.model.StatsPanelType
@@ -135,6 +136,10 @@ class StatsViewModel @Inject constructor(
         viewModelScope.launch {
             settingsPrefs.updateStatsDashboardConfig(defaultStatsDashboardConfig())
         }
+    }
+
+    fun selectActivity(activity: ActivityStat?) {
+        _uiState.update { it.copy(selectedActivity = activity) }
     }
 
     private fun computeTimeRangeMs(range: StatsTimeRange): Pair<Long?, Long?> {

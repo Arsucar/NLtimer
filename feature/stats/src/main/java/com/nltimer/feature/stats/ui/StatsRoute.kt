@@ -21,5 +21,7 @@ fun StatsRoute(
         onRemovePanel = viewModel::removePanel,
         onAddPanel = viewModel::addPanel,
         onResetToDefault = viewModel::resetToDefault,
+        onBarClick = viewModel::selectActivity,
+        onDismissActivity = { viewModel.selectActivity(null) },
     )
 }

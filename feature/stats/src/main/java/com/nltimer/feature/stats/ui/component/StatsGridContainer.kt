@@ -35,6 +35,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.nltimer.core.data.model.StatsPanelConfig
@@ -50,6 +51,8 @@ internal fun StatsGridContainer(
     onRemove: (panelId: String) -> Unit,
     panelContent: @Composable (StatsPanelConfig) -> Unit,
     modifier: Modifier = Modifier,
+    headerContent: (@Composable () -> Unit)? = null,
+    topPadding: Dp = 0.dp,
 ) {
     val gridState = rememberLazyGridState()
     val coroutineScope = rememberCoroutineScope()
@@ -61,10 +64,21 @@ internal fun StatsGridContainer(
         columns = GridCells.Fixed(GridColumns),
         state = gridState,
         modifier = modifier,
-        contentPadding = PaddingValues(bottom = if (isEditMode) 160.dp else 100.dp),
+        contentPadding = PaddingValues(
+            start = 16.dp,
+            end = 16.dp,
+            top = topPadding,
+            bottom = if (isEditMode) 160.dp else 100.dp,
+        ),
         verticalArrangement = Arrangement.spacedBy(14.dp),
         horizontalArrangement = Arrangement.spacedBy(14.dp),
     ) {
+        if (headerContent != null) {
+            item(span = { GridItemSpan(GridColumns) }) {
+                headerContent()
+            }
+        }
+
         items(
             count = panels.size,
             key = { panels[it].id },

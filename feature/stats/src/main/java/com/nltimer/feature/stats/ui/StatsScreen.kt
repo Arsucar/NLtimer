@@ -1,28 +1,22 @@
 package com.nltimer.feature.stats.ui
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDownward
-import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.DragHandle
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
@@ -44,7 +38,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.nltimer.core.data.model.ActivityStat
 import com.nltimer.core.data.model.StatsMetricKind
 import com.nltimer.core.data.model.StatsPanelConfig
 import com.nltimer.core.data.model.StatsPanelType
@@ -59,6 +55,7 @@ import com.nltimer.feature.stats.ui.component.CategoryShareCard
 import com.nltimer.feature.stats.ui.component.ComparisonCard
 import com.nltimer.feature.stats.ui.component.CoreMetricsGrid
 import com.nltimer.feature.stats.ui.component.SingleMetricCard
+import com.nltimer.feature.stats.ui.component.StatsGridContainer
 import com.nltimer.feature.stats.ui.component.TrendCard
 
 internal val CardShape = RoundedCornerShape(22.dp)
@@ -97,6 +94,8 @@ fun StatsScreen(
     onRemovePanel: (panelId: String) -> Unit,
     onAddPanel: (StatsPanelType) -> Unit,
     onResetToDefault: () -> Unit,
+    onBarClick: ((ActivityStat) -> Unit)? = null,
+    onDismissActivity: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val immersiveTopPadding = LocalImmersiveTopPadding.current
@@ -115,195 +114,162 @@ fun StatsScreen(
     Box(modifier = modifier.fillMaxSize()) {
         val panels = uiState.dashboardConfig.panels
 
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(4),
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(
-                start = ContentHorizontalPadding,
-                end = ContentHorizontalPadding,
-                top = 16.dp + immersiveTopPadding,
-                bottom = if (uiState.isEditMode) 160.dp else 100.dp,
-            ),
-            verticalArrangement = Arrangement.spacedBy(CardSpacing),
-            horizontalArrangement = Arrangement.spacedBy(CardSpacing),
-        ) {
-            item(span = { GridItemSpan(4) }) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    TimeRangeChips(
-                        currentTimeRange = uiState.currentTimeRange,
-                        onTimeRangeChange = onTimeRangeChange,
-                        isEditMode = uiState.isEditMode,
-                        modifier = Modifier.weight(1f),
-                    )
-                    IconButton(
-                        onClick = onToggleEditMode,
-                        modifier = Modifier.padding(start = 4.dp),
-                    ) {
-                        Icon(
-                            imageVector = if (uiState.isEditMode) Icons.Default.Check else Icons.Default.Edit,
-                            contentDescription = if (uiState.isEditMode) "完成编辑" else "编辑面板",
-                            tint = if (uiState.isEditMode) MaterialTheme.colorScheme.primary
-                                else MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(20.dp),
-                        )
-                    }
-                }
-            }
-
-            if (uiState.isLoading) {
-                item(span = { GridItemSpan(4) }) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 60.dp),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        CircularProgressIndicator()
-                    }
-                }
-            }
-
-            if (uiState.statsResult != null && !uiState.isLoading) {
-                val result = uiState.statsResult
-                itemsIndexed(
-                    items = panels,
-                    key = { _, panel -> panel.id },
-                    span = { _, panel ->
-                        GridItemSpan(panel.colSpan.coerceIn(1, 4))
-                    },
-                ) { index, panel ->
-                    PanelSlot(
+        Column(modifier = Modifier.fillMaxSize()) {
+            StatsGridContainer(
+                panels = panels,
+                isEditMode = uiState.isEditMode,
+                onReorder = onMovePanel,
+                onRemove = onRemovePanel,
+                panelContent = { panel ->
+                    PanelContent(
                         panel = panel,
-                        panelIndex = index,
-                        totalPanels = panels.size,
-                        result = result,
-                        isEditMode = uiState.isEditMode,
-                        onMoveUp = { onMovePanel(index, index - 1) },
-                        onMoveDown = { onMovePanel(index, index + 1) },
-                        onRemove = { onRemovePanel(panel.id) },
+                        result = uiState.statsResult,
+                        onBarClick = onBarClick,
                     )
-                }
-            }
-
-            if (uiState.statsResult == null && !uiState.isLoading) {
-                item(span = { GridItemSpan(4) }) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 60.dp),
-                        contentAlignment = Alignment.Center,
+                },
+                modifier = Modifier.weight(1f),
+                topPadding = 16.dp + immersiveTopPadding,
+                headerContent = {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text(
-                            text = "暂无数据",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        TimeRangeChips(
+                            currentTimeRange = uiState.currentTimeRange,
+                            onTimeRangeChange = onTimeRangeChange,
+                            isEditMode = uiState.isEditMode,
+                            modifier = Modifier.weight(1f),
                         )
+                        IconButton(
+                            onClick = onToggleEditMode,
+                            modifier = Modifier.padding(start = 4.dp),
+                        ) {
+                            Icon(
+                                imageVector = if (uiState.isEditMode) Icons.Default.Check else Icons.Default.Edit,
+                                contentDescription = if (uiState.isEditMode) "完成编辑" else "编辑面板",
+                                tint = if (uiState.isEditMode) MaterialTheme.colorScheme.primary
+                                    else MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(20.dp),
+                            )
+                        }
+                    }
+                },
+            )
+
+            // 详情区域
+            uiState.selectedActivity?.let { activity ->
+                ActivityDetailPanel(
+                    activity = activity,
+                    onDismiss = onDismissActivity,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        }
+
+        if (uiState.isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 60.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                CircularProgressIndicator()
+            }
+        }
+
+        if (uiState.statsResult == null && !uiState.isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 60.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = "暂无数据",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+
+        if (uiState.isEditMode) {
+            Surface(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .navigationBarsPadding(),
+                color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                shadowElevation = 8.dp,
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = ContentHorizontalPadding, vertical = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    FilledTonalButton(
+                        onClick = { showAddPanelDialog = true },
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        Text("添加面板")
+                    }
+                    FilledTonalButton(
+                        onClick = onResetToDefault,
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.filledTonalButtonColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer,
+                            contentColor = MaterialTheme.colorScheme.onErrorContainer,
+                        ),
+                    ) {
+                        Text("恢复默认")
                     }
                 }
             }
         }
-
-            if (uiState.isEditMode) {
-                Surface(
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .fillMaxWidth()
-                        .navigationBarsPadding(),
-                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                    shadowElevation = 8.dp,
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = ContentHorizontalPadding, vertical = 16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
-                        FilledTonalButton(
-                            onClick = { showAddPanelDialog = true },
-                            modifier = Modifier.weight(1f),
-                        ) {
-                            Text("添加面板")
-                        }
-                        FilledTonalButton(
-                            onClick = onResetToDefault,
-                            modifier = Modifier.weight(1f),
-                            colors = ButtonDefaults.filledTonalButtonColors(
-                                containerColor = MaterialTheme.colorScheme.errorContainer,
-                                contentColor = MaterialTheme.colorScheme.onErrorContainer,
-                            ),
-                        ) {
-                            Text("恢复默认")
-                        }
-                    }
-                }
-            }
     }
 }
 
 @Composable
-private fun PanelSlot(
+private fun PanelContent(
     panel: StatsPanelConfig,
-    panelIndex: Int,
-    totalPanels: Int,
-    result: StatsResult,
-    isEditMode: Boolean,
-    onMoveUp: () -> Unit,
-    onMoveDown: () -> Unit,
-    onRemove: () -> Unit,
+    result: StatsResult?,
+    onBarClick: ((ActivityStat) -> Unit)? = null,
 ) {
-    val panelContent: @Composable () -> Unit = when (panel.type) {
-        StatsPanelType.SUMMARY_CARD -> { { CoreMetricsGrid(result) } }
+    when (panel.type) {
+        StatsPanelType.SUMMARY_CARD -> CoreMetricsGrid(result ?: return)
         StatsPanelType.METRIC_CARD -> {
             val kind = panel.metricKind ?: StatsMetricKind.TOTAL_HOURS
-            { SingleMetricCard(result = result, metricKind = kind) }
+            SingleMetricCard(result = result ?: return, metricKind = kind)
         }
         StatsPanelType.TREND_LINE -> {
-            if (result.dailyBreakdown.isNotEmpty()) {
-                { TrendCard(result) }
+            if (result != null && result.dailyBreakdown.isNotEmpty()) {
+                TrendCard(result)
             } else {
-                { EmptyPanel("暂无趋势数据") }
+                EmptyPanel("暂无趋势数据")
             }
         }
         StatsPanelType.PIE_CHART -> {
-            if (result.activityStats.isNotEmpty()) {
-                { CategoryShareCard(result) }
+            if (result != null && result.activityStats.isNotEmpty()) {
+                CategoryShareCard(result)
             } else {
-                { EmptyPanel("暂无分类数据") }
+                EmptyPanel("暂无分类数据")
             }
         }
         StatsPanelType.RANKING_LIST -> {
-            if (result.activityStats.isNotEmpty()) {
-                { ActivityRankSection(result) }
+            if (result != null && result.activityStats.isNotEmpty()) {
+                ActivityRankSection(result)
             } else {
-                { EmptyPanel("暂无排行数据") }
+                EmptyPanel("暂无排行数据")
             }
         }
         StatsPanelType.BAR_CHART -> {
-            if (result.activityStats.isNotEmpty()) {
-                { BarChartCard(result) }
+            if (result != null && result.activityStats.isNotEmpty()) {
+                BarChartCard(result, onBarClick)
             } else {
-                { EmptyPanel("暂无柱状图数据") }
+                EmptyPanel("暂无柱状图数据")
             }
         }
-        StatsPanelType.COMPARISON -> { { ComparisonCard(result) } }
-        else -> { { EmptyPanel("${panel.title}（即将支持）") } }
-    }
-
-    if (isEditMode) {
-        EditModePanelWrapper(
-            panelTitle = PanelTypeLabels[panel.type] ?: panel.title,
-            panelIndex = panelIndex,
-            totalPanels = totalPanels,
-            onMoveUp = onMoveUp,
-            onMoveDown = onMoveDown,
-            onRemove = onRemove,
-        ) {
-            panelContent()
-        }
-    } else {
-        panelContent()
+        StatsPanelType.COMPARISON -> ComparisonCard(result ?: return)
+        else -> EmptyPanel("${panel.title}（即将支持）")
     }
 }
 
@@ -320,79 +286,6 @@ private fun EmptyPanel(message: String) {
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-    }
-}
-
-@Composable
-private fun EditModePanelWrapper(
-    panelTitle: String,
-    panelIndex: Int,
-    totalPanels: Int,
-    onMoveUp: () -> Unit,
-    onMoveDown: () -> Unit,
-    onRemove: () -> Unit,
-    content: @Composable () -> Unit,
-) {
-    Surface(
-        shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.surfaceContainerLow,
-        border = BorderStroke(
-            1.dp,
-            MaterialTheme.colorScheme.outlineVariant,
-        ),
-    ) {
-        Column {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp, vertical = 6.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Icon(
-                    imageVector = Icons.Default.DragHandle,
-                    contentDescription = null,
-                    modifier = Modifier.padding(end = 8.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Text(
-                    text = panelTitle,
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.weight(1f),
-                )
-                IconButton(
-                    onClick = onMoveUp,
-                    enabled = panelIndex > 0,
-                    modifier = Modifier.padding(0.dp),
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowUpward,
-                        contentDescription = "上移",
-                    )
-                }
-                IconButton(
-                    onClick = onMoveDown,
-                    enabled = panelIndex < totalPanels - 1,
-                    modifier = Modifier.padding(0.dp),
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowDownward,
-                        contentDescription = "下移",
-                    )
-                }
-                IconButton(
-                    onClick = onRemove,
-                    modifier = Modifier.padding(0.dp),
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Close,
-                        contentDescription = "删除",
-                        tint = MaterialTheme.colorScheme.error,
-                    )
-                }
-            }
-            content()
-        }
     }
 }
 
@@ -480,4 +373,65 @@ private fun AddPanelDialog(
             TextButton(onClick = onDismiss) { Text("取消") }
         },
     )
+}
+
+@Composable
+private fun ActivityDetailPanel(
+    activity: ActivityStat,
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        modifier = modifier,
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+        shadowElevation = 8.dp,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = "活动详情",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                )
+                IconButton(onClick = onDismiss) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "关闭",
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "活动名称：${activity.activityName}",
+                style = MaterialTheme.typography.bodyLarge,
+            )
+
+            Text(
+                text = "总时长：${activity.durationMinutes} 分钟",
+                style = MaterialTheme.typography.bodyMedium,
+            )
+
+            Text(
+                text = "次数：${activity.count} 次",
+                style = MaterialTheme.typography.bodyMedium,
+            )
+
+            if (activity.avgAchievement != null) {
+                Text(
+                    text = "平均完成度：${activity.avgAchievement}",
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
+        }
+    }
 }

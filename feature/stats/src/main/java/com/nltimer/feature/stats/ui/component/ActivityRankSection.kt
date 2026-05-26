@@ -25,6 +25,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nltimer.core.data.model.StatsResult
+import com.nltimer.core.designsystem.icon.IconRenderer
 import com.nltimer.feature.stats.ui.CardInnerPadding
 
 @Composable
@@ -85,11 +86,20 @@ internal fun ActivityRankItem(
             Canvas(modifier = Modifier.matchParentSize()) {
                 drawRect(color = color.copy(alpha = 0.15f))
             }
-            Text(
-                text = if (emoji.isNotBlank()) emoji else "${(rank)}",
-                fontSize = 18.sp,
-                textAlign = TextAlign.Center,
-            )
+            if (emoji.isNotBlank()) {
+                IconRenderer(
+                    iconKey = emoji,
+                    iconSize = 24.dp,
+                    emojiFontSize = 18.sp,
+                    tint = MaterialTheme.colorScheme.onSurface,
+                )
+            } else {
+                Text(
+                    text = "$rank",
+                    fontSize = 18.sp,
+                    textAlign = TextAlign.Center,
+                )
+            }
         }
         Spacer(modifier = Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
