@@ -48,12 +48,12 @@ internal fun HomeSheetRouter(
                 .filter { it.behaviorId != null && it.status != null }
                 .map { cell ->
                     Behavior(
-                        id = cell.behaviorId!!,
+                        id = requireNotNull(cell.behaviorId) { "behaviorId should not be null after filter" },
                         activityId = 0,
                         startTime = cell.startEpochMs
                             ?: error("startEpochMs missing for behaviorId=${cell.behaviorId}"),
                         endTime = cell.endEpochMs,
-                        status = cell.status!!,
+                        status = requireNotNull(cell.status) { "status should not be null after filter" },
                         note = cell.note,
                         pomodoroCount = cell.pomodoroCount,
                         sequence = 0,

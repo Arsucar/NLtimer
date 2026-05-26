@@ -38,7 +38,7 @@ class TimeSnapService {
         if (newStatus != BehaviorNature.PENDING) {
             val prevBehavior = overlappingBehaviors
                 .filter { it.endTime != null && it.endTime >= adjustedStart }
-                .maxByOrNull { it.endTime!! }
+                .maxByOrNull { it.endTime ?: 0L }
             val prevEnd = prevBehavior?.endTime
             if (prevEnd != null && prevEnd >= adjustedStart) {
                 adjustedStart = prevEnd + 1

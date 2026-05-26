@@ -109,7 +109,8 @@ class StartBehaviorTool @Inject constructor(
                 activityIdArg
             } else {
                 val allTags = tagRepository.getAllActive().first()
-                val tag = KeywordMatcher.matchTag(tagNameArg!!, allTags)
+                val tagName = requireNotNull(tagNameArg) { "tagNameArg should not be null when activityIdArg is null" }
+                val tag = KeywordMatcher.matchTag(tagName, allTags)
                     ?: return@runCatching ToolResult.Error(
                         name = name,
                         error = ToolError.NotFound("未找到标签（名称或关键词匹配）: $tagNameArg"),

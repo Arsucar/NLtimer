@@ -283,8 +283,9 @@ class AiInterApiClient @Inject constructor() {
             is JsonObject -> {
                 val errorFields = listOf("error", "detail", "message", "description")
                 val foundField = errorFields.firstOrNull { element[it] != null }
-                if (foundField != null) {
-                    parseErrorDetail(element[foundField]!!)
+                val fieldValue = foundField?.let { element[it] }
+                if (fieldValue != null) {
+                    parseErrorDetail(fieldValue)
                 } else {
                     Exception(json.encodeToString(JsonElement.serializer(), element))
                 }

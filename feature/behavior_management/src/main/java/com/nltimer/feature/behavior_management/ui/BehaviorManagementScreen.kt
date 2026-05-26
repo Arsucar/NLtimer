@@ -346,7 +346,8 @@ private fun SummaryBar(
         val minutes = behaviors
             .filter { it.behavior.endTime != null }
             .sumOf { bwd ->
-                (bwd.behavior.endTime!! - bwd.behavior.startTime) / 60_000
+                val endTime = bwd.behavior.endTime ?: return@sumOf 0L
+                (endTime - bwd.behavior.startTime) / 60_000
             }
         completed to minutes
     }

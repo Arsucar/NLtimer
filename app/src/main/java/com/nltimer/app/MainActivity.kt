@@ -40,12 +40,12 @@ class MainActivity : ComponentActivity() {
                 if (theme != null) themeReady.set(true)
             }
 
-            if (theme != null) {
+            theme?.let { currentTheme ->
                 val hasSeenIntro by settingsPrefs.getHasSeenIntroFlow()
                     .collectAsStateWithLifecycle(initialValue = true)
                 val scope = rememberCoroutineScope()
 
-                NLtimerTheme(theme = theme!!) {
+                NLtimerTheme(theme = currentTheme) {
                     if (!hasSeenIntro) {
                         AppIntroScreen(
                             onFinish = { scope.launch { settingsPrefs.setHasSeenIntro(true) } },

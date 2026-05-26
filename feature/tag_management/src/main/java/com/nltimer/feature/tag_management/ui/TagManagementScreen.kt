@@ -96,8 +96,10 @@ fun TagManagementScreen(
     var targetIndex by remember { mutableIntStateOf(-1) }
     val itemLayouts = remember { mutableStateMapOf<Int, Pair<Float, Float>>() }
     val shiftOffsets = remember { mutableStateMapOf<Int, Float>() }
-    val allExpanded = uiState.categories.isNotEmpty() &&
-        uiState.categories.all { it.categoryName in uiState.expandedCategoryNames }
+    val allExpanded = remember(uiState.categories, uiState.expandedCategoryNames) {
+        uiState.categories.isNotEmpty() &&
+            uiState.categories.all { it.categoryName in uiState.expandedCategoryNames }
+    }
 
     LaunchedEffect(uiState.categories) {
         if (draggedIndex == -1 && reorderedCategories.toList() != uiState.categories) {
@@ -106,11 +108,11 @@ fun TagManagementScreen(
         }
     }
 
-    val computeTargetIndex: (Int, Float) -> Int = { source, offsetY ->
-        computeDragTargetIndex(itemLayouts, source, offsetY)
+    val computeTargetIndex: (Int, Float) -> Int = remember(itemLayouts) {
+        { source, offsetY -> computeDragTargetIndex(itemLayouts, source, offsetY) }
     }
-    val updateShiftOffsets: (Int, Int) -> Unit = { source, target ->
-        applyDragShiftOffsets(itemLayouts, shiftOffsets, source, target)
+    val updateShiftOffsets: (Int, Int) -> Unit = remember(itemLayouts, shiftOffsets) {
+        { source, target -> applyDragShiftOffsets(itemLayouts, shiftOffsets, source, target) }
     }
 
     Box(

@@ -115,7 +115,7 @@ class HomeUiStateBuilder {
         val result = mutableListOf<HomeListItem>()
         datedCellsByDate.keys.sorted().forEach { date ->
             result.add(HomeListItem.DayDivider(date = date, label = dayLabel(date, today)))
-            datedCellsByDate[date]!!.forEach { cell -> result.add(HomeListItem.CellItem(cell)) }
+            datedCellsByDate[date]?.forEach { cell -> result.add(HomeListItem.CellItem(cell)) }
         }
         return result
     }
@@ -130,7 +130,7 @@ class HomeUiStateBuilder {
         val sections = mutableListOf<GridDaySection>()
         datedCellsByDate.keys.sortedDescending().forEach { date ->
             // 行内正序（旧→新）：cells 先按 startEpochMs 升序排，AddCell 追加到末尾代表"当下"。
-            val cellsAsc = datedCellsByDate[date]!!.sortedBy { it.startEpochMs ?: Long.MAX_VALUE }
+            val cellsAsc = datedCellsByDate[date]?.sortedBy { it.startEpochMs ?: Long.MAX_VALUE } ?: emptyList()
             val cellsWithAdd = if (date == today) cellsAsc + todayAddCell else cellsAsc
             // 行序倒序：先 chunk 成时间块，再把块顺序反过来——最新一块在顶部，最旧一块在底部。
             val rowChunks = cellsWithAdd.chunked(gridColumns).reversed()
@@ -328,8 +328,9 @@ class HomeUiStateBuilder {
         return behaviors
             .filter { it.endTime != null }
             .maxByOrNull { it.endTime ?: 0 }
-            ?.let {
-                Instant.ofEpochMilli(it.endTime!!)
+            ?.endTime
+            ?.let { endTime ->
+                Instant.ofEpochMilli(endTime)
                     .atZone(zoneId)
                     .toLocalDateTime()
             }

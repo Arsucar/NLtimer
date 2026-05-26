@@ -356,7 +356,10 @@ internal fun parseColor(colorString: String): Color? {
                 val rgb = colorString.removePrefix("rgb(").removeSuffix(")")
                 val values = rgb.split(",").map { it.trim().toIntOrNull() }
                 if (values.size == 3 && values.all { it != null && it in 0..255 }) {
-                    Color(values[0]!!, values[1]!!, values[2]!!)
+                    val r = values[0]!!
+                    val g = values[1]!!
+                    val b = values[2]!!
+                    Color(r, g, b)
                 } else null
             }
 
