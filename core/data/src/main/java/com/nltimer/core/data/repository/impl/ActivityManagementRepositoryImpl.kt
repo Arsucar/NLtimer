@@ -122,7 +122,7 @@ class ActivityManagementRepositoryImpl @Inject constructor(
             if (tagIds.isNotEmpty()) {
                 activityDao.insertActivityTagBindings(
                     tagIds.map { tagId ->
-                        ActivityTagBindingEntity(activityId = activityId, tagId = tagId)
+                        ActivityTagBindingEntity(activityId = activityId, tagId = tagId, source = "activity")
                     }
                 )
             }

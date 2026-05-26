@@ -74,7 +74,7 @@ interface ActivityDao {
     @Query("DELETE FROM activities")
     suspend fun deleteAll()
 
-    @Query("SELECT tagId FROM activity_tag_binding WHERE activityId = :activityId")
+    @Query("SELECT tagId FROM activity_tag_binding WHERE activityId = :activityId AND source = 'activity'")
     suspend fun getTagIdsForActivitySync(activityId: Long): List<Long>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
@@ -83,7 +83,7 @@ interface ActivityDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertActivityTagBindings(bindings: List<ActivityTagBindingEntity>)
 
-    @Query("DELETE FROM activity_tag_binding WHERE activityId = :activityId")
+    @Query("DELETE FROM activity_tag_binding WHERE activityId = :activityId AND source = 'activity'")
     suspend fun deleteActivityTagBindingsForActivity(activityId: Long)
 
     @Query("SELECT * FROM activities WHERE isArchived = 0 ORDER BY name")

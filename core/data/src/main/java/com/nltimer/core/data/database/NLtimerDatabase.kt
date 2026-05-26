@@ -20,6 +20,7 @@ import com.nltimer.core.data.database.migration.MIGRATION_10_11
 import com.nltimer.core.data.database.migration.MIGRATION_11_12
 import com.nltimer.core.data.database.migration.MIGRATION_12_13
 import com.nltimer.core.data.database.migration.MIGRATION_13_14
+import com.nltimer.core.data.database.migration.MIGRATION_14_15
 import com.nltimer.core.data.database.migration.MIGRATION_3_4
 import com.nltimer.core.data.database.migration.MIGRATION_4_5
 import com.nltimer.core.data.database.migration.MIGRATION_5_6
@@ -39,7 +40,7 @@ import com.nltimer.core.data.database.migration.MIGRATION_9_10
         BehaviorTagCrossRefEntity::class,
         IconSearchMissEntity::class,
     ],
-    version = 14,
+    version = 15,
     exportSchema = true,
 )
 abstract class NLtimerDatabase : RoomDatabase() {
@@ -63,6 +64,7 @@ abstract class NLtimerDatabase : RoomDatabase() {
             MIGRATION_11_12,
             MIGRATION_12_13,
             MIGRATION_13_14,
+            MIGRATION_14_15,
         )
     }
 }

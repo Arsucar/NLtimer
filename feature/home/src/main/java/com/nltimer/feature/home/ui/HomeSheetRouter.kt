@@ -36,7 +36,7 @@ internal fun HomeSheetRouter(
     onActivityGroupsReordered: (List<Long>) -> Unit = {},
     onTagCategoriesReordered: (List<String>) -> Unit = {},
     onMatchNote: (String) -> NoteScanResult,
-    onProcessNote: suspend (String) -> NoteProcessOutcome,
+    onProcessNote: suspend (String, Long?) -> NoteProcessOutcome,
     onQueryTagsForActivity: suspend (Long) -> List<Long> = { emptyList() },
     onQueryActivitiesForTag: suspend (Long) -> List<Long> = { emptyList() },
 ) {

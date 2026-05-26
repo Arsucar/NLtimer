@@ -81,8 +81,8 @@ fun HomeRoute(
         { note: String -> viewModel.matchNoteFromText(note) }
     }
     val onProcessNote = remember(viewModel) {
-        val lambda: suspend (String) -> com.nltimer.core.tools.match.NoteProcessOutcome = { note ->
-            viewModel.processNote(note)
+        val lambda: suspend (String, Long?) -> com.nltimer.core.tools.match.NoteProcessOutcome = { note, selectedActivityId ->
+            viewModel.processNote(note, selectedActivityId)
         }
         lambda
     }

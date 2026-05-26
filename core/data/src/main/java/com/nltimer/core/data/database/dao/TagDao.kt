@@ -46,12 +46,12 @@ interface TagDao {
     @Query("SELECT * FROM tags WHERE name LIKE '%' || :query || '%' AND isArchived = 0")
     fun search(query: String): Flow<List<TagEntity>>
 
-    /** 查询与指定活动绑定的标签 */
+    /** 查询与指定活动绑定的标签（仅活动侧发起的绑定） */
     @Query(
         """
         SELECT t.* FROM tags t
         INNER JOIN activity_tag_binding atb ON t.id = atb.tagId
-        WHERE atb.activityId = :activityId AND t.isArchived = 0
+        WHERE atb.activityId = :activityId AND atb.source = 'activity' AND t.isArchived = 0
         ORDER BY t.priority DESC, t.name
         """
     )
@@ -86,7 +86,7 @@ interface TagDao {
     @Query("DELETE FROM tags")
     suspend fun deleteAll()
 
-    @Query("SELECT activityId FROM activity_tag_binding WHERE tagId = :tagId")
+    @Query("SELECT activityId FROM activity_tag_binding WHERE tagId = :tagId AND source = 'tag'")
     suspend fun getActivityIdsForTagSync(tagId: Long): List<Long>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
@@ -95,6 +95,6 @@ interface TagDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertActivityTagBindings(bindings: List<ActivityTagBindingEntity>)
 
-    @Query("DELETE FROM activity_tag_binding WHERE tagId = :tagId")
+    @Query("DELETE FROM activity_tag_binding WHERE tagId = :tagId AND source = 'tag'")
     suspend fun deleteActivityTagBindingsForTag(tagId: Long)
 }

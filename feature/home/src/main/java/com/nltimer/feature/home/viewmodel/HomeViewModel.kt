@@ -377,12 +377,13 @@ class HomeViewModel @Inject constructor(
      * 智能识别按钮的入口：解析 @/# directive → 创建/复用 → 反向扫描备注，
      * 由 UI 层接管把结果合并到 sheet 状态。
      */
-    suspend fun processNote(note: String): NoteProcessOutcome {
+    suspend fun processNote(note: String, selectedActivityId: Long? = null): NoteProcessOutcome {
         val parsed = NoteDirectiveParser.parse(note)
         val directive = applyNoteDirectivesUseCase(
             parsed.directives,
             _activities.value,
             _allTags.value,
+            selectedActivityId,
         )
         val scan = noteMatcher.scan(parsed.cleanedNote, _activities.value, _allTags.value)
         return NoteProcessOutcome(parsed.cleanedNote, directive, scan)

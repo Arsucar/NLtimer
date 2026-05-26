@@ -24,7 +24,7 @@ import com.nltimer.core.tools.match.NoteScanResult
 import java.time.LocalDateTime
 
 /** Sheet 透传给 ViewModel 的"智能识别"统一回调；默认 no-op 兜底无 directive 流的页面。 */
-typealias OnProcessNote = suspend (note: String) -> NoteProcessOutcome
+typealias OnProcessNote = suspend (note: String, selectedActivityId: Long?) -> NoteProcessOutcome
 
 /** 查询活动绑定的标签ID列表 */
 typealias QueryTagsForActivity = suspend (activityId: Long) -> List<Long>
@@ -58,7 +58,7 @@ fun AddBehaviorSheet(
     onTagCategoriesReordered: (List<String>) -> Unit = {},
     onAddActivity: AddActivityCallback = { _, _, _, _, _, _ -> },
     onAddTag: AddTagCallback = { _, _, _, _, _, _, _ -> },
-    onProcessNote: OnProcessNote = { NoteProcessOutcome.Empty },
+    onProcessNote: OnProcessNote = { _, _ -> NoteProcessOutcome.Empty },
     onMatchNote: (String) -> NoteScanResult = { NoteScanResult(null, emptySet()) },
     onQueryTagsForActivity: QueryTagsForActivity = { emptyList() },
     onQueryActivitiesForTag: QueryActivitiesForTag = { emptyList() },
@@ -116,7 +116,7 @@ fun AddCurrentBehaviorSheet(
     onTagCategoriesReordered: (List<String>) -> Unit = {},
     onAddActivity: AddActivityCallback = { _, _, _, _, _, _ -> },
     onAddTag: AddTagCallback = { _, _, _, _, _, _, _ -> },
-    onProcessNote: OnProcessNote = { NoteProcessOutcome.Empty },
+    onProcessNote: OnProcessNote = { _, _ -> NoteProcessOutcome.Empty },
     onMatchNote: (String) -> NoteScanResult = { NoteScanResult(null, emptySet()) },
     onQueryTagsForActivity: QueryTagsForActivity = { emptyList() },
     onQueryActivitiesForTag: QueryActivitiesForTag = { emptyList() },
@@ -172,7 +172,7 @@ fun AddTargetBehaviorSheet(
     onTagCategoriesReordered: (List<String>) -> Unit = {},
     onAddActivity: AddActivityCallback = { _, _, _, _, _, _ -> },
     onAddTag: AddTagCallback = { _, _, _, _, _, _, _ -> },
-    onProcessNote: OnProcessNote = { NoteProcessOutcome.Empty },
+    onProcessNote: OnProcessNote = { _, _ -> NoteProcessOutcome.Empty },
     onMatchNote: (String) -> NoteScanResult = { NoteScanResult(null, emptySet()) },
     onQueryTagsForActivity: QueryTagsForActivity = { emptyList() },
     onQueryActivitiesForTag: QueryActivitiesForTag = { emptyList() },

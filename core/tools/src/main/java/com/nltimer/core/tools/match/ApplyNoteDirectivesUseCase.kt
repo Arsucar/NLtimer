@@ -37,6 +37,7 @@ class ApplyNoteDirectivesUseCase @Inject constructor(
         directives: List<NoteDirectiveParser.Directive>,
         existingActivities: List<Activity>,
         existingTags: List<Tag>,
+        selectedActivityId: Long? = null,
     ): Outcome {
         if (directives.isEmpty()) return Outcome.Empty
 
@@ -88,7 +89,7 @@ class ApplyNoteDirectivesUseCase @Inject constructor(
                         existing.id
                     } else {
                         val newId = safeCall {
-                            addTagUseCase(d.name, null, null, 0, null, null, null)
+                            addTagUseCase(d.name, null, null, 0, null, null, selectedActivityId)
                         } ?: continue
                         createdTagNames += d.name
                         newId

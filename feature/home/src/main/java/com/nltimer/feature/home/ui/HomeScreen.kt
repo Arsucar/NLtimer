@@ -122,7 +122,7 @@ fun HomeScreen(
     _onHomeLayoutConfigChange: (HomeLayoutConfig) -> Unit = {},
     onHomeLayoutChange: (HomeLayout) -> Unit = {},
     onMatchNote: (String) -> NoteScanResult = { NoteScanResult(null, emptySet()) },
-    onProcessNote: suspend (String) -> NoteProcessOutcome = { NoteProcessOutcome.Empty },
+    onProcessNote: suspend (String, Long?) -> NoteProcessOutcome = { _, _ -> NoteProcessOutcome.Empty },
     onQueryTagsForActivity: suspend (Long) -> List<Long> = { emptyList() },
     onQueryActivitiesForTag: suspend (Long) -> List<Long> = { emptyList() },
     onShowAiQuickInput: () -> Unit = {},

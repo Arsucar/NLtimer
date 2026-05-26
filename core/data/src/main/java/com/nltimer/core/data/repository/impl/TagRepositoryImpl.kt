@@ -64,7 +64,7 @@ class TagRepositoryImpl @Inject constructor(
             if (activityIds.isNotEmpty()) {
                 tagDao.insertActivityTagBindings(
                     activityIds.map { activityId ->
-                        ActivityTagBindingEntity(activityId = activityId, tagId = tagId)
+                        ActivityTagBindingEntity(activityId = activityId, tagId = tagId, source = "tag")
                     }
                 )
             }

@@ -92,7 +92,7 @@ internal fun AddBehaviorSheetContent(
     onTagCategoriesReordered: (List<String>) -> Unit = {},
     onAddActivity: (name: String, iconKey: String?, color: Long?, groupId: Long?, keywords: String?, tagIds: List<Long>) -> Unit = { _, _, _, _, _, _ -> },
     onAddTag: (name: String, color: Long?, icon: String?, priority: Int, category: String?, keywords: String?, activityId: Long?) -> Unit = { _, _, _, _, _, _, _ -> },
-    onProcessNote: OnProcessNote = { NoteProcessOutcome.Empty },
+    onProcessNote: OnProcessNote = { _, _ -> NoteProcessOutcome.Empty },
     onMatchNote: (String) -> NoteScanResult = { NoteScanResult(null, emptySet()) },
     onQueryTagsForActivity: suspend (Long) -> List<Long> = { emptyList() },
     onQueryActivitiesForTag: suspend (Long) -> List<Long> = { emptyList() },
@@ -351,7 +351,7 @@ private fun SheetMainContent(
                         Toast.makeText(context, "请输入备注后再识别", Toast.LENGTH_SHORT).show()
                     } else {
                         scope.launch {
-                            val processed = onProcessNote(raw)
+                            val processed = onProcessNote(raw, state.selectedActivityId)
                             state.note = processed.cleanedNote
                             val directiveApply = state.applyDirectiveOutcome(processed.directiveOutcome)
                             val scanResult = processed.scanResult
