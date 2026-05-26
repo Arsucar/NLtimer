@@ -13,11 +13,11 @@ data class HomeLayoutConfig(
 
 @Immutable
 data class GridLayoutStyle(
-    val columns: Int = 4,
-    val minRowHeight: Int = 100,
-    val maxCellHeight: Int = 140,
+    val columns: Int = 3,
+    val minRowHeight: Int = 120,
+    val maxCellHeight: Int = 160,
     val columnSpacing: Int = 5,
-    val cellPadding: Int = 4,
+    val cellPadding: Int = 6,
     val iconSize: Int = 14,
     val tagScale: Float = 0.8f,
     val tagSpacing: Int = 2,
@@ -89,20 +89,20 @@ data class TextListLayoutStyle(
     val paddingV: Int = 2,
     val globalFontScale: Float = 1f,
     val fieldConfigs: List<TextListFieldConfig> = defaultTextListFieldConfigs(),
-    val separator: String = " · ",
+    val separator: String = ",",
     val columnMode: TextListColumnMode = TextListColumnMode.FLOW,
 )
 
 fun defaultTextListFieldConfigs(): List<TextListFieldConfig> = listOf(
+    TextListFieldConfig(TextListFieldType.ICON, visible = true),
     TextListFieldConfig(TextListFieldType.NAME, visible = true, bold = true, fontScale = 1.1f),
     TextListFieldConfig(TextListFieldType.TIME_RANGE, visible = true),
     TextListFieldConfig(TextListFieldType.DURATION, visible = true),
     TextListFieldConfig(TextListFieldType.TAGS, visible = true),
-    TextListFieldConfig(TextListFieldType.STATUS, visible = true),
+    TextListFieldConfig(TextListFieldType.STATUS, visible = false),
     TextListFieldConfig(TextListFieldType.NOTE, visible = true, italic = true, fontScale = 0.9f),
     TextListFieldConfig(TextListFieldType.POMODORO, visible = false),
     TextListFieldConfig(TextListFieldType.ESTIMATED, visible = false),
     TextListFieldConfig(TextListFieldType.ACHIEVEMENT, visible = false),
     TextListFieldConfig(TextListFieldType.PLANNED, visible = false),
-    TextListFieldConfig(TextListFieldType.ICON, visible = true),
 )
