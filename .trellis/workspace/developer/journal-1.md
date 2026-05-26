@@ -571,3 +571,36 @@ cherry-pick noble-raccoon 分支的 overnight refactor 提交到 dev-v5，补上
 ### Next Steps
 
 - None - task complete
+
+
+## Session 18: 解耦标签活动双向绑定
+
+**Date**: 2026-05-26
+**Task**: 解耦标签活动双向绑定
+**Branch**: `dev-v5`
+
+### Summary
+
+实现标签-活动绑定方向解耦：activity_tag_binding 表添加 source 字段，标签侧和活动侧绑定独立互不影响。支持#解析新标签时自动关联已选中活动。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `c0457536` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
