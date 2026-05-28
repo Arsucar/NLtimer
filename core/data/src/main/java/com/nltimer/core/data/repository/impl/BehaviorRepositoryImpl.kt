@@ -3,6 +3,7 @@ package com.nltimer.core.data.repository.impl
 import com.nltimer.core.data.database.dao.ActivityDao
 import com.nltimer.core.data.database.dao.BehaviorDao
 import com.nltimer.core.data.database.dao.TagDao
+import com.nltimer.core.data.database.dao.toTag
 import com.nltimer.core.data.database.entity.BehaviorEntity
 import com.nltimer.core.data.database.entity.BehaviorTagCrossRefEntity
 import com.nltimer.core.data.database.NLtimerDatabase
@@ -211,23 +212,7 @@ class BehaviorRepositoryImpl @Inject constructor(
         if (behaviorIds.isEmpty()) return emptyMap()
         val rows = behaviorDao.getTagsForBehaviorsSync(behaviorIds)
         return rows.groupBy { it.behaviorId }.mapValues { (_, rows) ->
-            // DIFF: BehaviorTagRow is a joined query result, not TagEntity, cannot use Tag.fromEntity()
-            rows.map { row ->
-                Tag(
-                    id = row.id,
-                    name = row.name,
-                    color = row.color,
-                    iconKey = row.iconKey,
-                    category = row.category,
-                    groupId = null,
-                    priority = row.priority,
-                    usageCount = row.usageCount,
-                    sortOrder = row.sortOrder,
-                    keywords = row.keywords,
-                    isArchived = row.isArchived,
-                    archivedAt = row.archivedAt,
-                )
-            }
+            rows.map { it.toTag() }
         }
     }
 
@@ -270,24 +255,7 @@ class BehaviorRepositoryImpl @Inject constructor(
         val behaviorIds = entities.map { it.id }
         val tagsMap = behaviorDao.getTagsForBehaviorsSync(behaviorIds)
             .groupBy { it.behaviorId }
-            .mapValues { (_, rows) ->
-                rows.map { row ->
-                    Tag(
-                        id = row.id,
-                        name = row.name,
-                        color = row.color,
-                        iconKey = row.iconKey,
-                        category = row.category,
-                        groupId = null,
-                        priority = row.priority,
-                        usageCount = row.usageCount,
-                        sortOrder = row.sortOrder,
-                        keywords = row.keywords,
-                        isArchived = row.isArchived,
-                        archivedAt = row.archivedAt,
-                    )
-                }
-            }
+            .mapValues { (_, rows) -> rows.map { it.toTag() } }
         val activityIds = entities.map { it.activityId }.distinct()
         val activityMap = activityDao.getByIds(activityIds).associateBy { it.id }
         return entities.mapNotNull { entity ->

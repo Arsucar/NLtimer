@@ -8,6 +8,7 @@ import com.nltimer.core.data.database.entity.ActivityTagBindingEntity
 import com.nltimer.core.data.database.entity.BehaviorEntity
 import com.nltimer.core.data.database.entity.BehaviorTagCrossRefEntity
 import com.nltimer.core.data.database.entity.TagEntity
+import com.nltimer.core.data.model.Tag
 import kotlinx.coroutines.flow.Flow
 
 data class BehaviorTagRow(
@@ -34,6 +35,26 @@ data class ActivityStatsRow(
 data class LastUsedRow(
     val id: Long,
     val lastUsedTimestamp: Long?,
+)
+
+/**
+ * 将联表查询结果 BehaviorTagRow 转换为领域模型 Tag。
+ * BehaviorTagRow 是 DAO 层 JOIN 查询的扁平结果，不包含 groupId 字段，
+ * 因此转换时将其置为 null。
+ */
+fun BehaviorTagRow.toTag() = Tag(
+    id = id,
+    name = name,
+    color = color,
+    iconKey = iconKey,
+    category = category,
+    groupId = null,
+    priority = priority,
+    usageCount = usageCount,
+    sortOrder = sortOrder,
+    keywords = keywords,
+    isArchived = isArchived,
+    archivedAt = archivedAt,
 )
 
 /**
