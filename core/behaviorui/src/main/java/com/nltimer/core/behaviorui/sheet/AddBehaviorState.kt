@@ -44,6 +44,7 @@ internal fun rememberAddBehaviorState(
         editBehaviorId,
         existingBehaviors,
         dialogConfig,
+        initialEstimatedDurationMs,
     ) {
         AddBehaviorState(
             mode = mode,

@@ -81,6 +81,7 @@ internal fun AddBehaviorSheetContent(
     initialActivityId: Long? = null,
     initialTagIds: List<Long> = emptyList(),
     initialNote: String? = null,
+    initialEstimatedDurationMs: Long? = null,
     editBehaviorId: Long? = null,
     existingBehaviors: List<Behavior> = emptyList(),
     activityLastUsedMap: Map<Long, Long?> = emptyMap(),
@@ -97,7 +98,18 @@ internal fun AddBehaviorSheetContent(
     onQueryTagsForActivity: suspend (Long) -> List<Long> = { emptyList() },
     onQueryActivitiesForTag: suspend (Long) -> List<Long> = { emptyList() },
 ) {
-    val state = rememberAddBehaviorState(mode, initialStartTime, initialEndTime, initialActivityId, initialTagIds, initialNote, editBehaviorId, existingBehaviors, dialogConfig)
+    val state = rememberAddBehaviorState(
+        mode,
+        initialStartTime,
+        initialEndTime,
+        initialActivityId,
+        initialTagIds,
+        initialNote,
+        editBehaviorId,
+        existingBehaviors,
+        dialogConfig,
+        initialEstimatedDurationMs,
+    )
 
     EndTimeAutoTickEffect(state)
 
