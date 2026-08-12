@@ -30,7 +30,6 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -67,6 +66,7 @@ import kotlinx.coroutines.flow.filter
 @Composable
 fun TextListView(
     items: List<HomeListItem>,
+    onCellClick: (GridCellUiState) -> Unit = {},
     onCellLongClick: (GridCellUiState) -> Unit = {},
     onLoadMore: () -> Unit = {},
     isLoadingMore: Boolean = false,
@@ -77,7 +77,6 @@ fun TextListView(
     modifier: Modifier = Modifier,
 ) {
     val listState = rememberLazyListState()
-    var detailCell by remember { mutableStateOf<GridCellUiState?>(null) }
     val initialScrollDone = remember { mutableStateOf(false) }
 
     val displayItems = remember(items) { reverseGroupedItems(items) }
@@ -186,13 +185,13 @@ fun TextListView(
                                 style = textListStyle,
                                 visibleFields = visibleFields,
                                 tagDisplayConfig = tagDisplayConfig,
-                                onClick = { detailCell = item.cell },
+                                onClick = { onCellClick(item.cell) },
                                 onLongClick = { onCellLongClick(item.cell) },
                             ) else TextListFlowRow(
                                 cell = item.cell,
                                 style = textListStyle,
                                 tagDisplayConfig = tagDisplayConfig,
-                                onClick = { detailCell = item.cell },
+                                onClick = { onCellClick(item.cell) },
                                 onLongClick = { onCellLongClick(item.cell) },
                             )
                         }
@@ -201,10 +200,6 @@ fun TextListView(
                 if (isLoadingMore) item { LoadingMoreIndicator() }
             }
         }
-    }
-
-    detailCell?.let { cell ->
-        BehaviorDetailDialog(cell = cell, onDismiss = { detailCell = null })
     }
 }
 

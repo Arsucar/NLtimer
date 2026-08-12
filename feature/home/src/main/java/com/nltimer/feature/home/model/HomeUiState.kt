@@ -35,5 +35,7 @@ data class HomeUiState(
     val editInitialActivityId: Long? = null,
     val editInitialTagIds: PersistentList<Long> = persistentListOf(),
     val editInitialNote: String? = null,
+    /** 编辑 PENDING 目标时回填预估时长；新建为 null */
+    val editInitialEstimatedDurationMs: Long? = null,
     val showAiQuickInput: Boolean = false,
 )

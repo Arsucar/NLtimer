@@ -42,16 +42,23 @@ internal fun HomeSheetRouter(
 ) {
     if (uiState.addSheetMode == null) return
 
+    // 冲突检测只需 ACTIVE/COMPLETED；PENDING 目标在 hasTimeConflict 中早返回，
+    // 且 endTime=null 会误入「未结束」语义，构建时直接排除更干净。
     val existingBehaviors by remember(uiState.momentCells) {
         derivedStateOf {
             uiState.momentCells
-                .filter { it.behaviorId != null && it.status != null }
+                .filter {
+                    it.behaviorId != null &&
+                        it.status != null &&
+                        it.status != BehaviorNature.PENDING
+                }
                 .map { cell ->
                     Behavior(
                         id = requireNotNull(cell.behaviorId) { "behaviorId should not be null after filter" },
                         activityId = 0,
-                        startTime = cell.startEpochMs
-                            ?: error("startEpochMs missing for behaviorId=${cell.behaviorId}"),
+                        // 历史遗留 startTime<=0 的数据在 UI 状态中 startEpochMs 可能为 null；
+                        // 归零后 hasTimeConflict 对 startTime<=0 安全返回 false。
+                        startTime = cell.startEpochMs ?: 0L,
                         endTime = cell.endEpochMs,
                         status = requireNotNull(cell.status) { "status should not be null after filter" },
                         note = cell.note,
@@ -132,6 +139,7 @@ internal fun HomeSheetRouter(
             initialActivityId = uiState.editInitialActivityId,
             initialTagIds = uiState.editInitialTagIds,
             initialNote = uiState.editInitialNote,
+            initialEstimatedDurationMs = uiState.editInitialEstimatedDurationMs,
             editBehaviorId = uiState.editBehaviorId,
             existingBehaviors = existingBehaviors,
             activityLastUsedMap = activityLastUsedMap,

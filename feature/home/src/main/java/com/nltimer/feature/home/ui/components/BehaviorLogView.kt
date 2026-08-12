@@ -22,7 +22,6 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,6 +38,7 @@ import kotlinx.coroutines.flow.filter
 @Composable
 fun BehaviorLogView(
     items: List<HomeListItem>,
+    onCellClick: (GridCellUiState) -> Unit = {},
     onCellLongClick: (GridCellUiState) -> Unit = {},
     onLoadMore: () -> Unit = {},
     isLoadingMore: Boolean = false,
@@ -50,7 +50,6 @@ fun BehaviorLogView(
 ) {
     val timeFormatter = hhmmFormatter
     val listState = rememberLazyListState()
-    var detailCell by remember { mutableStateOf<GridCellUiState?>(null) }
     val initialScrollDone = remember { mutableStateOf(false) }
 
     val displayItems = remember(items) { reverseGroupedItems(items) }
@@ -144,7 +143,7 @@ fun BehaviorLogView(
                         is HomeListItem.CellItem -> BehaviorLogCard(
                             behavior = item.cell,
                             timeFormatter = timeFormatter,
-                            onClick = { detailCell = item.cell },
+                            onClick = { onCellClick(item.cell) },
                             onLongClick = { onCellLongClick(item.cell) },
                             logStyle = logStyle,
                             tagDisplayConfig = tagDisplayConfig,
@@ -154,10 +153,6 @@ fun BehaviorLogView(
                 if (isLoadingMore) item { LoadingMoreIndicator() }
             }
         }
-    }
-
-    detailCell?.let { cell ->
-        BehaviorDetailDialog(cell = cell, onDismiss = { detailCell = null })
     }
 }
 

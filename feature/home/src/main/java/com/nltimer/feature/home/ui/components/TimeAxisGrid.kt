@@ -40,6 +40,7 @@ fun TimeAxisGrid(
     modifier: Modifier = Modifier,
     sections: List<GridDaySection>,
     onEmptyCellClick: (idleStart: LocalDateTime?, idleEnd: LocalDateTime?) -> Unit,
+    onCellClick: (GridCellUiState) -> Unit = {},
     onCellLongClick: (GridCellUiState) -> Unit = {},
     onLoadMore: () -> Unit = {},
     isLoadingMore: Boolean = false,
@@ -130,6 +131,7 @@ fun TimeAxisGrid(
                 GridRow(
                     row = row,
                     onEmptyCellClick = onEmptyCellClick,
+                    onCellClick = onCellClick,
                     onCellLongClick = onCellLongClick,
                     timeLabelConfig = timeLabelConfig,
                     gridStyle = gridStyle,

@@ -57,9 +57,9 @@ import com.nltimer.core.data.model.TextListLayoutStyle
 import com.nltimer.core.data.model.TimelineLayoutStyle
 import com.nltimer.core.data.model.Tag
 import com.nltimer.core.designsystem.component.BottomBarDragFab
+import com.nltimer.core.designsystem.component.ConfirmDialog
 import com.nltimer.core.designsystem.component.LoadingScreen
 import com.nltimer.core.designsystem.component.rememberDragFabState
-import com.nltimer.core.designsystem.theme.BottomBarMode
 import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.core.designsystem.theme.LocalTheme
 import com.nltimer.core.designsystem.theme.NLtimerTheme
@@ -72,15 +72,18 @@ import com.nltimer.feature.home.model.GridDaySection
 import com.nltimer.feature.home.model.GridRowUiState
 import com.nltimer.feature.home.model.HomeUiState
 import com.nltimer.feature.home.model.TagUiState
+import com.nltimer.feature.home.ui.components.AiQuickInputSheet
+import com.nltimer.feature.home.ui.components.BehaviorDetailDialog
+import com.nltimer.feature.home.ui.components.BehaviorItemActionSheet
+import com.nltimer.feature.home.ui.components.BehaviorItemActions
 import com.nltimer.feature.home.ui.components.BehaviorLogView
 import com.nltimer.feature.home.ui.components.MomentFocusCard
 import com.nltimer.feature.home.ui.components.MomentView
-import com.nltimer.feature.home.ui.components.TimeAxisGrid
 import com.nltimer.feature.home.ui.components.TextListView
+import com.nltimer.feature.home.ui.components.TimeAxisGrid
 import com.nltimer.feature.home.ui.components.TimeLabelSettingsDialog
 import com.nltimer.feature.home.ui.components.TimeSideBar
 import com.nltimer.feature.home.ui.components.TimelineReverseView
-import com.nltimer.feature.home.ui.components.AiQuickInputSheet
 import java.time.LocalDateTime
 import java.time.LocalTime
 import kotlinx.collections.immutable.persistentListOf
@@ -104,6 +107,7 @@ fun HomeScreen(
     onEmptyCellClick: (idleStart: LocalDateTime?, idleEnd: LocalDateTime?) -> Unit,
     onShowAddSheet: (AddSheetMode) -> Unit,
     onCellLongClick: (GridCellUiState) -> Unit,
+    onDeleteBehavior: (Long) -> Unit = {},
     onAddBehavior: (activityId: Long, tagIds: List<Long>, startTime: LocalDateTime, endTime: LocalDateTime?, nature: BehaviorNature, note: String?, estimatedDurationMs: Long?) -> Unit,
     onDismissSheet: () -> Unit,
     onCompleteBehavior: (Long) -> Unit,
@@ -132,11 +136,19 @@ fun HomeScreen(
     val theme = LocalTheme.current
     val layout = theme.homeLayout
     var showTimeLabelSettings by remember { mutableStateOf(false) }
+    var actionTargetCell by remember { mutableStateOf<GridCellUiState?>(null) }
+    var detailCell by remember { mutableStateOf<GridCellUiState?>(null) }
+    var deleteTargetCell by remember { mutableStateOf<GridCellUiState?>(null) }
+
     LaunchedEffect(timeLabelSettingsRequestKey) {
         if (timeLabelSettingsRequestKey > 0) {
             showTimeLabelSettings = true
             onTimeLabelSettingsShown()
         }
+    }
+
+    val onCellClick = remember {
+        { cell: GridCellUiState -> actionTargetCell = cell }
     }
 
     val activeCell by remember(uiState.momentCells) {
@@ -185,6 +197,7 @@ fun HomeScreen(
                         activeCell = activeCell,
                         nextPendingCell = nextPendingCell,
                         onEmptyCellClick = onEmptyCellClick,
+                        onCellClick = onCellClick,
                         onCellLongClick = onCellLongClick,
                         onHourClick = onHourClick,
                         onCompleteBehavior = onCompleteBehavior,
@@ -266,6 +279,42 @@ fun HomeScreen(
                 onDismiss = onHideAiQuickInput,
             )
         }
+
+        actionTargetCell?.let { cell ->
+            BehaviorItemActionSheet(
+                cell = cell,
+                onDismiss = { actionTargetCell = null },
+                onAction = { action ->
+                    actionTargetCell = null
+                    when (action.id) {
+                        BehaviorItemActions.DETAIL -> detailCell = cell
+                        BehaviorItemActions.DELETE -> deleteTargetCell = cell
+                    }
+                },
+            )
+        }
+
+        detailCell?.let { cell ->
+            BehaviorDetailDialog(
+                cell = cell,
+                onDismiss = { detailCell = null },
+            )
+        }
+
+        deleteTargetCell?.let { cell ->
+            val name = cell.activityName?.takeIf { it.isNotBlank() } ?: "该行为"
+            ConfirmDialog(
+                title = "删除行为",
+                message = "确定要删除「$name」？此操作不可撤销。",
+                confirmText = "删除",
+                confirmTextColor = MaterialTheme.colorScheme.error,
+                onDismiss = { deleteTargetCell = null },
+                onConfirm = {
+                    cell.behaviorId?.let(onDeleteBehavior)
+                    deleteTargetCell = null
+                },
+            )
+        }
     }
 }
 
@@ -276,6 +325,7 @@ private fun HomeLayoutContent(
     activeCell: GridCellUiState?,
     nextPendingCell: GridCellUiState?,
     onEmptyCellClick: (idleStart: LocalDateTime?, idleEnd: LocalDateTime?) -> Unit,
+    onCellClick: (GridCellUiState) -> Unit,
     onCellLongClick: (GridCellUiState) -> Unit,
     onHourClick: (Int) -> Unit,
     onCompleteBehavior: (Long) -> Unit,
@@ -402,6 +452,7 @@ private fun HomeLayoutContent(
             HomeLayout.GRID -> GridContent(
                 uiState = uiState,
                 onEmptyCellClick = onEmptyCellClick,
+                onCellClick = onCellClick,
                 onCellLongClick = onCellLongClick,
                 onHourClick = onHourClick,
                 onLoadMore = onLoadMore,
@@ -414,6 +465,7 @@ private fun HomeLayoutContent(
             HomeLayout.TIMELINE_REVERSE -> TimelineReverseContent(
                 uiState = uiState,
                 onEmptyCellClick = onEmptyCellClick,
+                onCellClick = onCellClick,
                 onCellLongClick = onCellLongClick,
                 onLoadMore = onLoadMore,
                 timelineStyle = homeLayoutConfig.timeline,
@@ -423,6 +475,7 @@ private fun HomeLayoutContent(
             )
             HomeLayout.LOG -> LogContent(
                 uiState = uiState,
+                onCellClick = onCellClick,
                 onCellLongClick = onCellLongClick,
                 onLoadMore = onLoadMore,
                 logStyle = homeLayoutConfig.log,
@@ -435,6 +488,7 @@ private fun HomeLayoutContent(
                 activeCell = activeCell,
                 _nextPendingCell = nextPendingCell,
                 onEmptyCellClick = onEmptyCellClick,
+                onCellClick = onCellClick,
                 onCellLongClick = onCellLongClick,
                 onCompleteBehavior = onCompleteBehavior,
                 onStartNextPending = onStartNextPending,
@@ -449,6 +503,7 @@ private fun HomeLayoutContent(
             )
             HomeLayout.TEXT_LIST -> TextListContent(
                 uiState = uiState,
+                onCellClick = onCellClick,
                 onCellLongClick = onCellLongClick,
                 onLoadMore = onLoadMore,
                 textListStyle = homeLayoutConfig.textList,
@@ -464,6 +519,7 @@ private fun HomeLayoutContent(
 private fun GridContent(
     uiState: HomeUiState,
     onEmptyCellClick: (idleStart: LocalDateTime?, idleEnd: LocalDateTime?) -> Unit,
+    onCellClick: (GridCellUiState) -> Unit,
     onCellLongClick: (GridCellUiState) -> Unit,
     onHourClick: (Int) -> Unit,
     onLoadMore: () -> Unit,
@@ -478,6 +534,7 @@ private fun GridContent(
         TimeAxisGrid(
             sections = uiState.gridSections,
             onEmptyCellClick = onEmptyCellClick,
+            onCellClick = onCellClick,
             onCellLongClick = onCellLongClick,
             onLoadMore = onLoadMore,
             isLoadingMore = uiState.isLoadingMore,
@@ -512,6 +569,7 @@ private fun GridContent(
 private fun TimelineReverseContent(
     uiState: HomeUiState,
     onEmptyCellClick: (idleStart: LocalDateTime?, idleEnd: LocalDateTime?) -> Unit,
+    onCellClick: (GridCellUiState) -> Unit,
     onCellLongClick: (GridCellUiState) -> Unit,
     onLoadMore: () -> Unit,
     timelineStyle: TimelineLayoutStyle = TimelineLayoutStyle(),
@@ -522,6 +580,7 @@ private fun TimelineReverseContent(
     TimelineReverseView(
         items = uiState.items,
         onAddClick = onEmptyCellClick,
+        onCellClick = onCellClick,
         onCellLongClick = onCellLongClick,
         onLoadMore = onLoadMore,
         isLoadingMore = uiState.isLoadingMore,
@@ -536,6 +595,7 @@ private fun TimelineReverseContent(
 @Composable
 private fun LogContent(
     uiState: HomeUiState,
+    onCellClick: (GridCellUiState) -> Unit,
     onCellLongClick: (GridCellUiState) -> Unit,
     onLoadMore: () -> Unit,
     logStyle: LogLayoutStyle = LogLayoutStyle(),
@@ -545,6 +605,7 @@ private fun LogContent(
 ) {
     BehaviorLogView(
         items = uiState.items,
+        onCellClick = onCellClick,
         onCellLongClick = onCellLongClick,
         onLoadMore = onLoadMore,
         isLoadingMore = uiState.isLoadingMore,
@@ -562,6 +623,7 @@ private fun MomentContent(
     activeCell: GridCellUiState?,
     _nextPendingCell: GridCellUiState?,
     onEmptyCellClick: (idleStart: LocalDateTime?, idleEnd: LocalDateTime?) -> Unit,
+    onCellClick: (GridCellUiState) -> Unit,
     onCellLongClick: (GridCellUiState) -> Unit,
     onCompleteBehavior: (Long) -> Unit,
     onStartNextPending: () -> Unit,
@@ -582,6 +644,7 @@ private fun MomentContent(
         _onStartNextPending = onStartNextPending,
         _onStartBehavior = onStartBehavior,
         _onEmptyCellClick = onEmptyCellClick,
+        onCellClick = onCellClick,
         onCellLongClick = onCellLongClick,
         onLoadMore = onLoadMore,
         isLoadingMore = isLoadingMore,
@@ -596,6 +659,7 @@ private fun MomentContent(
 @Composable
 private fun TextListContent(
     uiState: HomeUiState,
+    onCellClick: (GridCellUiState) -> Unit,
     onCellLongClick: (GridCellUiState) -> Unit,
     onLoadMore: () -> Unit,
     textListStyle: TextListLayoutStyle = TextListLayoutStyle(),
@@ -605,6 +669,7 @@ private fun TextListContent(
 ) {
     TextListView(
         items = uiState.items,
+        onCellClick = onCellClick,
         onCellLongClick = onCellLongClick,
         onLoadMore = onLoadMore,
         isLoadingMore = uiState.isLoadingMore,

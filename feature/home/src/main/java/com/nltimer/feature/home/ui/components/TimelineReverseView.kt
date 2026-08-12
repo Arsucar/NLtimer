@@ -38,7 +38,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -75,6 +74,7 @@ import kotlinx.coroutines.flow.filter
 fun TimelineReverseView(
     items: List<HomeListItem>,
     onAddClick: (idleStart: LocalDateTime?, idleEnd: LocalDateTime?) -> Unit,
+    onCellClick: (GridCellUiState) -> Unit = {},
     onCellLongClick: (GridCellUiState) -> Unit = {},
     onLoadMore: () -> Unit = {},
     isLoadingMore: Boolean = false,
@@ -86,7 +86,6 @@ fun TimelineReverseView(
 ) {
     val timeFormatter = hhmmFormatter
     val listState = rememberLazyListState()
-    var detailCell by remember { mutableStateOf<GridCellUiState?>(null) }
     val initialScrollDone = remember { mutableStateOf(false) }
 
     val timelineItems = remember(items) { buildTimelineItemsReversed(items) }
@@ -167,7 +166,7 @@ fun TimelineReverseView(
                     is TimelineDisplayItem.BehaviorRow -> TimelineBehaviorItem(
                         behavior = item.cell,
                         timeFormatter = timeFormatter,
-                        onClick = { detailCell = item.cell },
+                        onClick = { onCellClick(item.cell) },
                         onLongClick = { onCellLongClick(item.cell) },
                         tagDisplayConfig = tagDisplayConfig,
                     )
@@ -181,10 +180,6 @@ fun TimelineReverseView(
             }
             if (isLoadingMore) item { LoadingMoreIndicator() }
         }
-    }
-
-    detailCell?.let { cell ->
-        BehaviorDetailDialog(cell = cell, onDismiss = { detailCell = null })
     }
 }
 

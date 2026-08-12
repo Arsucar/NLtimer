@@ -1,5 +1,6 @@
 package com.nltimer.feature.home.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nltimer.core.data.model.Activity
@@ -46,6 +47,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -75,6 +77,10 @@ class HomeViewModel @Inject constructor(
     private val clockService: ClockService,
     private val toolEventBus: ToolEventBus,
 ) : ViewModel() {
+
+    companion object {
+        private const val TAG = "HomeViewModel"
+    }
 
     private val uiStateBuilder = HomeUiStateBuilder()
 
@@ -231,6 +237,7 @@ class HomeViewModel @Inject constructor(
                         editInitialActivityId = current.editInitialActivityId,
                         editInitialTagIds = current.editInitialTagIds,
                         editInitialNote = current.editInitialNote,
+                        editInitialEstimatedDurationMs = current.editInitialEstimatedDurationMs,
                         errorMessage = current.errorMessage,
                     )
                 }
@@ -296,6 +303,7 @@ class HomeViewModel @Inject constructor(
                 editInitialActivityId = null,
                 editInitialTagIds = cell.tags.map { tag -> tag.id }.toPersistentList(),
                 editInitialNote = cell.note,
+                editInitialEstimatedDurationMs = cell.estimatedDuration,
                 idleStartTime = cell.startTime,
                 idleEndTime = cell.endTime,
             )
@@ -320,6 +328,7 @@ class HomeViewModel @Inject constructor(
                 editInitialActivityId = null,
                 editInitialTagIds = persistentListOf(),
                 editInitialNote = null,
+                editInitialEstimatedDurationMs = null,
             )
         }
         _selectedActivityId.value = null
@@ -428,7 +437,14 @@ class HomeViewModel @Inject constructor(
 
     fun deleteBehavior(id: Long) {
         viewModelScope.launch {
-            behaviorRepository.delete(id)
+            try {
+                behaviorRepository.delete(id)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.e(TAG, "deleteBehavior failed id=$id", e)
+                _uiState.update { it.copy(errorMessage = "删除失败，请重试") }
+            }
         }
     }
 

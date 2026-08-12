@@ -106,6 +106,22 @@ Both must pass before committing.
 
 ---
 
+### Pattern: Home item short-click action layer
+
+**Problem**: Five home layouts used to each host local `detailCell` + `BehaviorDetailDialog` on short-click, so multi-action UX (详情 / 删除 / future) would be copy-pasted five times.
+
+**Solution**:
+1. Layouts only call `onCellClick(cell)` (long-click still `onCellLongClick` → edit sheet).
+2. `HomeScreen` hosts a local state machine:
+   - `actionTargetCell` → `BehaviorItemActionSheet`
+   - `detailCell` → `BehaviorDetailDialog`
+   - `deleteTargetCell` → `ConfirmDialog` → `deleteBehavior(id)`
+3. Extend menus via `BehaviorItemActions.Default` + `when (action.id)` in `HomeScreen` only — do not re-wire layouts.
+
+**Don't**: Put `detailCell` / action sheet state back inside Grid/Timeline/Log/Moment/TextList views.
+
+---
+
 ## Testing Requirements
 
 (To be filled by the team)

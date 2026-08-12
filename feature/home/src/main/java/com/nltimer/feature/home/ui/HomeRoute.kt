@@ -45,6 +45,9 @@ fun HomeRoute(
     val onCellLongClick = remember(viewModel) {
         { cell: com.nltimer.feature.home.model.GridCellUiState -> viewModel.showEditSheet(cell) }
     }
+    val onDeleteBehavior = remember(viewModel) {
+        { id: Long -> viewModel.deleteBehavior(id) }
+    }
     val onAddBehavior = remember(viewModel) {
         { activityId: Long, tagIds: List<Long>, startTime: LocalDateTime, endTime: LocalDateTime?, nature: com.nltimer.core.data.model.BehaviorNature, note: String?, estimatedDurationMs: Long? ->
             val startEpochMillis = startTime
@@ -126,6 +129,7 @@ fun HomeRoute(
         onEmptyCellClick = onEmptyCellClick,
         onShowAddSheet = onShowAddSheet,
         onCellLongClick = onCellLongClick,
+        onDeleteBehavior = onDeleteBehavior,
         onAddBehavior = onAddBehavior,
         onDismissSheet = onDismissSheet,
         onCompleteBehavior = onCompleteBehavior,

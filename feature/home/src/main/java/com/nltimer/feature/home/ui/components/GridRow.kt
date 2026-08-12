@@ -10,10 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -22,21 +18,19 @@ import com.nltimer.core.designsystem.theme.TimeLabelConfig
 import com.nltimer.feature.home.model.GridCellUiState
 import com.nltimer.feature.home.model.GridRowUiState
 import java.time.LocalDateTime
-import java.time.LocalTime
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun GridRow(
     row: GridRowUiState,
     onEmptyCellClick: (idleStart: LocalDateTime?, idleEnd: LocalDateTime?) -> Unit,
+    onCellClick: (GridCellUiState) -> Unit = {},
     onCellLongClick: (GridCellUiState) -> Unit = {},
     timeLabelConfig: TimeLabelConfig = TimeLabelConfig(),
     modifier: Modifier = Modifier,
     gridStyle: GridLayoutStyle = GridLayoutStyle(),
     tagDisplayConfig: com.nltimer.core.data.model.TagDisplayConfig = com.nltimer.core.data.model.TagDisplayConfig(),
 ) {
-    var detailCell by remember { mutableStateOf<GridCellUiState?>(null) }
-
     val gridMinHeight = gridStyle.minRowHeight.dp
     val columnSpacing = gridStyle.columnSpacing.dp
 
@@ -73,7 +67,7 @@ fun GridRow(
                                     modifier = Modifier
                                         .heightIn(min = gridMinHeight)
                                         .combinedClickable(
-                                            onClick = { detailCell = cell },
+                                            onClick = { onCellClick(cell) },
                                             onLongClick = { onCellLongClick(cell) },
                                         ),
                                     gridStyle = gridStyle,
@@ -88,13 +82,6 @@ fun GridRow(
                         }
                     }
             }
-        }
-
-        detailCell?.let { cell ->
-            BehaviorDetailDialog(
-                cell = cell,
-                onDismiss = { detailCell = null },
-            )
         }
     }
 }

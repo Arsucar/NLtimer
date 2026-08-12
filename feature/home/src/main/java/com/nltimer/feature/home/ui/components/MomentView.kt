@@ -8,12 +8,10 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,7 +21,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.model.LogLayoutStyle
 import com.nltimer.core.data.model.MomentLayoutStyle
+import com.nltimer.core.designsystem.component.LoadingMoreIndicator
 import com.nltimer.core.designsystem.theme.LocalImmersiveTopPadding
 import com.nltimer.feature.home.model.GridCellUiState
 import java.time.Instant
@@ -110,6 +108,7 @@ fun MomentView(
     _onStartNextPending: () -> Unit,
     _onStartBehavior: (Long) -> Unit,
     _onEmptyCellClick: (idleStart: LocalDateTime?, idleEnd: LocalDateTime?) -> Unit,
+    onCellClick: (GridCellUiState) -> Unit = {},
     onCellLongClick: (GridCellUiState) -> Unit,
     onLoadMore: () -> Unit = {},
     isLoadingMore: Boolean = false,
@@ -134,8 +133,6 @@ fun MomentView(
             else -> MomentSortMode.TIME_DESC
         }
     }
-
-    var detailCell by remember { mutableStateOf<GridCellUiState?>(null) }
 
     val listState = rememberLazyListState()
     val initialScrollDone = rememberSaveable { mutableStateOf(false) }
@@ -196,16 +193,16 @@ fun MomentView(
         visibleDateLabelState.value = currentLabel
     }
 
+    // 最新在上、更早数据追加在底部；与 TimelineReverseView 等一致，底部接近末尾时加载更早数据。
     LaunchedEffect(displayItems, hasReachedEarliest) {
         if (hasReachedEarliest) return@LaunchedEffect
-        snapshotFlow { listState.firstVisibleItemIndex }
-            .distinctUntilChanged()
-            .filter { it <= 5 }
+        snapshotFlow {
+            val total = listState.layoutInfo.totalItemsCount
+            val lastVisible = listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+            total to lastVisible
+        }.distinctUntilChanged()
+            .filter { (total, last) -> total > 0 && last >= total - 5 }
             .collect { onLoadMore() }
-    }
-
-    detailCell?.let { cell ->
-        BehaviorDetailDialog(cell = cell, onDismiss = { detailCell = null })
     }
 
     LazyColumn(
@@ -221,14 +218,6 @@ fun MomentView(
         if (header != null) {
             item(key = "header", contentType = "header") {
                 header()
-            }
-        }
-        if (isLoadingMore) item("loading-top") {
-            Box(
-                modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
-                contentAlignment = Alignment.Center,
-            ) {
-                CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
             }
         }
 
@@ -255,11 +244,16 @@ fun MomentView(
                 }
                 is MomentDisplayItem.Behavior -> MomentBehaviorItem(
                     behavior = item.cell,
-                    onClick = { detailCell = item.cell },
+                    onClick = { onCellClick(item.cell) },
                     onLongClick = { onCellLongClick(item.cell) },
                     logStyle = LogLayoutStyle(cardPadding = momentStyle.cardPadding),
                     tagDisplayConfig = tagDisplayConfig,
                 )
+            }
+        }
+        if (isLoadingMore) {
+            item(key = "loading-bottom", contentType = "loading") {
+                LoadingMoreIndicator()
             }
         }
     }
