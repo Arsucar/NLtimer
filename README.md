@@ -187,6 +187,10 @@ CI 会从标签中提取版本号，并更新构建时的 `APP_VERSION_NAME` 与
 | [用户文档](docs/user/00-索引.md) | `docs/user/` | 快速上手、活动/标签/行为管理、视图、设置 |
 | [Agent 文档](docs/agent/00-index.md) | `docs/agent/` | 项目概览、架构摘要、模块映射、模式速查 |
 
+## 贡献指南
+
+所有新功能和 Bug 修复必须通过 GitHub Issue 提交（使用模板），PR 必须链接到 Issue。详见 [CONTRIBUTING.md](CONTRIBUTING.md)。
+
 ## 开发约定
 
 - 优先使用 Kotlin、Compose 和 Material 3 实现界面。
