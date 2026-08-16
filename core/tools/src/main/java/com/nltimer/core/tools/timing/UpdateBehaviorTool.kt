@@ -91,6 +91,11 @@ class UpdateBehaviorTool @Inject constructor(
                     val endMs = TimeUtils.parseIsoToMillis(endStr)
                         ?: return@runCatching ToolResult.Error(name, ToolError.ValidationError("endTime 格式错误: $endStr"))
                     behaviorRepository.setEndTime(id, endMs)
+                    // 结束时间一旦设置，ACTIVE 行为必须同步为 COMPLETED，
+                    // 否则会出现 status=active + endTime 不一致状态（getCurrentBehavior 查不到，统计仍按进行中计算）
+                    if (b.status == BehaviorNature.ACTIVE) {
+                        behaviorRepository.setStatus(id, BehaviorNature.COMPLETED.key)
+                    }
                 } else if (b.status == BehaviorNature.COMPLETED) {
                     behaviorRepository.setEndTime(id, System.currentTimeMillis())
                 }

@@ -103,6 +103,9 @@ class AiInterViewModel @Inject constructor(
 
     private var currentStreamJob: Job? = null
 
+    /** 用户主动清空对话后，被取消协程的 finally 不应再追加"已中断"消息 */
+    private var clearRequested = false
+
     fun getLogById(id: Long): Flow<AiCallLogEntity?> = repository.getLogById(id)
 
     fun getAllTools(): List<ToolDefinition> = toolRegistry.getAllTools()
@@ -153,6 +156,7 @@ class AiInterViewModel @Inject constructor(
     }
 
     fun clearChat() {
+        clearRequested = true
         currentStreamJob?.cancel()
         _chatMessages.value = emptyList()
         _streamingState.value = StreamingState()
@@ -192,6 +196,7 @@ class AiInterViewModel @Inject constructor(
     fun sendMessage(text: String) {
         if (text.isBlank() || _isSending.value) return
         _isSending.value = true
+        clearRequested = false
         _streamingState.value = StreamingState()
         _chatError.value = null
 
@@ -236,7 +241,9 @@ class AiInterViewModel @Inject constructor(
         val startTime = System.currentTimeMillis()
         val fullUrl = cfg.apiAddress.trimEnd('/') + cfg.apiPath
 
+        // 直接赋给 currentStreamJob，避免 launch lambda 内前向引用尚未初始化的 val job
         currentStreamJob = viewModelScope.launch {
+            val thisJob = coroutineContext[Job]
             val finalReasoning = StringBuilder()
             val finalContent = StringBuilder()
             val allToolCalls: MutableList<ToolCallRecord> = mutableListOf()
@@ -320,78 +327,75 @@ class AiInterViewModel @Inject constructor(
             } catch (e: Exception) {
                 errorMsg = e.message ?: (e::class.simpleName ?: "Unknown error")
             } finally {
-                val duration = System.currentTimeMillis() - startTime
-                val finalContentStr = finalContent.toString()
-                val finalReasoningStr = finalReasoning.toString()
-                val finalToolCalls = allToolCalls.toList()
+                // 若用户已在清理/发送期间启动了新任务，旧任务的 finally 不应再改共享状态
+                if (currentStreamJob === thisJob) {
+                    val duration = System.currentTimeMillis() - startTime
+                    val finalContentStr = finalContent.toString()
+                    val finalReasoningStr = finalReasoning.toString()
+                    val finalToolCalls = allToolCalls.toList()
 
-                if (wasCancelled) {
-                    if (finalContentStr.isNotEmpty() || finalReasoningStr.isNotEmpty() || finalToolCalls.isNotEmpty()) {
-                        _chatMessages.update { it + ChatMessage(
+                    if (wasCancelled) {
+                        if (!clearRequested && (finalContentStr.isNotEmpty() || finalReasoningStr.isNotEmpty() || finalToolCalls.isNotEmpty())) {
+                            _chatMessages.update { it + ChatMessage(
+                                role = "assistant",
+                                content = if (finalContentStr.isNotEmpty()) "$finalContentStr\n\n(已中断)" else "(已中断)",
+                                reasoning = finalReasoningStr,
+                                toolCalls = finalToolCalls,
+                            ) }
+                        }
+                        _streamingState.value = StreamingState()
+                        _isSending.value = false
+                    } else {
+                        val assistantContent = when {
+                            finalContentStr.isNotEmpty() && errorMsg == null -> finalContentStr
+                            finalContentStr.isNotEmpty() && errorMsg != null -> "$finalContentStr\n\n(中途出错：$errorMsg)"
+                            errorMsg != null -> "(请求失败：$errorMsg)"
+                            finalToolCalls.isNotEmpty() -> "(已完成 ${finalToolCalls.size} 次工具调用，但模型未给出文本回复)"
+                            else -> "(空响应 — 服务端正常关闭流但未发送任何 token。请确认：模型名「${cfg.modelName}」是否存在、API 路径「${cfg.apiPath}」是否正确、API Key 是否有效)"
+                        }
+                        _chatMessages.value = _chatMessages.value + ChatMessage(
                             role = "assistant",
-                            content = if (finalContentStr.isNotEmpty()) "$finalContentStr\n\n(已中断)" else "(已中断)",
+                            content = assistantContent,
                             reasoning = finalReasoningStr,
                             toolCalls = finalToolCalls,
-                        ) }
-                    }
-                    _streamingState.value = StreamingState()
-                    _isSending.value = false
-                } else {
-                    val assistantContent = when {
-                        finalContentStr.isNotEmpty() && errorMsg == null -> finalContentStr
-                        finalContentStr.isNotEmpty() && errorMsg != null -> "$finalContentStr\n\n(中途出错：$errorMsg)"
-                        errorMsg != null -> "(请求失败：$errorMsg)"
-                        finalToolCalls.isNotEmpty() -> "(已完成 ${finalToolCalls.size} 次工具调用，但模型未给出文本回复)"
-                        else -> "(空响应 — 服务端正常关闭流但未发送任何 token。请确认：模型名「${cfg.modelName}」是否存在、API 路径「${cfg.apiPath}」是否正确、API Key 是否有效)"
-                    }
-                    _chatMessages.value = _chatMessages.value + ChatMessage(
-                        role = "assistant",
-                        content = assistantContent,
-                        reasoning = finalReasoningStr,
-                        toolCalls = finalToolCalls,
-                    )
-                    _streamingState.value = StreamingState()
-
-                    if (errorMsg != null) {
-                        _chatError.value = errorMsg
-                    }
-
-                    repository.addLog(
-                        AiCallLogEntity(
-                            timestamp = System.currentTimeMillis(),
-                            type = "Test Chat",
-                            status = if (errorMsg == null && (finalContentStr.isNotEmpty() || finalToolCalls.isNotEmpty())) "Success" else "Failed",
-                            durationMs = duration,
-                            model = cfg.modelName,
-                            tools = finalToolCalls.joinToString(",") { it.name },
-                            prompt = text,
-                            response = finalContentStr,
-                            errorMessage = errorMsg,
-                            requestUrl = fullUrl,
-                            reasoning = finalReasoningStr,
-                            toolCallsJson = AiChatToolHelper.serializeToolCalls(finalToolCalls),
                         )
-                    )
+                        _streamingState.value = StreamingState()
 
-                    _isSending.value = false
+                        if (errorMsg != null) {
+                            _chatError.value = errorMsg
+                        }
+
+                        runCatching {
+                            repository.addLog(
+                                AiCallLogEntity(
+                                    timestamp = System.currentTimeMillis(),
+                                    type = "Test Chat",
+                                    status = if (errorMsg == null && (finalContentStr.isNotEmpty() || finalToolCalls.isNotEmpty())) "Success" else "Failed",
+                                    durationMs = duration,
+                                    model = cfg.modelName,
+                                    tools = finalToolCalls.joinToString(",") { it.name },
+                                    prompt = text,
+                                    response = finalContentStr,
+                                    errorMessage = errorMsg,
+                                    requestUrl = fullUrl,
+                                    reasoning = finalReasoningStr,
+                                    toolCallsJson = AiChatToolHelper.serializeToolCalls(finalToolCalls),
+                                )
+                            )
+                        }
+
+                        _isSending.value = false
+                    }
+                    clearRequested = false
                 }
             }
         }
     }
 
     fun stopStreaming() {
+        // 只取消任务；"已中断"消息与状态重置统一由被取消协程的 finally 处理，
+        // 避免这里追加一次、finally 又追加一次导致重复消息。
         currentStreamJob?.cancel()
-        val partial = _streamingState.value
-        if (!partial.isEmpty) {
-            _chatMessages.value = _chatMessages.value + ChatMessage(
-                role = "assistant",
-                content = if (partial.content.isNotEmpty()) "${partial.content}\n\n(已中断)" else "(已中断)",
-                reasoning = partial.reasoning,
-                toolCalls = partial.toolCalls,
-            )
-        }
-        _streamingState.value = StreamingState()
-        _isSending.value = false
     }
 
     override fun onCleared() {

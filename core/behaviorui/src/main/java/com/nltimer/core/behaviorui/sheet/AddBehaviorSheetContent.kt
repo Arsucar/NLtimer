@@ -67,7 +67,7 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import kotlin.time.Duration.Companion.minutes
 
-@Suppress("LongParameterList", "LongMethod")
+@Suppress("LongParameterList", "LongMethod", "UNUSED_PARAMETER")
 @Composable
 internal fun AddBehaviorSheetContent(
     modifier: Modifier = Modifier,
@@ -98,17 +98,17 @@ internal fun AddBehaviorSheetContent(
     onQueryTagsForActivity: suspend (Long) -> List<Long> = { emptyList() },
     onQueryActivitiesForTag: suspend (Long) -> List<Long> = { emptyList() },
 ) {
+    // existingBehaviors 仍由公共 Sheet API 透传（保持签名稳定），冲突由 UseCase 校验。
     val state = rememberAddBehaviorState(
-        mode,
-        initialStartTime,
-        initialEndTime,
-        initialActivityId,
-        initialTagIds,
-        initialNote,
-        editBehaviorId,
-        existingBehaviors,
-        dialogConfig,
-        initialEstimatedDurationMs,
+        mode = mode,
+        initialStartTime = initialStartTime,
+        initialEndTime = initialEndTime,
+        initialActivityId = initialActivityId,
+        initialTagIds = initialTagIds,
+        initialNote = initialNote,
+        editBehaviorId = editBehaviorId,
+        dialogConfig = dialogConfig,
+        initialEstimatedDurationMs = initialEstimatedDurationMs,
     )
 
     EndTimeAutoTickEffect(state)
@@ -224,6 +224,14 @@ private fun SheetMainContent(
     val horizontalLinesForTags = remember(dialogConfig.tagHorizontalLines) {
         if (dialogConfig.tagHorizontalLines == 0) Int.MAX_VALUE else dialogConfig.tagHorizontalLines
     }
+    // 竖向布局下列数会作为 StaggeredHorizontalGrid 的 maxLines（IntArray(maxLines)），
+    // 0 会触发数组越界；设置页最小值为 1，但防御性钳制避免历史脏数据崩溃。
+    val columnLinesForActivities = remember(dialogConfig.activityColumnLines) {
+        dialogConfig.activityColumnLines.coerceAtLeast(1)
+    }
+    val columnLinesForTags = remember(dialogConfig.tagColumnLines) {
+        dialogConfig.tagColumnLines.coerceAtLeast(1)
+    }
 
     val blurRadius by animateDpAsState(
         targetValue = if (state.showTimeAdjustments) 8.dp else 0.dp,
@@ -297,7 +305,7 @@ private fun SheetMainContent(
                 selectedId = state.selectedActivityId,
                 displayMode = dialogConfig.activityDisplayMode,
                 layoutMode = dialogConfig.activityLayoutMode,
-                maxLinesPerColumn = dialogConfig.activityColumnLines,
+                maxLinesPerColumn = columnLinesForActivities,
                 maxLinesHorizontal = horizontalLinesForActivities,
                 useActivityColorForText = dialogConfig.activityUseColorForText,
                 functionChipLabel = "活动",
@@ -330,7 +338,7 @@ private fun SheetMainContent(
                 multiSelect = true,
                 displayMode = dialogConfig.tagDisplayMode,
                 layoutMode = dialogConfig.tagLayoutMode,
-                maxLinesPerColumn = dialogConfig.tagColumnLines,
+                maxLinesPerColumn = columnLinesForTags,
                 maxLinesHorizontal = horizontalLinesForTags,
                 useActivityColorForText = dialogConfig.tagUseColorForText,
                 functionChipLabel = "标签",
@@ -368,7 +376,16 @@ private fun SheetMainContent(
                             val directiveApply = state.applyDirectiveOutcome(processed.directiveOutcome)
                             val scanResult = processed.scanResult
                             val scanApply = state.applyNoteScan(scanResult)
-                            applyLinkage(state, scanResult.activityId, scanResult.tagIds, onQueryTagsForActivity, onQueryActivitiesForTag)
+                            // linkage 活动源取 directive/scan 合并后的最终选中值：
+                            // directive 的 @活动 会覆盖选中，若仍用 scanResult.activityId
+                            // 会漏掉新建/复用活动的绑定标签联动。
+                            applyLinkage(
+                                state,
+                                state.selectedActivityId,
+                                scanResult.tagIds,
+                                onQueryTagsForActivity,
+                                onQueryActivitiesForTag,
+                            )
                             Toast.makeText(
                                 context,
                                 buildFeedbackMessage(processed.directiveOutcome, directiveApply, scanApply),
@@ -496,6 +513,13 @@ private fun ConfirmButtonRow(
                     && !state.startTime.isBefore(state.endTime)
                 ) {
                     Toast.makeText(context, "开始时间必须早于结束时间", Toast.LENGTH_SHORT).show()
+                    return@Button
+                }
+                // 与 AddBehaviorUseCase.validateTimeConstraints 对齐：ACTIVE 开始时间不可晚于现在
+                if (mode == BehaviorNature.ACTIVE
+                    && state.startTime.isAfter(LocalDateTime.now())
+                ) {
+                    Toast.makeText(context, "开始时间不能大于当前时间", Toast.LENGTH_SHORT).show()
                     return@Button
                 }
                 val confirmTime = LocalDateTime.now()

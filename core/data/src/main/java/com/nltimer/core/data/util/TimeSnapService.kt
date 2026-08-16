@@ -44,7 +44,7 @@ class TimeSnapService {
                 adjustedStart = prevEnd + 1
                 if (newStatus == BehaviorNature.COMPLETED && adjustedEnd != null) {
                     if (newEnd / MILLIS_PER_MINUTE == prevEnd / MILLIS_PER_MINUTE) {
-                        adjustedEnd = prevEnd / MILLIS_PER_MINUTE * MILLIS_PER_MINUTE + 59_999
+                        adjustedEnd = prevEnd / MILLIS_PER_MINUTE * MILLIS_PER_MINUTE + MILLIS_PER_MINUTE - 1
                     }
                 }
             }

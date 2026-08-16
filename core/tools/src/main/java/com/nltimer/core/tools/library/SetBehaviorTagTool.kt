@@ -104,9 +104,9 @@ class SetBehaviorTagTool @Inject constructor(
                     JSONObject()
                         .put("id", tag.id)
                         .put("name", tag.name)
-                        .put("color", tag.color)
-                        .put("iconKey", tag.iconKey)
-                        .put("category", tag.category)
+                        .put("color", tag.color ?: JSONObject.NULL)
+                        .put("iconKey", tag.iconKey ?: JSONObject.NULL)
+                        .put("category", tag.category ?: JSONObject.NULL)
                 )
             }
 

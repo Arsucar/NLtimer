@@ -57,6 +57,8 @@ class StatsViewModel @Inject constructor(
                     _uiState.update { it.copy(isLoading = true) }
                     val result = try {
                         statsQueryUseCase.query(startMs, endMs)
+                    } catch (e: kotlinx.coroutines.CancellationException) {
+                        throw e
                     } catch (_: Exception) {
                         null
                     }

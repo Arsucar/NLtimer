@@ -110,7 +110,7 @@ internal fun HtmlBlockElement(
         "img" -> {
             val src = element.attr("src")
             val alt = element.attr("alt")
-            if (src.isNotEmpty()) {
+            if (src.isNotEmpty() && isSafeImageSource(src)) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     ZoomableAsyncImage(
                         model = src,

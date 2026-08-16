@@ -11,6 +11,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import java.time.Instant
 import java.time.ZoneId
+import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -92,7 +93,7 @@ class StatsQueryUseCase @Inject constructor(
                     count = agg.count,
                     plannedCount = agg.plannedCount,
                     avgAchievement = if (agg.achievementCount > 0) {
-                        String.format("%.1f", agg.achievementSum.toDouble() / agg.achievementCount)
+                        String.format(Locale.US, "%.1f", agg.achievementSum.toDouble() / agg.achievementCount)
                     } else null,
                 )
             }.toImmutableList()
@@ -112,18 +113,18 @@ class StatsQueryUseCase @Inject constructor(
             }.toImmutableList()
 
         val completionRate = if (completedCount + activeCount > 0) {
-            String.format("%.0f%%", completedCount.toDouble() / (completedCount + activeCount) * 100)
+            String.format(Locale.US, "%.0f%%", completedCount.toDouble() / (completedCount + activeCount) * 100)
         } else "0%"
 
         val planAdherenceRate = if (totalEstimatedMinutes > 0) {
-            String.format("%.0f%%", totalActualMinutes.toDouble() / totalEstimatedMinutes * 100)
+            String.format(Locale.US, "%.0f%%", totalActualMinutes.toDouble() / totalEstimatedMinutes * 100)
         } else null
 
         return StatsResult(
             timeRangeStartMs = startTimeMs,
             timeRangeEndMs = endTimeMs,
             totalMinutes = totalMinutes,
-            totalHours = String.format("%.1f", totalMinutes / 60.0),
+            totalHours = String.format(Locale.US, "%.1f", totalMinutes / 60.0),
             completedCount = completedCount,
             activeCount = activeCount,
             pendingCount = pendingCount,

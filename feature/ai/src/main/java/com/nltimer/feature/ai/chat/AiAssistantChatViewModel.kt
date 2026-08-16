@@ -1,5 +1,6 @@
 package com.nltimer.feature.ai.chat
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nltimer.feature.ai.chat.data.ConversationDao
@@ -32,7 +33,6 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.add
@@ -43,6 +43,7 @@ import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 import java.util.UUID
 import javax.inject.Inject
+import kotlin.coroutines.coroutineContext
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
@@ -92,28 +93,58 @@ class AiAssistantChatViewModel @Inject constructor(
     private val _availableModels = MutableStateFlow<List<String>>(emptyList())
     val availableModels: StateFlow<List<String>> = _availableModels.asStateFlow()
 
+    private val _modelsError = MutableStateFlow<String?>(null)
+    val modelsError: StateFlow<String?> = _modelsError.asStateFlow()
+
     private var streamJob: Job? = null
 
+    /** 用户主动清空当前会话后，被取消协程的 finally 不应再把 assistant 消息插回 */
+    private var clearRequested = false
+
     init {
-        newConversation()
+        // 进入页时复用已有会话，避免每次都新建空「新对话」
+        viewModelScope.launch {
+            val existing = conversationDao.observeAll().first()
+            if (existing.isEmpty()) {
+                createBlankConversation()
+            } else {
+                _currentConversationId.value = existing.first().id
+            }
+        }
     }
 
     fun selectConversation(id: String) {
         _currentConversationId.value = id
     }
 
+    /**
+     * 新建对话：若已有无消息的默认标题会话则复用，否则真正插入一条新会话。
+     * 避免 init / 连续点「新对话」堆积空会话。
+     */
     fun newConversation() {
         viewModelScope.launch {
-            val id = UUID.randomUUID().toString()
-            val now = System.currentTimeMillis()
-            conversationDao.upsert(ConversationEntity(id, "新对话", now, now))
-            _currentConversationId.value = id
+            val all = conversationDao.observeAll().first()
+            val emptyReuse = all.firstOrNull { conv ->
+                conv.title == DEFAULT_TITLE && messageDao.nextOrder(conv.id) == 0
+            }
+            if (emptyReuse != null) {
+                _currentConversationId.value = emptyReuse.id
+            } else {
+                createBlankConversation()
+            }
         }
+    }
+
+    private suspend fun createBlankConversation() {
+        val id = UUID.randomUUID().toString()
+        val now = System.currentTimeMillis()
+        conversationDao.upsert(ConversationEntity(id, DEFAULT_TITLE, now, now))
+        _currentConversationId.value = id
     }
 
     fun renameConversation(id: String, title: String) {
         viewModelScope.launch {
-            val trimmed = title.trim().ifBlank { "新对话" }
+            val trimmed = title.trim().ifBlank { DEFAULT_TITLE }
             conversationDao.rename(id, trimmed, System.currentTimeMillis())
         }
     }
@@ -125,13 +156,18 @@ class AiAssistantChatViewModel @Inject constructor(
                 val remaining = conversationDao.observeAll().first()
                 _currentConversationId.value = remaining.firstOrNull()?.id
                 if (_currentConversationId.value == null) {
-                    newConversation()
+                    createBlankConversation()
                 }
             }
         }
     }
 
     fun clearCurrent() {
+        clearRequested = true
+        streamJob?.cancel()
+        _streamingState.value = StreamingState()
+        _isSending.value = false
+        _chatError.value = null
         viewModelScope.launch {
             val id = _currentConversationId.value ?: return@launch
             messageDao.deleteAllInConversation(id)
@@ -144,6 +180,10 @@ class AiAssistantChatViewModel @Inject constructor(
 
     fun clearChatError() {
         _chatError.value = null
+    }
+
+    fun clearModelsError() {
+        _modelsError.value = null
     }
 
     fun stopStreaming() {
@@ -168,10 +208,21 @@ class AiAssistantChatViewModel @Inject constructor(
 
     fun refreshModels() {
         viewModelScope.launch {
+            _modelsError.value = null
             val cfg = config.value
             apiClient.fetchModels(cfg.apiAddress, cfg.apiKey).fold(
-                onSuccess = { _availableModels.value = it },
-                onFailure = { _availableModels.value = emptyList() },
+                onSuccess = { models ->
+                    _availableModels.value = models
+                    if (models.isEmpty()) {
+                        _modelsError.value = "服务端返回的模型列表为空（响应已成功，但 data 数组为空）"
+                    }
+                },
+                onFailure = { e ->
+                    Log.e(TAG, "refreshModels failed", e)
+                    _modelsError.value = e.message
+                        ?: ("${e::class.simpleName ?: "未知错误"}（无错误描述）")
+                    _availableModels.value = emptyList()
+                },
             )
         }
     }
@@ -182,29 +233,33 @@ class AiAssistantChatViewModel @Inject constructor(
         }
     }
 
-    fun sendMessage(text: String) {
+    fun sendMessage(text: String, persistUserMessage: Boolean = true) {
         if (text.isBlank() || _isSending.value) return
         val conversationId = _currentConversationId.value ?: return
         _isSending.value = true
+        clearRequested = false
         _streamingState.value = StreamingState()
         _chatError.value = null
 
         streamJob = viewModelScope.launch {
+            val thisJob = coroutineContext[Job]
             val cfg = config.value
             val now = System.currentTimeMillis()
 
-            val userOrder = messageDao.nextOrder(conversationId)
-            messageDao.insert(
-                ConversationMessageEntity(
-                    id = UUID.randomUUID().toString(),
-                    conversationId = conversationId,
-                    order = userOrder,
-                    role = "user",
-                    content = text,
-                    createdAt = now,
+            if (persistUserMessage) {
+                val userOrder = messageDao.nextOrder(conversationId)
+                messageDao.insert(
+                    ConversationMessageEntity(
+                        id = UUID.randomUUID().toString(),
+                        conversationId = conversationId,
+                        order = userOrder,
+                        role = "user",
+                        content = text,
+                        createdAt = now,
+                    )
                 )
-            )
-            conversationDao.touch(conversationId, now)
+                conversationDao.touch(conversationId, now)
+            }
 
             val conv = conversationDao.get(conversationId)
             if (conv != null && conv.title == DEFAULT_TITLE) {
@@ -289,58 +344,69 @@ class AiAssistantChatViewModel @Inject constructor(
             } catch (e: Exception) {
                 errorMsg = e.message ?: e::class.simpleName ?: "Unknown error"
             } finally {
-                val duration = System.currentTimeMillis() - startTime
-                val finalContentStr = finalContent.toString()
-                val finalReasoningStr = finalReasoning.toString()
-                val finalToolCalls = allToolCalls.toList()
+                // 若用户已在清理/发送期间启动了新任务，旧任务的 finally 不应再改共享状态
+                if (streamJob === thisJob) {
+                    val duration = System.currentTimeMillis() - startTime
+                    val finalContentStr = finalContent.toString()
+                    val finalReasoningStr = finalReasoning.toString()
+                    val finalToolCalls = allToolCalls.toList()
 
-                val assistantContent = when {
-                    wasCancelled && finalContentStr.isNotEmpty() -> "$finalContentStr\n\n(已中断)"
-                    wasCancelled -> ""
-                    errorMsg != null && finalContentStr.isNotEmpty() -> "$finalContentStr\n\n(中途出错：$errorMsg)"
-                    errorMsg != null -> "(请求失败：$errorMsg)"
-                    finalContentStr.isNotEmpty() -> finalContentStr
-                    finalToolCalls.isNotEmpty() -> "(已完成 ${finalToolCalls.size} 次工具调用，但模型未给出文本回复)"
-                    else -> "(空响应)"
-                }
+                    val assistantContent = when {
+                        // 清空会话：跳过「已中断」复活，避免 clear 后消息插回
+                        wasCancelled && clearRequested -> ""
+                        wasCancelled && finalContentStr.isNotEmpty() -> "$finalContentStr\n\n(已中断)"
+                        wasCancelled -> ""
+                        errorMsg != null && finalContentStr.isNotEmpty() -> "$finalContentStr\n\n(中途出错：$errorMsg)"
+                        errorMsg != null -> "(请求失败：$errorMsg)"
+                        finalContentStr.isNotEmpty() -> finalContentStr
+                        finalToolCalls.isNotEmpty() -> "(已完成 ${finalToolCalls.size} 次工具调用，但模型未给出文本回复)"
+                        else -> "(空响应)"
+                    }
 
-                if (assistantContent.isNotEmpty()) {
-                    val assistantOrder = messageDao.nextOrder(conversationId)
-                    messageDao.insert(
-                        ConversationMessageEntity(
-                            id = UUID.randomUUID().toString(),
-                            conversationId = conversationId,
-                            order = assistantOrder,
-                            role = "assistant",
-                            content = assistantContent,
-                            reasoning = finalReasoningStr,
-                            toolCallsJson = AiChatToolHelper.serializeToolCalls(finalToolCalls),
-                            createdAt = System.currentTimeMillis(),
+                    if (assistantContent.isNotEmpty()) {
+                        runCatching {
+                            val assistantOrder = messageDao.nextOrder(conversationId)
+                            messageDao.insert(
+                                ConversationMessageEntity(
+                                    id = UUID.randomUUID().toString(),
+                                    conversationId = conversationId,
+                                    order = assistantOrder,
+                                    role = "assistant",
+                                    content = assistantContent,
+                                    reasoning = finalReasoningStr,
+                                    toolCallsJson = AiChatToolHelper.serializeToolCalls(finalToolCalls),
+                                    createdAt = System.currentTimeMillis(),
+                                )
+                            )
+                            conversationDao.touch(conversationId, System.currentTimeMillis())
+                        }
+                    }
+
+                    _streamingState.value = StreamingState()
+                    _isSending.value = false
+                    if (errorMsg != null) _chatError.value = errorMsg
+
+                    runCatching {
+                        repository.addLog(
+                            AiCallLogEntity(
+                                timestamp = startTime,
+                                type = "Assistant Chat",
+                                status = if (errorMsg == null && (finalContentStr.isNotEmpty() || finalToolCalls.isNotEmpty())) "Success" else "Failed",
+                                durationMs = duration,
+                                model = cfg.modelName,
+                                tools = finalToolCalls.joinToString(",") { it.name },
+                                prompt = text,
+                                response = finalContentStr,
+                                errorMessage = errorMsg,
+                                requestUrl = fullUrl,
+                                reasoning = finalReasoningStr,
+                                toolCallsJson = AiChatToolHelper.serializeToolCalls(finalToolCalls),
+                            )
                         )
-                    )
-                    conversationDao.touch(conversationId, System.currentTimeMillis())
+                    }
+
+                    clearRequested = false
                 }
-
-                _streamingState.value = StreamingState()
-                _isSending.value = false
-                if (errorMsg != null) _chatError.value = errorMsg
-
-                repository.addLog(
-                    AiCallLogEntity(
-                        timestamp = startTime,
-                        type = "Assistant Chat",
-                        status = if (errorMsg == null && (finalContentStr.isNotEmpty() || finalToolCalls.isNotEmpty())) "Success" else "Failed",
-                        durationMs = duration,
-                        model = cfg.modelName,
-                        tools = finalToolCalls.joinToString(",") { it.name },
-                        prompt = text,
-                        response = finalContentStr,
-                        errorMessage = errorMsg,
-                        requestUrl = fullUrl,
-                        reasoning = finalReasoningStr,
-                        toolCallsJson = AiChatToolHelper.serializeToolCalls(finalToolCalls),
-                    )
-                )
             }
         }
     }
@@ -354,7 +420,8 @@ class AiAssistantChatViewModel @Inject constructor(
             val precedingUser = msgs.lastOrNull { it.role == "user" && it.order < lastAssistant.order } ?: return@launch
 
             messageDao.delete(lastAssistant.id)
-            sendMessage(precedingUser.content)
+            // 用户消息已存在，重生成时不再重复插入 user 消息
+            sendMessage(precedingUser.content, persistUserMessage = false)
         }
     }
 
@@ -364,6 +431,7 @@ class AiAssistantChatViewModel @Inject constructor(
     }
 
     companion object {
+        private const val TAG = "AiAssistantChatVM"
         private const val DEFAULT_TITLE = "新对话"
         private const val TITLE_MAX_LEN = 24
     }

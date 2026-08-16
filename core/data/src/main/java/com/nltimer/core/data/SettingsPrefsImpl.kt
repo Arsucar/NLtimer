@@ -119,9 +119,12 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
             prefs[cornerPresetKey] = theme.style.cornerPreset.name
             prefs[borderPresetKey] = theme.style.borderPreset.name
             prefs[alphaPresetKey] = theme.style.alphaPreset.name
-            val cornerScale = theme.style.cornerScale; if (cornerScale != null) prefs[cornerScaleCustomKey] = cornerScale else prefs.remove(cornerScaleCustomKey)
-            val borderScale = theme.style.borderScale; if (borderScale != null) prefs[borderScaleCustomKey] = borderScale else prefs.remove(borderScaleCustomKey)
-            val alphaScale = theme.style.alphaScale; if (alphaScale != null) prefs[alphaScaleCustomKey] = alphaScale else prefs.remove(alphaScaleCustomKey)
+            val cornerScale = theme.style.cornerScale
+            if (cornerScale != null) prefs[cornerScaleCustomKey] = cornerScale else prefs.remove(cornerScaleCustomKey)
+            val borderScale = theme.style.borderScale
+            if (borderScale != null) prefs[borderScaleCustomKey] = borderScale else prefs.remove(borderScaleCustomKey)
+            val alphaScale = theme.style.alphaScale
+            if (alphaScale != null) prefs[alphaScaleCustomKey] = alphaScale else prefs.remove(alphaScaleCustomKey)
             prefs[expressivenessKey] = theme.style.expressiveness.name
             prefs[cardColorStrategyKey] = theme.style.cardColorStrategy.name
             prefs[iconContainerSizeKey] = theme.style.iconContainerSize.name

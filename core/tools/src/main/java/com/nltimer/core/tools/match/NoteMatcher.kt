@@ -44,7 +44,7 @@ class NoteMatcher @Inject constructor() {
         if (note.isBlank()) return NoteScanResult(null, emptySet())
         val noteLower = note.lowercase()
 
-            val activityId = activities
+        val activityId = activities
             .asSequence()
             .filter { !it.isArchived }
             .mapNotNull { a ->

@@ -65,7 +65,11 @@ class BulkUpdateActivitiesTool @Inject constructor(
         for (item in rawList) {
             val id = (item["id"] as? Number)?.toLong()
             if (id == null) {
-                notFound.put(JSONObject().put("id", item["id"]).put("reason", "id 无效"))
+                notFound.put(
+                    JSONObject()
+                        .put("id", item["id"] ?: JSONObject.NULL)
+                        .put("reason", "id 无效")
+                )
                 continue
             }
 

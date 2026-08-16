@@ -111,6 +111,13 @@ private fun AnimatedBarChart(
         val totalBarWidth = (size.width - spacing * (barCount + 1)) / barCount
         val chartHeight = size.height - 30.dp.toPx()
 
+        val labelPaint = android.graphics.Paint().apply {
+            textAlign = android.graphics.Paint.Align.CENTER
+            textSize = 10.dp.toPx()
+            setColor(labelColor.hashCode())
+            alpha = 180
+        }
+
         for (i in values.indices) {
             val x = spacing + i * (totalBarWidth + spacing)
             val fraction = (values[i].toFloat() / maxValue) * progress
@@ -127,16 +134,12 @@ private fun AnimatedBarChart(
             )
 
             val labelX = x + totalBarWidth / 2f
+            labelPaint.alpha = if (selectedIndex < 0 || selectedIndex == i) 180 else 80
             drawContext.canvas.nativeCanvas.drawText(
                 labels[i].take(2),
                 labelX,
                 size.height,
-                android.graphics.Paint().apply {
-                    textAlign = android.graphics.Paint.Align.CENTER
-                    textSize = 10.dp.toPx()
-                    setColor(labelColor.hashCode())
-                    this.alpha = if (selectedIndex < 0 || selectedIndex == i) 180 else 80
-                },
+                labelPaint,
             )
         }
     }

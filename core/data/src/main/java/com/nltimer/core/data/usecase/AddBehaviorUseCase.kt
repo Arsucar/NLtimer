@@ -109,6 +109,7 @@ class AddBehaviorUseCase @Inject constructor(
         endTime: Long?,
         status: BehaviorNature,
         now: Long,
+        ignoreBehaviorId: Long? = null,
     ): SnapResult {
         if (status == BehaviorNature.PENDING) {
             return SnapResult(startTime, endTime, false)
@@ -129,6 +130,7 @@ class AddBehaviorUseCase @Inject constructor(
             newStatus = status,
             overlappingBehaviors = overlapping,
             currentTime = now,
+            ignoreBehaviorId = ignoreBehaviorId,
         )
     }
 
@@ -186,11 +188,26 @@ class AddBehaviorUseCase @Inject constructor(
         val validationError = validateTimeConstraints(startTime, endTime, status, now)
         if (validationError != null) return validationError
 
+        // 编辑时忽略自身，复用新增路径的吸附/冲突检查，避免改到与其他行为重叠的时间段
+        val snapResult = performSnapAndConflictCheck(
+            startTime = startTime,
+            endTime = endTime,
+            status = status,
+            now = now,
+            ignoreBehaviorId = behaviorId,
+        )
+        if (snapResult.hasConflict) {
+            return Result.Conflict("该时间段与已有行为记录冲突")
+        }
+
+        val finalStart = snapResult.adjustedStart
+        val finalEnd = snapResult.adjustedEnd
+
         behaviorRepository.updateBehavior(
             id = behaviorId,
             activityId = activityId,
-            startTime = if (status == BehaviorNature.PENDING) 0L else startTime,
-            endTime = if (status == BehaviorNature.COMPLETED) endTime ?: startTime else null,
+            startTime = if (status == BehaviorNature.PENDING) 0L else finalStart,
+            endTime = if (status == BehaviorNature.COMPLETED) finalEnd ?: finalStart else null,
             status = status.key,
             note = note,
         )

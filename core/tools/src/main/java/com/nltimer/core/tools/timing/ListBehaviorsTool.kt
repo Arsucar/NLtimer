@@ -75,6 +75,12 @@ class ListBehaviorsTool @Inject constructor(
         }
 
         // 查询范围上限 31 天
+        if (endMs <= startMs) {
+            return ToolResult.Error(
+                name,
+                ToolError.ValidationError("endTime 必须晚于 startTime"),
+            )
+        }
         val rangeDays = ((endMs - startMs) / (24 * 60 * 60 * 1000))
         if (rangeDays > 31) {
             return ToolResult.Error(

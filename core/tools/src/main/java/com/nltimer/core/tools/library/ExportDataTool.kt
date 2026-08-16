@@ -30,13 +30,13 @@ class ExportDataTool @Inject constructor(
         ToolParameter(
             name = "startDate",
             description = "开始时间（epoch 毫秒）",
-            type = ParameterType.DATE_TIME,
+            type = ParameterType.NUMBER,
             required = true,
         ),
         ToolParameter(
             name = "endDate",
             description = "结束时间（epoch 毫秒）",
-            type = ParameterType.DATE_TIME,
+            type = ParameterType.NUMBER,
             required = true,
         ),
     )

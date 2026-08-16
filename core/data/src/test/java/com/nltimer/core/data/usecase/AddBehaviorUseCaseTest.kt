@@ -85,7 +85,7 @@ class AddBehaviorUseCaseTest {
     @Test
     fun `ACTIVE ends current behavior before creating new one`() = runTest {
         coEvery { behaviorRepository.getByDayRange(any(), any()) } returns flowOf(emptyList())
-        every { timeSnapService.snapAndCheckConflict(any(), any(), any(), any(), any()) } returns
+        every { timeSnapService.snapAndCheckConflict(any(), any(), any(), any(), any(), any()) } returns
             SnapResult(fixedNow - 1000, null, false)
         coEvery { behaviorRepository.insert(any<Behavior>(), any()) } returns 42L
 
@@ -97,7 +97,7 @@ class AddBehaviorUseCaseTest {
     @Test
     fun `ACTIVE with conflict returns Conflict result`() = runTest {
         coEvery { behaviorRepository.getBehaviorsOverlappingRange(any(), any()) } returns flowOf(emptyList())
-        every { timeSnapService.snapAndCheckConflict(any(), any(), any(), any(), any()) } returns
+        every { timeSnapService.snapAndCheckConflict(any(), any(), any(), any(), any(), any()) } returns
             SnapResult(fixedNow - 1000, null, true)
 
         val result = invokeUseCase(startTime = fixedNow - 1000, status = BehaviorNature.ACTIVE)
@@ -108,7 +108,7 @@ class AddBehaviorUseCaseTest {
     @Test
     fun `ACTIVE without conflict inserts behavior and returns Success`() = runTest {
         coEvery { behaviorRepository.getByDayRange(any(), any()) } returns flowOf(emptyList())
-        every { timeSnapService.snapAndCheckConflict(any(), any(), any(), any(), any()) } returns
+        every { timeSnapService.snapAndCheckConflict(any(), any(), any(), any(), any(), any()) } returns
             SnapResult(fixedNow - 1000, null, false)
         coEvery { behaviorRepository.insert(any<Behavior>(), any()) } returns 99L
 
@@ -127,7 +127,7 @@ class AddBehaviorUseCaseTest {
         val snappedStart = fixedNow - 5000
         val behaviorSlot = slot<Behavior>()
         coEvery { behaviorRepository.getByDayRange(any(), any()) } returns flowOf(emptyList())
-        every { timeSnapService.snapAndCheckConflict(any(), any(), any(), any(), any()) } returns
+        every { timeSnapService.snapAndCheckConflict(any(), any(), any(), any(), any(), any()) } returns
             SnapResult(snappedStart, null, false)
         coEvery { behaviorRepository.insert(capture(behaviorSlot), any()) } returns 1L
 
@@ -144,7 +144,7 @@ class AddBehaviorUseCaseTest {
         val end = fixedNow - 10000
         val behaviorSlot = slot<Behavior>()
         coEvery { behaviorRepository.getByDayRange(any(), any()) } returns flowOf(emptyList())
-        every { timeSnapService.snapAndCheckConflict(any(), any(), any(), any(), any()) } returns
+        every { timeSnapService.snapAndCheckConflict(any(), any(), any(), any(), any(), any()) } returns
             SnapResult(start, end, false)
         coEvery { behaviorRepository.insert(capture(behaviorSlot), any()) } returns 1L
 
@@ -160,7 +160,7 @@ class AddBehaviorUseCaseTest {
         val start = fixedNow - 60000
         val behaviorSlot = slot<Behavior>()
         coEvery { behaviorRepository.getByDayRange(any(), any()) } returns flowOf(emptyList())
-        every { timeSnapService.snapAndCheckConflict(any(), any(), any(), any(), any()) } returns
+        every { timeSnapService.snapAndCheckConflict(any(), any(), any(), any(), any(), any()) } returns
             SnapResult(start, start, false)
         coEvery { behaviorRepository.insert(capture(behaviorSlot), any()) } returns 1L
 
@@ -172,7 +172,7 @@ class AddBehaviorUseCaseTest {
     @Test
     fun `COMPLETED does not call endCurrentBehavior`() = runTest {
         coEvery { behaviorRepository.getByDayRange(any(), any()) } returns flowOf(emptyList())
-        every { timeSnapService.snapAndCheckConflict(any(), any(), any(), any(), any()) } returns
+        every { timeSnapService.snapAndCheckConflict(any(), any(), any(), any(), any(), any()) } returns
             SnapResult(fixedNow - 60000, fixedNow, false)
         coEvery { behaviorRepository.insert(any<Behavior>(), any()) } returns 1L
 
@@ -240,7 +240,7 @@ class AddBehaviorUseCaseTest {
     fun `sequence is 0 when no existing behaviors for the day`() = runTest {
         val behaviorSlot = slot<Behavior>()
         coEvery { behaviorRepository.getByDayRange(any(), any()) } returns flowOf(emptyList())
-        every { timeSnapService.snapAndCheckConflict(any(), any(), any(), any(), any()) } returns
+        every { timeSnapService.snapAndCheckConflict(any(), any(), any(), any(), any(), any()) } returns
             SnapResult(fixedNow, null, false)
         coEvery { behaviorRepository.insert(capture(behaviorSlot), any()) } returns 1L
 
@@ -261,7 +261,7 @@ class AddBehaviorUseCaseTest {
                 estimatedDuration = null, actualDuration = null, achievementLevel = null, wasPlanned = false),
         )
         coEvery { behaviorRepository.getByDayRange(any(), any()) } returns flowOf(existingBehaviors)
-        every { timeSnapService.snapAndCheckConflict(any(), any(), any(), any(), any()) } returns
+        every { timeSnapService.snapAndCheckConflict(any(), any(), any(), any(), any(), any()) } returns
             SnapResult(fixedNow, null, false)
         coEvery { behaviorRepository.insert(capture(behaviorSlot), any()) } returns 3L
 
@@ -281,7 +281,7 @@ class AddBehaviorUseCaseTest {
                 estimatedDuration = null, actualDuration = null, achievementLevel = null, wasPlanned = false),
         )
         coEvery { behaviorRepository.getByDayRange(any(), any()) } returns flowOf(existingBehaviors)
-        every { timeSnapService.snapAndCheckConflict(any(), any(), any(), any(), any()) } returns
+        every { timeSnapService.snapAndCheckConflict(any(), any(), any(), any(), any(), any()) } returns
             SnapResult(fixedNow, null, false)
         coEvery { behaviorRepository.insert(any<Behavior>(), any()) } returns 3L
 
@@ -294,6 +294,10 @@ class AddBehaviorUseCaseTest {
 
     @Test
     fun `edit mode calls updateBehavior and updateTagsForBehavior`() = runTest {
+        coEvery { behaviorRepository.getBehaviorsOverlappingRange(any(), any()) } returns flowOf(emptyList())
+        every { timeSnapService.snapAndCheckConflict(any(), any(), any(), any(), any(), any()) } returns
+            SnapResult(fixedNow - 5000, fixedNow, false)
+
         val result = invokeUseCase(
             tagIds = listOf(10L, 20L),
             startTime = fixedNow - 5000, endTime = fixedNow,
@@ -305,6 +309,17 @@ class AddBehaviorUseCaseTest {
         assertEquals(42L, (result as AddBehaviorUseCase.Result.Success).behaviorId)
         coVerify { behaviorRepository.updateBehavior(42L, 1L, fixedNow - 5000, fixedNow, "completed", "edited") }
         coVerify { behaviorRepository.updateTagsForBehavior(42L, listOf(10L, 20L)) }
+        // 编辑时必须忽略自身 id，避免与自己冲突
+        io.mockk.verify {
+            timeSnapService.snapAndCheckConflict(
+                newStart = fixedNow - 5000,
+                newEnd = fixedNow,
+                newStatus = BehaviorNature.COMPLETED,
+                overlappingBehaviors = any(),
+                currentTime = fixedNow,
+                ignoreBehaviorId = 42L,
+            )
+        }
     }
 
     @Test
@@ -324,6 +339,22 @@ class AddBehaviorUseCaseTest {
         assertTrue(result is AddBehaviorUseCase.Result.ValidationError)
     }
 
+    @Test
+    fun `edit mode with conflict returns Conflict result`() = runTest {
+        coEvery { behaviorRepository.getBehaviorsOverlappingRange(any(), any()) } returns flowOf(emptyList())
+        every { timeSnapService.snapAndCheckConflict(any(), any(), any(), any(), any(), any()) } returns
+            SnapResult(fixedNow - 5000, fixedNow, true)
+
+        val result = invokeUseCase(
+            startTime = fixedNow - 5000, endTime = fixedNow,
+            status = BehaviorNature.COMPLETED,
+            editBehaviorId = 42L,
+        )
+
+        assertTrue(result is AddBehaviorUseCase.Result.Conflict)
+        coVerify(exactly = 0) { behaviorRepository.updateBehavior(any(), any(), any(), any(), any(), any()) }
+    }
+
     // --- Actual duration ---
 
     @Test
@@ -332,7 +363,7 @@ class AddBehaviorUseCaseTest {
         val end = fixedNow
         val behaviorSlot = slot<Behavior>()
         coEvery { behaviorRepository.getByDayRange(any(), any()) } returns flowOf(emptyList())
-        every { timeSnapService.snapAndCheckConflict(any(), any(), any(), any(), any()) } returns
+        every { timeSnapService.snapAndCheckConflict(any(), any(), any(), any(), any(), any()) } returns
             SnapResult(start, end, false)
         coEvery { behaviorRepository.insert(capture(behaviorSlot), any()) } returns 1L
 
@@ -346,7 +377,7 @@ class AddBehaviorUseCaseTest {
         val start = fixedNow - 30000
         val behaviorSlot = slot<Behavior>()
         coEvery { behaviorRepository.getByDayRange(any(), any()) } returns flowOf(emptyList())
-        every { timeSnapService.snapAndCheckConflict(any(), any(), any(), any(), any()) } returns
+        every { timeSnapService.snapAndCheckConflict(any(), any(), any(), any(), any(), any()) } returns
             SnapResult(start, null, false)
         coEvery { behaviorRepository.insert(capture(behaviorSlot), any()) } returns 1L
 
@@ -376,7 +407,7 @@ class AddBehaviorUseCaseTest {
                 estimatedDuration = null, actualDuration = null, achievementLevel = null, wasPlanned = false),
         )
         coEvery { behaviorRepository.getByDayRange(any(), any()) } returns flowOf(existingBehaviors)
-        every { timeSnapService.snapAndCheckConflict(any(), any(), any(), any(), any()) } returns
+        every { timeSnapService.snapAndCheckConflict(any(), any(), any(), any(), any(), any()) } returns
             SnapResult(fixedNow, null, false)
         coEvery { behaviorRepository.insert(any<Behavior>(), any()) } returns 2L
 
@@ -390,7 +421,7 @@ class AddBehaviorUseCaseTest {
     @Test
     fun `empty tagIds list creates behavior without tags`() = runTest {
         coEvery { behaviorRepository.getByDayRange(any(), any()) } returns flowOf(emptyList())
-        every { timeSnapService.snapAndCheckConflict(any(), any(), any(), any(), any()) } returns
+        every { timeSnapService.snapAndCheckConflict(any(), any(), any(), any(), any(), any()) } returns
             SnapResult(fixedNow, null, false)
         coEvery { behaviorRepository.insert(any<Behavior>(), emptyList()) } returns 1L
 
@@ -402,7 +433,7 @@ class AddBehaviorUseCaseTest {
     @Test
     fun `COMPLETED with endTime equal to now is valid`() = runTest {
         coEvery { behaviorRepository.getByDayRange(any(), any()) } returns flowOf(emptyList())
-        every { timeSnapService.snapAndCheckConflict(any(), any(), any(), any(), any()) } returns
+        every { timeSnapService.snapAndCheckConflict(any(), any(), any(), any(), any(), any()) } returns
             SnapResult(fixedNow - 60000, fixedNow, false)
         coEvery { behaviorRepository.insert(any<Behavior>(), any()) } returns 1L
 
@@ -417,7 +448,7 @@ class AddBehaviorUseCaseTest {
     @Test
     fun `ACTIVE with startTime equal to now is valid`() = runTest {
         coEvery { behaviorRepository.getByDayRange(any(), any()) } returns flowOf(emptyList())
-        every { timeSnapService.snapAndCheckConflict(any(), any(), any(), any(), any()) } returns
+        every { timeSnapService.snapAndCheckConflict(any(), any(), any(), any(), any(), any()) } returns
             SnapResult(fixedNow, null, false)
         coEvery { behaviorRepository.insert(any<Behavior>(), any()) } returns 1L
 

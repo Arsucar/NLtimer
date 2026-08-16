@@ -60,14 +60,18 @@ class GetDailySummaryTool @Inject constructor(
     )
 
     override suspend fun execute(args: Map<String, Any?>): ToolResult {
-        return runCatching {
-            val dateStr = (args["date"] as? String)?.takeIf { it.isNotBlank() }
-            val date = if (dateStr != null) {
+        val dateStr = (args["date"] as? String)?.takeIf { it.isNotBlank() }
+        val date = if (dateStr != null) {
+            try {
                 LocalDate.parse(dateStr)
-            } else {
-                LocalDate.now()
+            } catch (_: java.time.format.DateTimeParseException) {
+                return ToolResult.Error(name, ToolError.ValidationError("date 格式错误，应为 YYYY-MM-DD: $dateStr"))
             }
+        } else {
+            LocalDate.now()
+        }
 
+        return runCatching {
             val zone = ZoneId.systemDefault()
             val dayStart = date.atStartOfDay(zone).toInstant().toEpochMilli()
             val dayEnd = date.atTime(23, 59, 59).atZone(zone).toInstant().toEpochMilli()
@@ -97,18 +101,18 @@ class GetDailySummaryTool @Inject constructor(
                 }
                 val durationMinutes = (durationMs / 60_000).toInt().coerceAtLeast(0)
 
-        groupedStats[b.activityId] = groupedStats[b.activityId]?.let {
-            it.copy(
-                durationMinutes = it.durationMinutes + durationMinutes,
-                behaviorCount = it.behaviorCount + 1,
-            )
-        } ?: ActivityStats(
-            activityId = b.activityId,
-            activityName = bwd.activity.name,
-            iconKey = bwd.activity.iconKey,
-            durationMinutes = durationMinutes,
-            behaviorCount = 1,
-        )
+                groupedStats[b.activityId] = groupedStats[b.activityId]?.let {
+                    it.copy(
+                        durationMinutes = it.durationMinutes + durationMinutes,
+                        behaviorCount = it.behaviorCount + 1,
+                    )
+                } ?: ActivityStats(
+                    activityId = b.activityId,
+                    activityName = bwd.activity.name,
+                    iconKey = bwd.activity.iconKey,
+                    durationMinutes = durationMinutes,
+                    behaviorCount = 1,
+                )
             }
 
             // 构建 JSON

@@ -83,7 +83,7 @@ internal fun HtmlInlineAsComposable(node: Node, onClickCitation: (String) -> Uni
                 tag == "img" -> {
                     val src = node.attr("src")
                     val alt = node.attr("alt")
-                    if (src.isNotEmpty()) {
+                    if (src.isNotEmpty() && isSafeImageSource(src)) {
                         ZoomableAsyncImage(
                             model = src,
                             contentDescription = alt.takeIf { it.isNotEmpty() },
@@ -214,7 +214,7 @@ internal fun AnnotatedString.Builder.appendHtmlInlineElement(
 
         "a" -> {
             val href = element.attr("href")
-            if (href.isNotEmpty()) {
+            if (href.isNotEmpty() && isSafeWebLink(href)) {
                 val linkStyle = SpanStyle(
                     color = colorScheme.primary,
                     textDecoration = TextDecoration.Underline,
@@ -225,6 +225,7 @@ internal fun AnnotatedString.Builder.appendHtmlInlineElement(
                     }
                 }
             } else {
+                // 仅对安全协议渲染为可点击链接；其余（javascript:/file:/content: 等）按纯文本输出
                 appendElementChildren()
             }
         }
@@ -262,6 +263,28 @@ private fun SpanStyle.asTextStyle(): TextStyle {
         textDecoration = textDecoration,
     )
 }
+
+/**
+ * 判断链接协议是否安全。仅 http/https/mailto/tel 渲染为可点击链接，
+ * 其余协议（javascript:/file:/content:/intent: 等）按纯文本处理，避免越权拉起应用。
+ */
+internal fun isSafeWebLink(href: String): Boolean {
+    val scheme = href.trim().substringBefore(':').lowercase()
+    return scheme in SAFE_LINK_SCHEMES
+}
+
+/**
+ * 判断图片地址是否允许加载。仅 http/https 或相对路径（无协议前缀）允许，
+ * 防止 prompt 注入的 file:/content:/data: 等本地资源被 Coil 读取。
+ */
+internal fun isSafeImageSource(src: String): Boolean {
+    val trimmed = src.trim()
+    val scheme = trimmed.substringBefore(':').lowercase()
+    return scheme in SAFE_IMAGE_SCHEMES || !trimmed.contains(':')
+}
+
+private val SAFE_LINK_SCHEMES = setOf("http", "https", "mailto", "tel")
+private val SAFE_IMAGE_SCHEMES = setOf("http", "https")
 
 internal fun buildFontTagStyle(
     element: Element,

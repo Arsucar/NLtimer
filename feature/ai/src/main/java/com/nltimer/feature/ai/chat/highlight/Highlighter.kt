@@ -20,17 +20,12 @@ import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import java.util.concurrent.Executors
+import java.util.concurrent.RejectedExecutionException
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 class Highlighter(ctx: Context) {
     private val executor = Executors.newSingleThreadExecutor()
-
-    init {
-        executor.submit {
-            context
-        }
-    }
 
     private val script: String by lazy {
         ctx.assets.open("prism.js").bufferedReader().use {
@@ -48,9 +43,13 @@ class Highlighter(ctx: Context) {
         context.globalObject.getJSFunction("highlight")
     }
 
+    @Volatile
+    private var destroyed = false
+
     suspend fun highlight(code: String, language: String) =
         suspendCancellableCoroutine { continuation ->
             executor.submit {
+                if (destroyed) return@submit
                 runCatching {
                     val result = highlightFn.call(code, language)
                     require(result is QuickJSArray) {
@@ -77,7 +76,9 @@ class Highlighter(ctx: Context) {
                         }
                     }
                     result.release()
-                    continuation.resume(tokens)
+                    if (continuation.isActive) {
+                        continuation.resume(tokens)
+                    }
                 }.onFailure {
                     it.printStackTrace()
                     if (continuation.isActive) {
@@ -88,7 +89,15 @@ class Highlighter(ctx: Context) {
         }
 
     fun destroy() {
-        context.destroy()
+        if (destroyed) return
+        destroyed = true
+        // 单线程池先执行完已排队的任务，再执行销毁任务，避免与进行中的高亮任务竞争
+        try {
+            executor.execute { runCatching { context.destroy() } }
+            executor.shutdown()
+        } catch (_: RejectedExecutionException) {
+            runCatching { context.destroy() }
+        }
     }
 }
 

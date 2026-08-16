@@ -4,6 +4,7 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nltimer.core.data.model.ExportData
@@ -58,6 +59,7 @@ class DataManagementViewModel @Inject constructor(
                 _uiState.update { it.copy(isExporting = false, pendingExportData = data) }
                 _exportEvents.tryEmit(ExportEvent(data, scope))
             } catch (e: Exception) {
+                Log.e("DataManagement", "Export failed", e)
                 _uiState.update {
                     it.copy(isExporting = false, snackbarMessage = "导出失败")
                 }
@@ -75,6 +77,7 @@ class DataManagementViewModel @Inject constructor(
                 }
                 _uiState.update { it.copy(pendingExportData = null, snackbarMessage = "数据已导出") }
             } catch (e: Exception) {
+                Log.e("DataManagement", "Write export file failed", e)
                 _uiState.update { it.copy(snackbarMessage = "导出失败") }
             }
         }
@@ -89,6 +92,7 @@ class DataManagementViewModel @Inject constructor(
                 val data = json.decodeFromString(ExportData.serializer(), content)
                 _uiState.update { it.copy(pendingImportData = data) }
             } catch (e: Exception) {
+                Log.e("DataManagement", "Parse import file failed", e)
                 _uiState.update { it.copy(snackbarMessage = "文件格式无效") }
             }
         }
@@ -139,6 +143,7 @@ class DataManagementViewModel @Inject constructor(
                     it.copy(isExporting = false, snackbarMessage = "已复制到剪贴板")
                 }
             } catch (e: Exception) {
+                Log.e("DataManagement", "Export to clipboard failed", e)
                 _uiState.update {
                     it.copy(isExporting = false, snackbarMessage = "导出到剪贴板失败")
                 }
@@ -156,6 +161,7 @@ class DataManagementViewModel @Inject constructor(
                 val data = json.decodeFromString(ExportData.serializer(), content)
                 _uiState.update { it.copy(pendingImportData = data) }
             } catch (e: Exception) {
+                Log.e("DataManagement", "Parse clipboard import failed", e)
                 _uiState.update {
                     it.copy(snackbarMessage = "剪贴板数据格式无效", pendingImportScope = null)
                 }

@@ -88,6 +88,13 @@ internal fun LineBarChart(
         val barHeight = chartHeight * 0.55f
         val dotRadius = 4.dp.toPx()
 
+        val labelPaint = android.graphics.Paint().apply {
+            textAlign = android.graphics.Paint.Align.CENTER
+            textSize = 11.dp.toPx()
+            color = labelColor.hashCode()
+            alpha = 180
+        }
+
         val barPoints = mutableListOf<Offset>()
         for (i in values.indices) {
             val x = barSpacing + i * (totalBarWidth + barSpacing) + totalBarWidth / 2f
@@ -109,12 +116,7 @@ internal fun LineBarChart(
                 labels[i],
                 x,
                 size.height,
-                android.graphics.Paint().apply {
-                    textAlign = android.graphics.Paint.Align.CENTER
-                    textSize = 11.dp.toPx()
-                    color = labelColor.hashCode()
-                    alpha = 180
-                },
+                labelPaint,
             )
         }
 

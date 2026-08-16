@@ -18,7 +18,7 @@ import com.nltimer.core.data.model.BehaviorNature
  * @param newEnd 新行为结束时间，null 表示未结束
  * @param newStatus 新行为状态
  * @param existingBehaviors 已有行为列表
- * @param currentTime 当前时间，用于计算 ACTIVE 行为的结束时间
+ * @param currentTime 保留参数以兼容命名调用；ACTIVE 按设计视为 [start, +∞)，不使用 now 截断
  * @param ignoreBehaviorId 需要忽略的行为 ID（编辑场景使用，新增时传 null）
  * @return true 表示存在冲突
  */
@@ -27,9 +27,11 @@ fun hasTimeConflict(
     newEnd: Long?,
     newStatus: BehaviorNature,
     existingBehaviors: List<Behavior>,
+    @Suppress("UnusedParameter")
     currentTime: Long = System.currentTimeMillis(),
     ignoreBehaviorId: Long? = null,
 ): Boolean {
+    // currentTime 未使用：ACTIVE 设计为 [start, +∞)，保留参数避免破坏调用方命名参数
     if (newStatus == BehaviorNature.PENDING) return false
     if (newStart <= 0L) return false
 

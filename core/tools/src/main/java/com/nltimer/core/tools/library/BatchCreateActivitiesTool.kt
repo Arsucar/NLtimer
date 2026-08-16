@@ -229,7 +229,6 @@ class BatchCreateActivitiesTool @Inject constructor(
     )
 
     private companion object {
-        const val MAX_BATCH_SIZE = 20
         const val DEFAULT_GROUP_NAME = "预制菜"
     }
 }

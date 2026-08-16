@@ -16,6 +16,8 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.reflect.KClass
 import kotlinx.coroutines.flow.first
+import org.json.JSONArray
+import org.json.JSONObject
 
 @Singleton
 class ProcessNoteTool @Inject constructor(
@@ -30,7 +32,7 @@ class ProcessNoteTool @Inject constructor(
         "解析用户备注文本，自动匹配或创建活动和标签。支持 @活动名、#标签名 指令和关键词匹配。"
     override val category: ToolCategory = ToolCategory.SEARCH
     override val accessLevel: AccessLevel = AccessLevel.WRITE
-    override val returnType: KClass<*> = Map::class
+    override val returnType: KClass<*> = String::class
 
     override val parameters: List<ToolParameter> = listOf(
         ToolParameter(
@@ -56,17 +58,18 @@ class ProcessNoteTool @Inject constructor(
         val finalActivityId = directive.lastActivityId ?: scan.activityId
         val finalTagIds = (directive.addedTagIds + scan.tagIds).toList()
 
+        val result = JSONObject().apply {
+            put("activityId", finalActivityId ?: JSONObject.NULL)
+            put("tagIds", JSONArray(finalTagIds))
+            put("cleanedNote", parsed.cleanedNote)
+            put("createdActivities", JSONArray(directive.createdActivityNames))
+            put("createdTags", JSONArray(directive.createdTagNames))
+            put("matchedActivities", JSONArray(directive.matchedActivityNames))
+            put("matchedTags", JSONArray(directive.matchedTagNames))
+        }
         return ToolResult.Success(
             name = name,
-            data = mapOf(
-                "activityId" to finalActivityId,
-                "tagIds" to finalTagIds,
-                "cleanedNote" to parsed.cleanedNote,
-                "createdActivities" to directive.createdActivityNames,
-                "createdTags" to directive.createdTagNames,
-                "matchedActivities" to directive.matchedActivityNames,
-                "matchedTags" to directive.matchedTagNames,
-            ),
+            data = result.toString(),
         )
     }
 

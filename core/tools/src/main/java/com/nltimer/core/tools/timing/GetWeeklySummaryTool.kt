@@ -14,6 +14,7 @@ import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.temporal.TemporalAdjusters
+import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.reflect.KClass
@@ -42,12 +43,20 @@ class GetWeeklySummaryTool @Inject constructor(
     )
 
     override suspend fun execute(args: Map<String, Any?>): ToolResult {
-        return runCatching {
-            val dateStr = (args["date"] as? String)?.takeIf { it.isNotBlank() }
-            val refDate = if (dateStr != null) LocalDate.parse(dateStr) else LocalDate.now()
-            val weekStart = refDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
-            val weekEnd = weekStart.plusDays(6)
+        val dateStr = (args["date"] as? String)?.takeIf { it.isNotBlank() }
+        val refDate = if (dateStr != null) {
+            try {
+                LocalDate.parse(dateStr)
+            } catch (_: java.time.format.DateTimeParseException) {
+                return ToolResult.Error(name, ToolError.ValidationError("date 格式错误，应为 YYYY-MM-DD: $dateStr"))
+            }
+        } else {
+            LocalDate.now()
+        }
+        val weekStart = refDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+        val weekEnd = weekStart.plusDays(6)
 
+        return runCatching {
             val zone = ZoneId.systemDefault()
             val startMs = weekStart.atStartOfDay(zone).toInstant().toEpochMilli()
             val endMs = weekEnd.atTime(23, 59, 59).atZone(zone).toInstant().toEpochMilli()
@@ -70,18 +79,18 @@ class GetWeeklySummaryTool @Inject constructor(
                 dailyMap.getOrPut(day) { mutableListOf() }
                     .add(DayBehavior(b.activityId, bwd.activity.name, bwd.activity.iconKey, durationMinutes))
 
-        activityTotals[b.activityId] = activityTotals[b.activityId]?.let {
-            it.copy(
-                durationMinutes = it.durationMinutes + durationMinutes,
-                count = it.count + 1,
-            )
-        } ?: ActivityTotal(
-            activityId = b.activityId,
-            activityName = bwd.activity.name,
-            iconKey = bwd.activity.iconKey,
-            durationMinutes = durationMinutes,
-            count = 1,
-        )
+                activityTotals[b.activityId] = activityTotals[b.activityId]?.let {
+                    it.copy(
+                        durationMinutes = it.durationMinutes + durationMinutes,
+                        count = it.count + 1,
+                    )
+                } ?: ActivityTotal(
+                    activityId = b.activityId,
+                    activityName = bwd.activity.name,
+                    iconKey = bwd.activity.iconKey,
+                    durationMinutes = durationMinutes,
+                    count = 1,
+                )
             }
 
             val daysArr = JSONArray()
@@ -124,7 +133,7 @@ class GetWeeklySummaryTool @Inject constructor(
                 put("weekStart", weekStart.toString())
                 put("weekEnd", weekEnd.toString())
                 put("totalMinutes", weekTotalMinutes)
-                put("totalHours", String.format("%.1f", weekTotalMinutes / 60.0))
+                put("totalHours", String.format(Locale.US, "%.1f", weekTotalMinutes / 60.0))
                 put("dailyBreakdown", daysArr)
                 put("activityBreakdown", activityArr)
             }

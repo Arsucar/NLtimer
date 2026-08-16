@@ -16,6 +16,8 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.reflect.KClass
 import kotlinx.coroutines.flow.first
+import org.json.JSONArray
+import org.json.JSONObject
 
 /**
  * 工具：**搜索** 模式 —— substring（子串）匹配活动 / 标签
@@ -46,7 +48,7 @@ class SearchActivitiesAndTagsTool @Inject constructor(
         "搜索（substring 子串）：输入「天」会同时命中今天 / 明天 / 后天；适合搜索框，不适合候选选择"
     override val category: ToolCategory = ToolCategory.SEARCH
     override val accessLevel: AccessLevel = AccessLevel.READ
-    override val returnType: KClass<*> = Map::class
+    override val returnType: KClass<*> = String::class
 
     override val parameters: List<ToolParameter> = listOf(
         ToolParameter(
@@ -114,11 +116,11 @@ class SearchActivitiesAndTagsTool @Inject constructor(
                 }
                 source.mapNotNull { activity ->
                     matchItem(matcher, activity.keywords, activity.name)?.let { field ->
-                        mapOf(
-                            "id" to activity.id,
-                            "name" to activity.name,
-                            "matchedField" to field,
-                        )
+                        JSONObject().apply {
+                            put("id", activity.id)
+                            put("name", activity.name)
+                            put("matchedField", field)
+                        }
                     }
                 }
             }
@@ -133,24 +135,25 @@ class SearchActivitiesAndTagsTool @Inject constructor(
                 }
                 source.mapNotNull { tag ->
                     matchItem(matcher, tag.keywords, tag.name)?.let { field ->
-                        mapOf(
-                            "id" to tag.id,
-                            "name" to tag.name,
-                            "matchedField" to field,
-                        )
+                        JSONObject().apply {
+                            put("id", tag.id)
+                            put("name", tag.name)
+                            put("matchedField", field)
+                        }
                     }
                 }
             }
 
+            val result = JSONObject().apply {
+                put("query", query)
+                put("useRegex", useRegex)
+                put("mode", "search")
+                put("activities", JSONArray(matchedActivities))
+                put("tags", JSONArray(matchedTags))
+            }
             ToolResult.Success(
                 name = name,
-                data = mapOf(
-                    "query" to query,
-                    "useRegex" to useRegex,
-                    "mode" to "search",
-                    "activities" to matchedActivities,
-                    "tags" to matchedTags,
-                ),
+                data = result.toString(),
             )
         }.getOrElse { e ->
             ToolResult.Error(name, ToolError.InternalError(e.message ?: "匹配失败"))
@@ -168,7 +171,7 @@ class SearchActivitiesAndTagsTool @Inject constructor(
             val options = if (caseSensitive) emptySet() else setOf(RegexOption.IGNORE_CASE)
             val regex = try {
                 Regex(query, options)
-            } catch (e: Exception) {
+            } catch (e: IllegalArgumentException) {
                 throw IllegalArgumentException("正则解析失败: ${e.message}")
             }
             FieldMatcher { candidate -> regex.containsMatchIn(candidate) }

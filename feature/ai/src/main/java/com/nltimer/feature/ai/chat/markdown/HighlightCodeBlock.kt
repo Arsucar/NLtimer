@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
@@ -34,6 +35,10 @@ fun HighlightCodeBlock(
 ) {
     val context = LocalContext.current
     val highlighter = remember { Highlighter(context) }
+    // 代码块离开组合时释放单线程池与 QuickJS 上下文，避免每次滚动都泄漏线程
+    DisposableEffect(highlighter) {
+        onDispose { highlighter.destroy() }
+    }
     val tokens by produceState<List<com.nltimer.feature.ai.chat.highlight.HighlightToken>>(emptyList(), code, language) {
         value = try {
             highlighter.highlight(code, language)

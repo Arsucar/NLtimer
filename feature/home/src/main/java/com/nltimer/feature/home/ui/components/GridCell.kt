@@ -60,7 +60,6 @@ fun GridCell(
 
     val backgroundColor = when {
         cell.isCurrent -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = styledAlpha(gridStyle.activeBgAlpha))
-        isPlatinum -> MaterialTheme.colorScheme.surfaceContainerLow
         else -> MaterialTheme.colorScheme.surfaceContainerLow
     }
 

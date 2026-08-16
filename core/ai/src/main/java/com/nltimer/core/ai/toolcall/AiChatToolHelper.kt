@@ -108,8 +108,11 @@ object AiChatToolHelper {
         put("content", content)
         putJsonArray("tool_calls") {
             toolBuffers.toSortedMap().forEach { (_, buf) ->
+                // 模型未下发 id 时，在此统一分配并写回 buffer，
+                // 保证 assistant tool_calls 的 id 与后续 tool 回执的 tool_call_id 一致。
+                val callId = buf.id ?: "call_${System.nanoTime()}".also { buf.id = it }
                 add(buildJsonObject {
-                    put("id", buf.id ?: "")
+                    put("id", callId)
                     put("type", "function")
                     putJsonObject("function") {
                         put("name", buf.name ?: "")

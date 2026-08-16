@@ -8,17 +8,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
-import com.nltimer.core.data.model.Behavior
 import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.model.DialogGridConfig
 import com.nltimer.core.data.model.SecondsStrategy
-import com.nltimer.core.data.util.hasTimeConflict
 import com.nltimer.core.designsystem.component.DragMenuState
 import com.nltimer.core.designsystem.theme.PathDrawMode
 import com.nltimer.core.tools.match.NoteScanResult
 import java.time.Duration
 import java.time.LocalDateTime
-import java.time.ZoneId
 
 @Suppress("LongParameterList")
 @Composable
@@ -30,7 +27,6 @@ internal fun rememberAddBehaviorState(
     initialTagIds: List<Long>,
     initialNote: String?,
     editBehaviorId: Long?,
-    existingBehaviors: List<Behavior>,
     dialogConfig: DialogGridConfig,
     initialEstimatedDurationMs: Long? = null,
 ): AddBehaviorState {
@@ -42,7 +38,6 @@ internal fun rememberAddBehaviorState(
         initialTagIds,
         initialNote,
         editBehaviorId,
-        existingBehaviors,
         dialogConfig,
         initialEstimatedDurationMs,
     ) {
@@ -54,7 +49,6 @@ internal fun rememberAddBehaviorState(
             initialTagIds = initialTagIds,
             initialNote = initialNote,
             editBehaviorId = editBehaviorId,
-            existingBehaviors = existingBehaviors,
             dialogConfig = dialogConfig,
             initialEstimatedDurationMs = initialEstimatedDurationMs,
         )
@@ -73,7 +67,6 @@ internal class AddBehaviorState(
     initialTagIds: List<Long>,
     initialNote: String?,
     private val editBehaviorId: Long?,
-    private val existingBehaviors: List<Behavior>,
     dialogConfig: DialogGridConfig,
     initialEstimatedDurationMs: Long? = null,
 ) {
@@ -113,28 +106,8 @@ internal class AddBehaviorState(
 
     var estimatedDurationMs by mutableStateOf(initialEstimatedDurationMs)
 
-    val hasTimeConflict: Boolean by derivedStateOf {
-        if (mode == BehaviorNature.PENDING) return@derivedStateOf false
-        val nowEpoch = System.currentTimeMillis()
-        val startEpoch = startTime
-            .atZone(ZoneId.systemDefault())
-            .toInstant()
-            .toEpochMilli()
-        val endEpoch = if (mode == BehaviorNature.COMPLETED) {
-            endTime
-                .atZone(ZoneId.systemDefault())
-                .toInstant()
-                .toEpochMilli()
-        } else null
-        hasTimeConflict(
-            newStart = startEpoch,
-            newEnd = endEpoch,
-            newStatus = mode,
-            existingBehaviors = existingBehaviors,
-            currentTime = nowEpoch,
-            ignoreBehaviorId = editBehaviorId,
-        )
-    }
+    // 时间冲突由 AddBehaviorUseCase 在确认时校验并返回 errorMessage；
+    // 此处不再维护未消费的 hasTimeConflict derivedState。
 
     var showAddActivityDialog by mutableStateOf(false)
     var showAddTagDialog by mutableStateOf(false)

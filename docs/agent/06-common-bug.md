@@ -57,3 +57,38 @@
 - 编译构建
 **若已有报错则参考修复方式**：
 - 请手动指定文件 `local.properties` 中添加 `sdk.dir=D\:\\por\\10_Library\\App_AndroidStudio_sdk`
+
+## 5. BehaviorNature 写入 DB 必须用 `.key` 而非 `.name`
+
+**出现时机**：工具或 Repository 调用 `setStatus(id, status)` / 写 status 字符串时。
+
+**现象**：`BehaviorNature.ACTIVE.name` 写入 `"ACTIVE"`（大写），但 DAO 查询使用小写 `'active'`；激活后的目标对 `getCurrentBehavior` / `endBehavior` 不可见。
+
+**避免方式**：
+- 统一使用 `BehaviorNature.xxx.key`（或项目约定的小写 key）写入与比较
+- 禁止 `enum.name` 直接落库
+
+## 6. ActivityTagBinding 的 source 方向
+
+**出现时机**：导入/创建活动侧标签绑定时。
+
+**现象**：默认 `source="tag"` 时，活动侧查询（`getByActivityId` / `getTagIdsForActivitySync` 过滤 `source='activity'`）读不到绑定，导入后活动标签在 UI/工具中静默消失。
+
+**避免方式**：
+- 活动侧绑定必须显式 `source="activity"`
+- 标签侧绑定使用 `source="tag"`
+- 导入四条路径（SMART/REPLACE 等）需统一设置
+
+## 7. Flow catch 不可吞掉 CancellationException
+
+**出现时机**：ViewModel 中 `flow.catch { }` 或 `try/catch (Exception)` 包住 `flatMapLatest` / 可取消协程。
+
+**现象**：快速切换时间范围等场景下，取消信号被吞掉，旧任务继续更新 UI 或异常状态。
+
+**避免方式**：
+```kotlin
+catch (e: Exception) {
+    if (e is CancellationException) throw e
+    // 处理业务异常
+}
+```

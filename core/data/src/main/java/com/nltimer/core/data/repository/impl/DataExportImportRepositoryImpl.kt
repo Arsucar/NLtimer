@@ -141,49 +141,53 @@ class DataExportImportRepositoryImpl @Inject constructor(
         val tags = data.tags ?: emptyList()
         val activities = data.activities ?: emptyList()
 
-        val groupNameToId = mutableMapOf<String, Long>()
-        for (group in groups) {
-            val existing = activityGroupDao.getByName(group.name)
-            if (existing != null) {
-                val merged = existing.mergeFrom(group)
-                activityGroupDao.update(merged)
-                groupNameToId[group.name] = existing.id
-            } else {
-                val id = activityGroupDao.insert(group.toEntity())
-                groupNameToId[group.name] = id
-            }
-        }
-
-        val tagNameToId = mutableMapOf<String, Long>()
-        for (tag in tags) {
-            val existing = tagDao.getByName(tag.name)
-            if (existing != null) {
-                val merged = existing.mergeFrom(tag)
-                tagDao.update(merged)
-                tagNameToId[tag.name] = existing.id
-            } else {
-                val id = tagDao.insert(tag.toEntity())
-                tagNameToId[tag.name] = id
-            }
-        }
-
-        val activityTagBindings = mutableListOf<ActivityTagBindingEntity>()
-        for (activity in activities) {
-            val groupId = activity.groupName?.let { groupNameToId[it] }
-            val existing = activityDao.getByName(activity.name)
-            if (existing != null) {
-                val merged = existing.mergeFrom(activity, groupId)
-                activityDao.update(merged)
-            } else {
-                val id = activityDao.insert(activity.toEntity(groupId))
-                val tagIds = activity.tagNames.mapNotNull { tagNameToId[it] }
-                for (tagId in tagIds) {
-                    activityTagBindings.add(ActivityTagBindingEntity(activityId = id, tagId = tagId))
+        database.withTransaction {
+            val groupNameToId = mutableMapOf<String, Long>()
+            for (group in groups) {
+                val existing = activityGroupDao.getByName(group.name)
+                if (existing != null) {
+                    val merged = existing.mergeFrom(group)
+                    activityGroupDao.update(merged)
+                    groupNameToId[group.name] = existing.id
+                } else {
+                    val id = activityGroupDao.insert(group.toEntity())
+                    groupNameToId[group.name] = id
                 }
             }
-        }
-        if (activityTagBindings.isNotEmpty()) {
-            behaviorDao.insertActivityTagBindings(activityTagBindings)
+
+            val tagNameToId = mutableMapOf<String, Long>()
+            for (tag in tags) {
+                val existing = tagDao.getByName(tag.name)
+                if (existing != null) {
+                    val merged = existing.mergeFrom(tag)
+                    tagDao.update(merged)
+                    tagNameToId[tag.name] = existing.id
+                } else {
+                    val id = tagDao.insert(tag.toEntity())
+                    tagNameToId[tag.name] = id
+                }
+            }
+
+            val activityTagBindings = mutableListOf<ActivityTagBindingEntity>()
+            for (activity in activities) {
+                val groupId = activity.groupName?.let { groupNameToId[it] }
+                val existing = activityDao.getByName(activity.name)
+                if (existing != null) {
+                    val merged = existing.mergeFrom(activity, groupId)
+                    activityDao.update(merged)
+                } else {
+                    val id = activityDao.insert(activity.toEntity(groupId))
+                    val tagIds = activity.tagNames.mapNotNull { tagNameToId[it] }
+                    for (tagId in tagIds) {
+                        activityTagBindings.add(
+                            ActivityTagBindingEntity(activityId = id, tagId = tagId, source = "activity")
+                        )
+                    }
+                }
+            }
+            if (activityTagBindings.isNotEmpty()) {
+                behaviorDao.insertActivityTagBindings(activityTagBindings)
+            }
         }
 
         return ImportResult.Success(
@@ -224,7 +228,9 @@ class DataExportImportRepositoryImpl @Inject constructor(
                 val id = activityDao.insert(activity.toEntity(groupId))
                 val tagIds = activity.tagNames.mapNotNull { tagNameToId[it] }
                 for (tagId in tagIds) {
-                    activityTagBindings.add(ActivityTagBindingEntity(activityId = id, tagId = tagId))
+                    activityTagBindings.add(
+                        ActivityTagBindingEntity(activityId = id, tagId = tagId, source = "activity")
+                    )
                 }
             }
             if (activityTagBindings.isNotEmpty()) {
@@ -241,31 +247,35 @@ class DataExportImportRepositoryImpl @Inject constructor(
     }
 
     private suspend fun importActivitiesSmart(activities: List<ExportedActivity>): ImportResult {
-        val groups = activityGroupDao.getAllSync()
-        val groupNameToId = groups.associate { it.name to it.id }
-
-        val tags = tagDao.getAllDistinctSync()
-        val tagNameToId = tags.associate { it.name to it.id }
-
-        val activityTagBindings = mutableListOf<ActivityTagBindingEntity>()
         var imported = 0
-        for (activity in activities) {
-            val groupId = activity.groupName?.let { groupNameToId[it] }
-            val existing = activityDao.getByName(activity.name)
-            if (existing != null) {
-                val merged = existing.mergeFrom(activity, groupId)
-                activityDao.update(merged)
-            } else {
-                val id = activityDao.insert(activity.toEntity(groupId))
-                val tagIds = activity.tagNames.mapNotNull { tagNameToId[it] }
-                for (tagId in tagIds) {
-                    activityTagBindings.add(ActivityTagBindingEntity(activityId = id, tagId = tagId))
+        database.withTransaction {
+            val groups = activityGroupDao.getAllSync()
+            val groupNameToId = groups.associate { it.name to it.id }
+
+            val tags = tagDao.getAllDistinctSync()
+            val tagNameToId = tags.associate { it.name to it.id }
+
+            val activityTagBindings = mutableListOf<ActivityTagBindingEntity>()
+            for (activity in activities) {
+                val groupId = activity.groupName?.let { groupNameToId[it] }
+                val existing = activityDao.getByName(activity.name)
+                if (existing != null) {
+                    val merged = existing.mergeFrom(activity, groupId)
+                    activityDao.update(merged)
+                } else {
+                    val id = activityDao.insert(activity.toEntity(groupId))
+                    val tagIds = activity.tagNames.mapNotNull { tagNameToId[it] }
+                    for (tagId in tagIds) {
+                        activityTagBindings.add(
+                            ActivityTagBindingEntity(activityId = id, tagId = tagId, source = "activity")
+                        )
+                    }
+                    imported++
                 }
-                imported++
             }
-        }
-        if (activityTagBindings.isNotEmpty()) {
-            behaviorDao.insertActivityTagBindings(activityTagBindings)
+            if (activityTagBindings.isNotEmpty()) {
+                behaviorDao.insertActivityTagBindings(activityTagBindings)
+            }
         }
 
         return ImportResult.Success(activitiesImported = imported)
@@ -288,7 +298,9 @@ class DataExportImportRepositoryImpl @Inject constructor(
                 val id = activityDao.insert(activity.toEntity(groupId))
                 val tagIds = activity.tagNames.mapNotNull { tagNameToId[it] }
                 for (tagId in tagIds) {
-                    activityTagBindings.add(ActivityTagBindingEntity(activityId = id, tagId = tagId))
+                    activityTagBindings.add(
+                        ActivityTagBindingEntity(activityId = id, tagId = tagId, source = "activity")
+                    )
                 }
             }
             if (activityTagBindings.isNotEmpty()) {
@@ -301,14 +313,16 @@ class DataExportImportRepositoryImpl @Inject constructor(
 
     private suspend fun importTagsSmart(tags: List<ExportedTag>): ImportResult {
         var imported = 0
-        for (tag in tags) {
-            val existing = tagDao.getByName(tag.name)
-            if (existing != null) {
-                val merged = existing.mergeFrom(tag)
-                tagDao.update(merged)
-            } else {
-                tagDao.insert(tag.toEntity())
-                imported++
+        database.withTransaction {
+            for (tag in tags) {
+                val existing = tagDao.getByName(tag.name)
+                if (existing != null) {
+                    val merged = existing.mergeFrom(tag)
+                    tagDao.update(merged)
+                } else {
+                    tagDao.insert(tag.toEntity())
+                    imported++
+                }
             }
         }
         return ImportResult.Success(tagsImported = imported)
@@ -332,7 +346,8 @@ class DataExportImportRepositoryImpl @Inject constructor(
         val activityIds = behaviors.map { it.activityId }.toSet()
         val groups = activityGroupDao.getAllSync()
         val groupIdToName = groups.associate { it.id to it.name }
-        val activities = activityIds.mapNotNull { activityDao.getById(it) }
+        val activityById = activityDao.getByIds(activityIds.toList()).associateBy { it.id }
+        val activities = activityIds.mapNotNull { activityById[it] }
         val involvedGroupIds = activities.mapNotNull { it.groupId }.toSet()
         val involvedGroups = groups.filter { it.id in involvedGroupIds }
 

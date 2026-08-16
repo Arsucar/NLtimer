@@ -156,7 +156,8 @@ class BehaviorRepositoryImpl @Inject constructor(
             val nextNow = clockService.currentTimeMillis()
             behaviorDao.setStatus(nextPending.id, BehaviorNature.ACTIVE.key)
             behaviorDao.setStartTime(nextPending.id, nextNow)
-            nextPending.let { Behavior.fromEntity(it) }
+            // 重新读取以返回反映 ACTIVE 状态与最新 startTime 的行为，避免返回过期实体
+            behaviorDao.getById(nextPending.id)?.let { Behavior.fromEntity(it) }
         }
     }
 
@@ -184,11 +185,22 @@ class BehaviorRepositoryImpl @Inject constructor(
         note: String?,
     ) {
         database.withTransaction {
+            // 更新前读取 wasPlanned / estimatedDuration（update 不改这两列）
+            val existing = behaviorDao.getById(id)
             behaviorDao.update(id, activityId, startTime, endTime, status, note)
 
             if (status == BehaviorNature.COMPLETED.key && endTime != null && startTime > 0) {
-                val duration = endTime - startTime
-                behaviorDao.setActualDuration(id, duration)
+                // 编辑后重算 actualDuration 与 achievementLevel（计划行为）
+                val result = BehaviorCalculator.calculateCompletion(
+                    startTime = startTime,
+                    endTime = endTime,
+                    wasPlanned = existing?.wasPlanned ?: false,
+                    estimatedDurationMinutes = existing?.estimatedDuration?.let { it / 60_000L },
+                )
+                behaviorDao.setActualDuration(id, result.durationMs)
+                if (result.achievementLevel != null) {
+                    behaviorDao.setAchievementLevel(id, result.achievementLevel)
+                }
             } else if (status == BehaviorNature.ACTIVE.key && startTime > 0) {
                 val duration = clockService.currentTimeMillis() - startTime
                 behaviorDao.setActualDuration(id, duration)

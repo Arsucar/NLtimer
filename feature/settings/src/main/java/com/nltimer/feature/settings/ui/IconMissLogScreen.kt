@@ -4,6 +4,7 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -16,22 +17,16 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -48,14 +43,12 @@ import com.nltimer.core.data.database.entity.IconSearchMissEntity
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun IconMissLogRoute(
-    onNavigateBack: () -> Unit,
+    _onNavigateBack: () -> Unit,
     viewModel: IconMissLogViewModel = hiltViewModel(),
 ) {
     val misses by viewModel.misses.collectAsStateWithLifecycle()
-    val snackbarHostState = remember { SnackbarHostState() }
     var showClearDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
@@ -76,40 +69,39 @@ fun IconMissLogRoute(
         )
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("图标库") },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回")
-                    }
-                },
-                actions = {
-                    if (misses.isNotEmpty()) {
-                        IconButton(onClick = {
-                            val text = formatMissesForCopy(misses)
-                            val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                            clipboard.setPrimaryClip(ClipData.newPlainText("图标未命中日志", text))
-                        }) {
-                            Icon(Icons.Default.ContentCopy, contentDescription = "复制日志")
-                        }
-                        IconButton(onClick = { showClearDialog = true }) {
-                            Icon(Icons.Default.DeleteSweep, contentDescription = "清除日志")
-                        }
-                    }
-                },
-            )
-        },
-        snackbarHost = { SnackbarHost(snackbarHostState) },
-    ) { padding ->
+    Box(modifier = Modifier.fillMaxSize()) {
         if (misses.isEmpty()) {
-            EmptyState(modifier = Modifier.padding(padding))
+            EmptyState(modifier = Modifier.fillMaxSize())
         } else {
-            MissList(
-                misses = misses,
-                modifier = Modifier.padding(padding),
-            )
+            Column(modifier = Modifier.fillMaxSize()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 2.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = "共 ${misses.size} 条记录",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Spacer(modifier = Modifier.weight(1f))
+                    IconButton(onClick = {
+                        val text = formatMissesForCopy(misses)
+                        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                        clipboard.setPrimaryClip(ClipData.newPlainText("图标未命中日志", text))
+                    }) {
+                        Icon(Icons.Default.ContentCopy, contentDescription = "复制日志")
+                    }
+                    IconButton(onClick = { showClearDialog = true }) {
+                        Icon(Icons.Default.DeleteSweep, contentDescription = "清除日志")
+                    }
+                }
+                MissList(
+                    misses = misses,
+                    modifier = Modifier.weight(1f),
+                )
+            }
         }
     }
 }

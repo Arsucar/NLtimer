@@ -23,6 +23,7 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object DatabaseModule {
 
+    @Suppress("SpreadOperator") // Room 的 addMigrations 接收 vararg，数组必须使用展开运算符
     @Provides
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): NLtimerDatabase =

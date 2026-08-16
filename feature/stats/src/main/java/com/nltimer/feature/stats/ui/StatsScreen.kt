@@ -335,37 +335,37 @@ private fun AddPanelDialog(
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 StatsPanelType.entries.forEach { type ->
-                val label = PanelTypeLabels[type] ?: type.name
-                val implemented = type in ImplementedPanelTypes
-                Surface(
-                    onClick = { if (implemented) onAdd(type) },
-                    shape = RoundedCornerShape(12.dp),
-                    color = if (implemented) MaterialTheme.colorScheme.surfaceContainerHigh
-                    else MaterialTheme.colorScheme.surfaceContainerLow,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 12.dp),
-                        verticalAlignment = Alignment.CenterVertically,
+                    val label = PanelTypeLabels[type] ?: type.name
+                    val implemented = type in ImplementedPanelTypes
+                    Surface(
+                        onClick = { if (implemented) onAdd(type) },
+                        shape = RoundedCornerShape(12.dp),
+                        color = if (implemented) MaterialTheme.colorScheme.surfaceContainerHigh
+                        else MaterialTheme.colorScheme.surfaceContainerLow,
+                        modifier = Modifier.fillMaxWidth(),
                     ) {
-                        Text(
-                            text = label,
-                            style = MaterialTheme.typography.bodyLarge,
-                            modifier = Modifier.weight(1f),
-                            color = if (implemented) MaterialTheme.colorScheme.onSurface
-                            else MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        if (!implemented) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
                             Text(
-                                text = "即将支持",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.outline,
+                                text = label,
+                                style = MaterialTheme.typography.bodyLarge,
+                                modifier = Modifier.weight(1f),
+                                color = if (implemented) MaterialTheme.colorScheme.onSurface
+                                else MaterialTheme.colorScheme.onSurfaceVariant,
                             )
+                            if (!implemented) {
+                                Text(
+                                    text = "即将支持",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.outline,
+                                )
+                            }
                         }
                     }
-                }
                 }
             }
         },

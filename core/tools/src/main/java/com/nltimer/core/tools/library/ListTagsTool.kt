@@ -14,6 +14,8 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.reflect.KClass
 import kotlinx.coroutines.flow.first
+import org.json.JSONArray
+import org.json.JSONObject
 
 /**
  * 工具：列出标签
@@ -40,7 +42,7 @@ class ListTagsTool @Inject constructor(
         ),
     )
 
-    override val returnType: KClass<*> = List::class
+    override val returnType: KClass<*> = String::class
 
     override suspend fun execute(args: Map<String, Any?>): ToolResult {
         val includeArchived = (args["includeArchived"] as? Boolean) ?: false
@@ -50,7 +52,18 @@ class ListTagsTool @Inject constructor(
             } else {
                 tagRepository.getAllActive().first()
             }
-            ToolResult.Success(name, tags)
+            val arr = JSONArray()
+            for (t in tags) {
+                arr.put(JSONObject().apply {
+                    put("id", t.id)
+                    put("name", t.name)
+                    put("iconKey", t.iconKey ?: JSONObject.NULL)
+                    put("color", t.color ?: JSONObject.NULL)
+                    put("category", t.category ?: JSONObject.NULL)
+                    put("isArchived", t.isArchived)
+                })
+            }
+            ToolResult.Success(name, arr.toString())
         }.getOrElse { e ->
             ToolResult.Error(
                 name = name,

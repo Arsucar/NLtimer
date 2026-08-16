@@ -170,15 +170,29 @@ class AiInterApiClient @Inject constructor() {
                 type: String?,
                 data: String
             ) {
-                if (data.trim() == "[DONE]") {
+                val trimmed = data.trim()
+                if (trimmed == "[DONE]") {
                     close()
                     return
                 }
-                data.trim().split("\n").filter { it.isNotBlank() }.forEach { line ->
+                // 优先把整块 data 当作单个 JSON 解析（兼容多行/美化输出），
+                // 解析失败时才按行回退（兼容同一事件内含多行 JSON 对象的非标准实现）。
+                val elements = try {
+                    listOf(json.parseToJsonElement(trimmed))
+                } catch (_: Exception) {
+                    trimmed.split("\n").mapNotNull { rawLine ->
+                        val line = rawLine.trim()
+                        if (line.isEmpty()) null
+                        else try {
+                            json.parseToJsonElement(line)
+                        } catch (_: Exception) {
+                            null
+                        }
+                    }
+                }
+                elements.forEach { element ->
+                    if (element !is JsonObject) return@forEach
                     try {
-                        val element = json.parseToJsonElement(line)
-                        if (element !is JsonObject) return@forEach
-
                         if (element["error"] != null) {
                             close(parseErrorDetail(element))
                             return
@@ -232,6 +246,7 @@ class AiInterApiClient @Inject constructor() {
                             }
                         }
                     } catch (_: Exception) {
+                        // 单个 chunk 解析失败不影响整条流，跳过继续
                     }
                 }
             }

@@ -28,7 +28,7 @@ class GetIconSearchMissesTool @Inject constructor(
     override val parameters: List<ToolParameter> = emptyList()
     override val returnType: KClass<*> = String::class
 
-    private val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+    private val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US)
 
     override suspend fun execute(args: Map<String, Any?>): ToolResult {
         return runCatching {

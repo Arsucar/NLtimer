@@ -33,7 +33,7 @@ private val OptionCornerRadius = 8.dp
 private val OptionPaddingVertical = 12.dp
 private val OptionTonalElevation = 4.dp
 private val OptionShadowElevation = 4.dp
-private const val MaxOptionsPerRow = 3
+private const val MAX_OPTIONS_PER_ROW = 3
 
 enum class DragMenuOptionsPlacement {
     AboveAnchorTop,
@@ -49,7 +49,7 @@ fun DragMenuOptions(
     gapFromAnchor: Dp = OptionsGapFromFab,
     horizontalPadding: Dp = OptionsRowPaddingHorizontal,
     rowGap: Dp = OptionsGap,
-    maxOptionsPerRow: Int = MaxOptionsPerRow,
+    maxOptionsPerRow: Int = MAX_OPTIONS_PER_ROW,
 ) {
     if (!state.isDragging) return
 

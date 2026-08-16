@@ -46,7 +46,12 @@ fun NLtimerNavHost(
         startDestination = NLtimerRoutes.HOME,
         modifier = modifier,
     ) {
-        composable(NLtimerRoutes.HOME) { HomeRoute(timeLabelSettingsRequestKey = timeLabelSettingsRequestKey, onTimeLabelSettingsShown = onTimeLabelSettingsShown) }
+        composable(NLtimerRoutes.HOME) {
+            HomeRoute(
+                timeLabelSettingsRequestKey = timeLabelSettingsRequestKey,
+                onTimeLabelSettingsShown = onTimeLabelSettingsShown,
+            )
+        }
         aiNavGraph(navController)
         composable(NLtimerRoutes.STATS) { StatsRoute() }
         composable(NLtimerRoutes.CATEGORIES) { CategoriesRoute() }
@@ -56,13 +61,7 @@ fun NLtimerNavHost(
                 _onNavigateBack = { navController.popBackStack() },
             )
         }
-        composable(
-            NLtimerRoutes.BEHAVIOR_MANAGEMENT,
-            enterTransition = { slideInHorizontally { it } },
-            exitTransition = { slideOutHorizontally { -it } },
-            popEnterTransition = { slideInHorizontally { -it } },
-            popExitTransition = { slideOutHorizontally { it } },
-        ) {
+        slideComposable(NLtimerRoutes.BEHAVIOR_MANAGEMENT) {
             BehaviorManagementRoute(
                 _onNavigateBack = { navController.popBackStack() },
             )
@@ -77,88 +76,59 @@ fun NLtimerNavHost(
                 onNavigateToAdvancedSettings = { navController.navigate(NLtimerRoutes.ADVANCED_SETTINGS) },
             )
         }
-        composable(
-            NLtimerRoutes.THEME_SETTINGS,
-            enterTransition = { slideInHorizontally { it } },
-            exitTransition = { slideOutHorizontally { -it } },
-            popEnterTransition = { slideInHorizontally { -it } },
-            popExitTransition = { slideOutHorizontally { it } },
-        ) {
+        slideComposable(NLtimerRoutes.THEME_SETTINGS) {
             ThemeSettingsRoute()
         }
-        composable(
-            NLtimerRoutes.DIALOG_CONFIG,
-            enterTransition = { slideInHorizontally { it } },
-            exitTransition = { slideOutHorizontally { -it } },
-            popEnterTransition = { slideInHorizontally { -it } },
-            popExitTransition = { slideOutHorizontally { it } },
-        ) {
+        slideComposable(NLtimerRoutes.DIALOG_CONFIG) {
             DialogConfigRoute()
         }
-        composable(
-            NLtimerRoutes.DATA_MANAGEMENT,
-            enterTransition = { slideInHorizontally { it } },
-            exitTransition = { slideOutHorizontally { -it } },
-            popEnterTransition = { slideInHorizontally { -it } },
-            popExitTransition = { slideOutHorizontally { it } },
-        ) {
+        slideComposable(NLtimerRoutes.DATA_MANAGEMENT) {
             DataManagementRoute(
                 _onNavigateBack = { navController.popBackStack() },
                 onNavigateToBehaviorManagement = { navController.navigate(NLtimerRoutes.BEHAVIOR_MANAGEMENT) },
             )
         }
-        composable(
-            NLtimerRoutes.HOME_LAYOUT_CONFIG,
-            enterTransition = { slideInHorizontally { it } },
-            exitTransition = { slideOutHorizontally { -it } },
-            popEnterTransition = { slideInHorizontally { -it } },
-            popExitTransition = { slideOutHorizontally { it } },
-        ) {
+        slideComposable(NLtimerRoutes.HOME_LAYOUT_CONFIG) {
             HomeLayoutConfigRoute()
         }
-        composable(
-            NLtimerRoutes.COLOR_PALETTE,
-            enterTransition = { slideInHorizontally { it } },
-            exitTransition = { slideOutHorizontally { -it } },
-            popEnterTransition = { slideInHorizontally { -it } },
-            popExitTransition = { slideOutHorizontally { it } },
-        ) {
+        slideComposable(NLtimerRoutes.COLOR_PALETTE) {
             ColorPaletteRoute()
         }
-        composable(
-            NLtimerRoutes.ADVANCED_SETTINGS,
-            enterTransition = { slideInHorizontally { it } },
-            exitTransition = { slideOutHorizontally { -it } },
-            popEnterTransition = { slideInHorizontally { -it } },
-            popExitTransition = { slideOutHorizontally { it } },
-        ) {
+        slideComposable(NLtimerRoutes.ADVANCED_SETTINGS) {
             AdvancedSettingsRoute(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToLogList = { navController.navigate(NLtimerRoutes.LOG_LIST) },
             )
         }
-        composable(
-            NLtimerRoutes.LOG_LIST,
-            enterTransition = { slideInHorizontally { it } },
-            exitTransition = { slideOutHorizontally { -it } },
-            popEnterTransition = { slideInHorizontally { -it } },
-            popExitTransition = { slideOutHorizontally { it } },
-        ) {
+        slideComposable(NLtimerRoutes.LOG_LIST) {
             LogListRoute(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToIconMissLog = { navController.navigate(NLtimerRoutes.ICON_MISS_LOG) },
             )
         }
-        composable(
-            NLtimerRoutes.ICON_MISS_LOG,
-            enterTransition = { slideInHorizontally { it } },
-            exitTransition = { slideOutHorizontally { -it } },
-            popEnterTransition = { slideInHorizontally { -it } },
-            popExitTransition = { slideOutHorizontally { it } },
-        ) {
-            IconMissLogRoute(onNavigateBack = { navController.popBackStack() })
+        slideComposable(NLtimerRoutes.ICON_MISS_LOG) {
+            IconMissLogRoute(_onNavigateBack = { navController.popBackStack() })
         }
         debugRoutes?.invoke(this)
+    }
+}
+
+/**
+ * 注册带水平滑入/滑出过渡的路由
+ * 设置类子页面统一使用此过渡，避免重复编写 4 个 transition lambda
+ */
+private fun NavGraphBuilder.slideComposable(
+    route: String,
+    content: @Composable () -> Unit,
+) {
+    composable(
+        route,
+        enterTransition = { slideInHorizontally { it } },
+        exitTransition = { slideOutHorizontally { -it } },
+        popEnterTransition = { slideInHorizontally { -it } },
+        popExitTransition = { slideOutHorizontally { it } },
+    ) {
+        content()
     }
 }
 

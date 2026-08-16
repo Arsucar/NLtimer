@@ -100,6 +100,7 @@ class BehaviorManagementViewModel @Inject constructor(
                     applyFilters(behaviors, state, groups)
                 }
                 .catch {
+                    Log.e("BehaviorMgmt", "Failed to observe behaviors", it)
                     _uiState.update { s -> s.copy(behaviors = persistentListOf()) }
                 }
                 .collect { filtered ->
@@ -347,13 +348,15 @@ class BehaviorManagementViewModel @Inject constructor(
                     }
                     else -> {
                         val tagIds = item.tags.mapNotNull { tagMap[it.name]?.id }
+                        val nature = BehaviorNature.entries.firstOrNull { it.key == item.status }
+                            ?: BehaviorNature.COMPLETED
                         behaviorRepository.insert(
                             Behavior(
                                 id = 0,
                                 activityId = localActivity.id,
                                 startTime = item.startTime,
                                 endTime = item.endTime,
-                                status = BehaviorNature.entries.first { it.key == item.status },
+                                status = nature,
                                 note = item.note,
                                 pomodoroCount = item.pomodoroCount,
                                 sequence = item.sequence,

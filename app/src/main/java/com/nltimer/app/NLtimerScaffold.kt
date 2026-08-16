@@ -20,6 +20,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -98,6 +99,12 @@ fun NLtimerScaffold(
     val isAiAssistantChat = currentRoute == AiRoutes.AI_ASSISTANT_CHAT
     val isStats = currentRoute == NLtimerRoutes.STATS
     val visibleDateLabelState = remember { mutableStateOf<String?>(null) }
+    // 离开主页后清除残留日期标签，避免管理页/子页标题显示过期日期
+    LaunchedEffect(currentRoute) {
+        if (currentRoute != NLtimerRoutes.HOME) {
+            visibleDateLabelState.value = null
+        }
+    }
     val isHomePage = currentRoute !in NLtimerRoutes.SETTINGS_FULLSCREEN_ROUTES && currentRoute != NLtimerRoutes.SETTINGS && !isAiInter && !isStats && !isAiAssistantChat
     val isDateTitle = isHomePage && visibleDateLabelState.value != null
     val topBarTitle = when (currentRoute) {
@@ -106,6 +113,12 @@ fun NLtimerScaffold(
         NLtimerRoutes.DIALOG_CONFIG -> "弹窗配置"
         NLtimerRoutes.BEHAVIOR_MANAGEMENT -> "行为管理"
         NLtimerRoutes.CATEGORIES -> "分类管理"
+        NLtimerRoutes.DATA_MANAGEMENT -> "数据管理"
+        NLtimerRoutes.HOME_LAYOUT_CONFIG -> "主页布局配置"
+        NLtimerRoutes.COLOR_PALETTE -> "色板"
+        NLtimerRoutes.ICON_MISS_LOG -> "图标库"
+        NLtimerRoutes.ADVANCED_SETTINGS -> "高级"
+        NLtimerRoutes.LOG_LIST -> "日志记录"
         AiRoutes.AI_INTER -> "AI Inter"
         NLtimerRoutes.STATS -> "统计"
         else -> visibleDateLabelState.value ?: "NLtimer"
@@ -159,7 +172,14 @@ fun NLtimerScaffold(
         HomeLayout.MOMENT -> "当前时刻设置"
         HomeLayout.TEXT_LIST -> "纯文字列表设置"
     }
-    val settingsDragOptions = remember(currentRoute, theme.homeLayout, theme.showTimeSideBar, displayColorConfig, tagDisplayConfig, layoutConfigLabel) {
+    val settingsDragOptions = remember(
+        currentRoute,
+        theme.homeLayout,
+        theme.showTimeSideBar,
+        displayColorConfig,
+        tagDisplayConfig,
+        layoutConfigLabel,
+    ) {
         buildList {
             if (currentRoute == NLtimerRoutes.HOME) {
                 add("更改布局")
@@ -289,7 +309,6 @@ fun NLtimerScaffold(
                         AppCollapsedTopAppBar(
                             title = topBarTitle,
                             isDateTitle = isDateTitle,
-                            isImmersive = isImmersive,
                             scrollBehavior = topBarScrollBehavior,
                             hazeState = if (theme.topBarHaze) topBarHazeState else null,
                             navigationIcon = if (isAiInter) {
@@ -316,7 +335,6 @@ fun NLtimerScaffold(
                         AppTopAppBar(
                             title = topBarTitle,
                             isDateTitle = isDateTitle,
-                            isImmersive = isImmersive,
                             hazeState = if (theme.topBarHaze) topBarHazeState else null,
                             navigationIcon = if (isAiInter) {
                                 {

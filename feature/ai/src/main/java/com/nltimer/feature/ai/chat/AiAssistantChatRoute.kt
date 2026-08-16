@@ -67,6 +67,7 @@ fun AiAssistantChatRoute(
     val chatError by viewModel.chatError.collectAsStateWithLifecycle()
     val config by viewModel.config.collectAsStateWithLifecycle()
     val availableModels by viewModel.availableModels.collectAsStateWithLifecycle()
+    val modelsError by viewModel.modelsError.collectAsStateWithLifecycle()
 
     val current = conversations.firstOrNull { it.id == currentId }
     val listState = rememberLazyListState()
@@ -218,8 +219,14 @@ fun AiAssistantChatRoute(
                 }
                 if (availableModels.isEmpty()) {
                     androidx.compose.material3.Text(
-                        "未拉取到模型列表，请先在 AI Inter → 提供商配置 中获取",
+                        modelsError
+                            ?: "未拉取到模型列表，请先在 AI Inter → 提供商配置 中获取",
                         style = MaterialTheme.typography.bodySmall,
+                        color = if (modelsError != null) {
+                            MaterialTheme.colorScheme.error
+                        } else {
+                            MaterialTheme.colorScheme.onSurface
+                        },
                     )
                 }
             }

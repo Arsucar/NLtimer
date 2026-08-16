@@ -217,7 +217,6 @@ class BatchCreateTagsTool @Inject constructor(
     )
 
     private companion object {
-        const val MAX_BATCH_SIZE = 20
         const val MAX_NAME_LENGTH = 50
         const val DEFAULT_CATEGORY = "预制菜"
     }

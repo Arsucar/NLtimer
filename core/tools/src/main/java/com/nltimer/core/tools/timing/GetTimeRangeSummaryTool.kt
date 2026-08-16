@@ -12,6 +12,7 @@ import com.nltimer.core.tools.ToolError
 import com.nltimer.core.tools.ToolParameter
 import com.nltimer.core.tools.ToolResult
 import java.time.ZoneId
+import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.reflect.KClass
@@ -110,7 +111,7 @@ class GetTimeRangeSummaryTool @Inject constructor(
             val activityArr = JSONArray()
             for (agg in activityMap.values.sortedByDescending { it.durationMinutes }) {
                 val avgAchievement = if (agg.achievementCount > 0) {
-                    String.format("%.1f", agg.achievementSum.toDouble() / agg.achievementCount)
+                    String.format(Locale.US, "%.1f", agg.achievementSum.toDouble() / agg.achievementCount)
                 } else null
                 activityArr.put(JSONObject().apply {
                     put("activityId", agg.activityId)
@@ -124,14 +125,14 @@ class GetTimeRangeSummaryTool @Inject constructor(
             }
 
             val completionRate = if (completedCount + activeCount > 0) {
-                String.format("%.0f%%", completedCount.toDouble() / (completedCount + activeCount) * 100)
+                String.format(Locale.US, "%.0f%%", completedCount.toDouble() / (completedCount + activeCount) * 100)
             } else "0%"
 
             val result = JSONObject().apply {
                 put("startTime", TimeUtils.formatIso(startMs))
                 put("endTime", TimeUtils.formatIso(endMs))
                 put("totalMinutes", totalMinutes)
-                put("totalHours", String.format("%.1f", totalMinutes / 60.0))
+                put("totalHours", String.format(Locale.US, "%.1f", totalMinutes / 60.0))
                 put("completedCount", completedCount)
                 put("activeCount", activeCount)
                 put("pendingCount", pendingCount)
@@ -140,7 +141,7 @@ class GetTimeRangeSummaryTool @Inject constructor(
                 put("totalEstimatedMinutes", totalEstimatedMinutes)
                 put("totalActualMinutes", totalActualMinutes)
                 put("planAdherenceRate", if (totalEstimatedMinutes > 0) {
-                    String.format("%.0f%%", totalActualMinutes.toDouble() / totalEstimatedMinutes * 100)
+                    String.format(Locale.US, "%.0f%%", totalActualMinutes.toDouble() / totalEstimatedMinutes * 100)
                 } else JSONObject.NULL)
                 put("activities", activityArr)
             }

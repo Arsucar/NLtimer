@@ -61,7 +61,7 @@ class ActivateGoalTool @Inject constructor(
             }
 
             behaviorRepository.setStartTime(id, System.currentTimeMillis())
-            behaviorRepository.setStatus(id, BehaviorNature.ACTIVE.name)
+            behaviorRepository.setStatus(id, BehaviorNature.ACTIVE.key)
 
             val resultObj = JSONObject().apply {
                 put("id", id)
