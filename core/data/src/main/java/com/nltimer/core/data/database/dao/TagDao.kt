@@ -31,6 +31,9 @@ interface TagDao {
     @Query("SELECT * FROM tags ORDER BY name")
     fun getAll(): Flow<List<TagEntity>>
 
+    @Query("SELECT * FROM tags WHERE isArchived = 1 ORDER BY archivedAt DESC, name")
+    fun getArchived(): Flow<List<TagEntity>>
+
     @Query("SELECT * FROM tags WHERE id = :id")
     suspend fun getById(id: Long): TagEntity?
 
@@ -40,8 +43,10 @@ interface TagDao {
     @Query("SELECT * FROM tags WHERE category = :category AND isArchived = 0 ORDER BY priority DESC, name")
     fun getByCategory(category: String): Flow<List<TagEntity>>
 
-    @Query("UPDATE tags SET isArchived = :archived WHERE id = :id")
-    suspend fun setArchived(id: Long, archived: Boolean)
+    @Query(
+        "UPDATE tags SET isArchived = :archived, archivedAt = CASE WHEN :archived THEN :now ELSE NULL END WHERE id = :id",
+    )
+    suspend fun setArchived(id: Long, archived: Boolean, now: Long)
 
     @Query("SELECT * FROM tags WHERE name LIKE '%' || :query || '%' AND isArchived = 0")
     fun search(query: String): Flow<List<TagEntity>>

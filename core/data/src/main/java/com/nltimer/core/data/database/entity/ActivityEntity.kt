@@ -19,6 +19,7 @@ data class ActivityEntity(
     val isPreset: Boolean = false,
     val isArchived: Boolean = false,
     val archivedAt: Long? = null,
+    val archiveNote: String? = null,
     val color: Long? = null,
     val usageCount: Int = 0,
     val createdAt: Long = System.currentTimeMillis(),

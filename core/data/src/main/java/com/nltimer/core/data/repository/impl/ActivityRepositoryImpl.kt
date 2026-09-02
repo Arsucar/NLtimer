@@ -29,6 +29,9 @@ class ActivityRepositoryImpl @Inject constructor(
     override fun getAll(): Flow<List<Activity>> =
         activityDao.getAll().mapList { Activity.fromEntity(it) }
 
+    override fun getArchived(): Flow<List<Activity>> =
+        activityDao.getArchived().mapList { Activity.fromEntity(it) }
+
     override fun getAllGroups(): Flow<List<ActivityGroup>> =
         groupDao.getAll().mapList { ActivityGroup.fromEntity(it) }
 
@@ -48,5 +51,5 @@ class ActivityRepositoryImpl @Inject constructor(
         activityDao.update(activity.toEntity())
 
     override suspend fun setArchived(id: Long, archived: Boolean) =
-        activityDao.setArchived(id, archived)
+        activityDao.setArchived(id, archived, System.currentTimeMillis())
 }

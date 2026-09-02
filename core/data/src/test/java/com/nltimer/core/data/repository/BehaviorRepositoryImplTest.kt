@@ -661,10 +661,11 @@ class BehaviorRepositoryImplTest {
         override suspend fun delete(activity: ActivityEntity) {}
         override fun getAllActive(): Flow<List<ActivityEntity>> = flowOf(activities)
         override fun getAll(): Flow<List<ActivityEntity>> = flowOf(activities)
+        override fun getArchived(): Flow<List<ActivityEntity>> = flowOf(activities.filter { it.isArchived })
         override suspend fun getById(id: Long): ActivityEntity? = activities.find { it.id == id }
         override suspend fun getByIds(ids: List<Long>): List<ActivityEntity> = activities.filter { it.id in ids }
         override suspend fun getByName(name: String): ActivityEntity? = null
-        override suspend fun setArchived(id: Long, archived: Boolean) {}
+        override suspend fun setArchived(id: Long, archived: Boolean, now: Long) {}
         override fun search(query: String): Flow<List<ActivityEntity>> = flowOf(emptyList())
         override fun getUncategorized(): Flow<List<ActivityEntity>> = flowOf(emptyList())
         override fun getByGroup(groupId: Long): Flow<List<ActivityEntity>> = flowOf(emptyList())
@@ -689,9 +690,10 @@ class BehaviorRepositoryImplTest {
         override suspend fun delete(tag: TagEntity) {}
         override fun getAllActive(): Flow<List<TagEntity>> = flowOf(emptyList())
         override fun getAll(): Flow<List<TagEntity>> = flowOf(emptyList())
+        override fun getArchived(): Flow<List<TagEntity>> = flowOf(emptyList())
         override suspend fun getById(id: Long): TagEntity? = null
         override suspend fun getByName(name: String): TagEntity? = null
-        override suspend fun setArchived(id: Long, archived: Boolean) {}
+        override suspend fun setArchived(id: Long, archived: Boolean, now: Long) {}
         override fun search(query: String): Flow<List<TagEntity>> = flowOf(emptyList())
         override fun getByActivityId(activityId: Long): Flow<List<TagEntity>> = flowOf(emptyList())
         override fun getByCategory(category: String): Flow<List<TagEntity>> = flowOf(emptyList())

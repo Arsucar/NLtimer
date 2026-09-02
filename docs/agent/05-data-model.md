@@ -27,6 +27,7 @@
 | isPreset | Boolean | 是否预置 |
 | isArchived | Boolean | 是否归档 |
 | archivedAt | Long? | 归档时间 |
+| archiveNote | String? | 归档感想（可空） |
 | color | Long? | 自定义颜色 |
 | usageCount | Int | 使用次数 |
 | createdAt | Long | 创建时间 |
@@ -72,6 +73,7 @@
 | keywords | String? | 智能匹配关键词 |
 | isArchived | Boolean | 是否归档 |
 | archivedAt | Long? | 归档时间 |
+| archiveNote | String? | 归档感想（可空） |
 
 ### BehaviorEntity
 
@@ -96,6 +98,7 @@
 |------|------|------|
 | activityId | Long (FK) | → activities.id |
 | tagId | Long (FK) | → tags.id |
+| source | String | 绑定方向：`activity` / `tag` |
 
 ### BehaviorTagCrossRefEntity
 
@@ -143,6 +146,8 @@ ActivityGroup 1:N Activity M:N Tag
 |------|------|
 | 13 | v0.1.5 |
 | 14 | 新增 tag_groups 表；TagEntity 新增 groupId；ActivityGroupEntity 新增 iconKey |
+| 15 | activity_tag_binding 新增 source |
+| 16 | activities/tags 新增 archiveNote |
 
 ## DisplayColorConfig
 

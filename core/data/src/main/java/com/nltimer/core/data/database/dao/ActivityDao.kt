@@ -34,6 +34,9 @@ interface ActivityDao {
     @Query("SELECT * FROM activities ORDER BY name")
     fun getAll(): Flow<List<ActivityEntity>>
 
+    @Query("SELECT * FROM activities WHERE isArchived = 1 ORDER BY archivedAt DESC, name")
+    fun getArchived(): Flow<List<ActivityEntity>>
+
     @Query("SELECT * FROM activities WHERE id = :id")
     suspend fun getById(id: Long): ActivityEntity?
 
@@ -43,8 +46,10 @@ interface ActivityDao {
     @Query("SELECT * FROM activities WHERE name = :name LIMIT 1")
     suspend fun getByName(name: String): ActivityEntity?
 
-    @Query("UPDATE activities SET isArchived = :archived WHERE id = :id")
-    suspend fun setArchived(id: Long, archived: Boolean)
+    @Query(
+        "UPDATE activities SET isArchived = :archived, archivedAt = CASE WHEN :archived THEN :now ELSE NULL END WHERE id = :id",
+    )
+    suspend fun setArchived(id: Long, archived: Boolean, now: Long)
 
     @Query("SELECT * FROM activities WHERE name LIKE '%' || :query || '%' AND isArchived = 0")
     fun search(query: String): Flow<List<ActivityEntity>>

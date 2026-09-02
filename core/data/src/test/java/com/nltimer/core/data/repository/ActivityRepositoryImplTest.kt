@@ -52,6 +52,12 @@ class ActivityRepositoryImplTest {
 
         override fun getAll(): Flow<List<ActivityEntity>> = activityFlow
 
+        override fun getArchived(): Flow<List<ActivityEntity>> =
+            activityFlow.map { list ->
+                list.filter { it.isArchived }
+                    .sortedWith(compareByDescending<ActivityEntity> { it.archivedAt ?: Long.MIN_VALUE }.thenBy { it.name })
+            }
+
         override suspend fun getById(id: Long): ActivityEntity? =
             activityEntities.find { it.id == id }
 
@@ -61,9 +67,13 @@ class ActivityRepositoryImplTest {
         override suspend fun getByName(name: String): ActivityEntity? =
             activityEntities.find { it.name == name }
 
-        override suspend fun setArchived(id: Long, archived: Boolean) {
+        override suspend fun setArchived(id: Long, archived: Boolean, now: Long) {
             activityEntities.replaceAll {
-                if (it.id == id) it.copy(isArchived = archived) else it
+                if (it.id == id) {
+                    it.copy(isArchived = archived, archivedAt = if (archived) now else null)
+                } else {
+                    it
+                }
             }
             activityFlow.value = activityEntities.toList()
         }
@@ -256,6 +266,41 @@ class ActivityRepositoryImplTest {
 
         val result = repository.getById(1L)
         assertTrue(result?.isArchived == true)
+        assertTrue(result?.archivedAt != null)
+    }
+
+    @Test
+    fun `getArchived returns only archived activities`() = runTest {
+        fakeActivityDao.insert(ActivityEntity(name = "活动A", isArchived = false))
+        fakeActivityDao.insert(ActivityEntity(name = "活动B", isArchived = true, archivedAt = 2000L))
+
+        val result = repository.getArchived().first()
+
+        assertEquals(1, result.size)
+        assertEquals("活动B", result[0].name)
+    }
+
+    @Test
+    fun `setArchived true sets archivedAt non-null`() = runTest {
+        fakeActivityDao.insert(ActivityEntity(name = "活动A", isArchived = false, archivedAt = null))
+
+        repository.setArchived(1L, true)
+
+        val result = repository.getById(1L)
+        assertTrue(result?.isArchived == true)
+        assertTrue(result?.archivedAt != null)
+    }
+
+    @Test
+    fun `setArchived false clears archivedAt and item leaves getArchived`() = runTest {
+        fakeActivityDao.insert(ActivityEntity(name = "活动A", isArchived = true, archivedAt = 1000L))
+
+        repository.setArchived(1L, false)
+
+        val restored = repository.getById(1L)
+        assertFalse(restored?.isArchived == true)
+        assertNull(restored?.archivedAt)
+        assertTrue(repository.getArchived().first().isEmpty())
     }
 
     @Test

@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.Flow
 interface ActivityRepository {
     fun getAllActive(): Flow<List<Activity>>
     fun getAll(): Flow<List<Activity>>
+    fun getArchived(): Flow<List<Activity>>
     fun getAllGroups(): Flow<List<ActivityGroup>>
     fun search(query: String): Flow<List<Activity>>
     suspend fun getById(id: Long): Activity?

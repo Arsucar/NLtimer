@@ -30,6 +30,7 @@
 | AddBehaviorUseCase | `core/data/.../usecase/AddBehaviorUseCase.kt` | 添加行为逻辑 |
 | ExportDataUseCase | `core/data/.../usecase/ExportDataUseCase.kt` | 数据导出 |
 | TimeFormatUtils | `core/data/.../util/TimeFormatUtils.kt` | 时间格式化 |
+| ArchiveGroup | `core/data/.../model/ArchiveGroup.kt` | 归档区分组聚合 |
 | SettingsPrefs | `core/data/.../` | DataStore 偏好 |
 
 ## core:designsystem
@@ -43,6 +44,7 @@
 | IconRenderer | `core/designsystem/.../icon/IconRenderer.kt` | 图标渲染 |
 | GenericFormDialog | `core/designsystem/.../form/` | 通用表单对话框 |
 | ConfirmDialog | `core/designsystem/.../component/` | 确认对话框 |
+| ArchiveItemDetailDialog | `core/designsystem/.../component/` | 归档条目详情（日期+感想+恢复） |
 | GroupCard | `core/designsystem/.../component/` | 分组卡片 |
 
 ## core:behaviorui
@@ -86,6 +88,23 @@
 | BatchCreateTagsTool | `core/tools/.../library/` | 批量创建标签（支持 autoIcon） |
 | BulkUpdateActivitiesTool | `core/tools/.../library/` | 批量修改活动属性 |
 | BulkUpdateTagsTool | `core/tools/.../library/` | 批量修改标签属性 |
+
+## core:ai
+
+| 关键类 | 路径 | 职责 |
+|--------|------|------|
+| AiInterApiClient | `core/ai/.../network/AiInterApiClient.kt` | AI 流式请求客户端 |
+| AiInterConfig | `core/ai/.../config/AiInterConfig.kt` | AI 配置模型 |
+| AiChatToolHelper | `core/ai/.../toolcall/AiChatToolHelper.kt` | Tool Call 辅助 |
+
+## feature:ai
+
+| 关键类 | 路径 | 职责 |
+|--------|------|------|
+| AiRoutes | `feature/ai/.../navigation/AiRoutes.kt` | AI 路由常量 |
+| AiNavGraph | `feature/ai/.../navigation/AiNavGraph.kt` | AI 导航图 |
+| AiInterScreen | `feature/ai/.../AiInterScreen.kt` | AI Inter 主页 |
+| AiAssistantChatRoute | `feature/ai/.../chat/AiAssistantChatRoute.kt` | 助手聊天路由 |
 
 ## feature:home
 
@@ -132,6 +151,9 @@
 | TagManagementRoute | `feature/tag_management/.../ui/` | 标签管理路由 |
 | TagManagementScreen | `feature/tag_management/.../ui/` | 标签管理页 |
 | TagManagementViewModel | `feature/tag_management/.../viewmodel/` | 标签状态管理 |
+| TagArchiveRoute | `feature/tag_management/.../ui/` | 标签归档区路由 |
+| TagArchiveScreen | `feature/tag_management/.../ui/` | 标签归档区 UI |
+| TagArchiveViewModel | `feature/tag_management/.../viewmodel/` | 标签归档区状态 |
 
 ## feature:management_activities
 
@@ -140,6 +162,9 @@
 | ActivityManagementRoute | `feature/management_activities/.../ui/` | 活动管理路由 |
 | ActivityManagementScreen | `feature/management_activities/.../ui/` | 活动管理页 |
 | ActivityManagementViewModel | `feature/management_activities/.../viewmodel/` | 活动状态管理 |
+| ActivityArchiveRoute | `feature/management_activities/.../ui/` | 活动归档区路由 |
+| ActivityArchiveScreen | `feature/management_activities/.../ui/` | 活动归档区 UI |
+| ActivityArchiveViewModel | `feature/management_activities/.../viewmodel/` | 活动归档区状态 |
 
 ## feature:stats
 

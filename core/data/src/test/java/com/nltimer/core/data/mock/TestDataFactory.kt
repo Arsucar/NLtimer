@@ -11,7 +11,14 @@ object TestDataFactory {
         groupId: Long = 1L,
         color: Long = Random.nextLong(0xFFFFFF),
         isArchived: Boolean = false,
-    ) = Activity(id, name, iconKey, null, groupId, false, isArchived, color)
+    ) = Activity(
+        id = id,
+        name = name,
+        iconKey = iconKey,
+        groupId = groupId,
+        isArchived = isArchived,
+        color = color,
+    )
 
     fun createTag(
         id: Long = Random.nextLong(),

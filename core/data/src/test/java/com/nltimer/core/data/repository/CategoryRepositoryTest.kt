@@ -97,11 +97,19 @@ class CategoryRepositoryTest {
         }
         override fun getAllActive(): Flow<List<TagEntity>> = flowOf(emptyList())
         override fun getAll(): Flow<List<TagEntity>> = tagFlow
+        override fun getArchived(): Flow<List<TagEntity>> =
+            tagFlow.map { list -> list.filter { it.isArchived } }
         override suspend fun getById(id: Long): TagEntity? = tagEntities.find { it.id == id }
         override suspend fun getByName(name: String): TagEntity? = tagEntities.find { it.name == name }
         override fun getByCategory(category: String): Flow<List<TagEntity>> = flowOf(emptyList())
-        override suspend fun setArchived(id: Long, archived: Boolean) {
-            tagEntities.replaceAll { if (it.id == id) it.copy(isArchived = archived) else it }
+        override suspend fun setArchived(id: Long, archived: Boolean, now: Long) {
+            tagEntities.replaceAll {
+                if (it.id == id) {
+                    it.copy(isArchived = archived, archivedAt = if (archived) now else null)
+                } else {
+                    it
+                }
+            }
             tagFlow.value = tagEntities.toList()
         }
         override fun search(query: String): Flow<List<TagEntity>> = flowOf(emptyList())

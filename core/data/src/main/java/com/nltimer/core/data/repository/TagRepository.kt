@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.Flow
 interface TagRepository {
     fun getAllActive(): Flow<List<Tag>>
     fun getAll(): Flow<List<Tag>>
+    fun getArchived(): Flow<List<Tag>>
     fun getByCategory(category: String): Flow<List<Tag>>
     fun search(query: String): Flow<List<Tag>>
     fun getByActivityId(activityId: Long): Flow<List<Tag>>

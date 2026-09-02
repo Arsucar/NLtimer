@@ -17,6 +17,7 @@ data class Tag(
     val keywords: String?,
     val isArchived: Boolean,
     val archivedAt: Long? = null,
+    val archiveNote: String? = null,
 ) {
     fun toEntity() = TagEntity(
         id = id,
@@ -31,6 +32,7 @@ data class Tag(
         keywords = keywords,
         isArchived = isArchived,
         archivedAt = archivedAt,
+        archiveNote = archiveNote,
     )
 
     companion object {
@@ -47,6 +49,7 @@ data class Tag(
             keywords = entity.keywords,
             isArchived = entity.isArchived,
             archivedAt = entity.archivedAt,
+            archiveNote = entity.archiveNote,
         )
     }
 }

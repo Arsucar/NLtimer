@@ -21,6 +21,7 @@ data class ExportedActivity(
     val isPreset: Boolean = false,
     val isArchived: Boolean = false,
     val archivedAt: Long? = null,
+    val archiveNote: String? = null,
     val color: Long? = null,
     val usageCount: Int = 0,
     val tagNames: List<String> = emptyList(),
@@ -46,4 +47,5 @@ data class ExportedTag(
     val keywords: String? = null,
     val isArchived: Boolean = false,
     val archivedAt: Long? = null,
+    val archiveNote: String? = null,
 )

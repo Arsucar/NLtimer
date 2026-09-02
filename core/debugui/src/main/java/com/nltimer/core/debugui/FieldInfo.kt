@@ -33,6 +33,7 @@ fun Activity.toFieldInfoList(): List<FieldInfo> = listOf(
     FieldInfo("isPreset", "预设", isPreset, isDisplayed = false, isMissing = false),
     FieldInfo("isArchived", "归档", isArchived, isDisplayed = false, isMissing = false),
     FieldInfo("archivedAt", "归档时间", archivedAt, isDisplayed = false, isMissing = archivedAt.isFieldMissing("archivedAt")),
+    FieldInfo("archiveNote", "归档感想", archiveNote, isDisplayed = false, isMissing = archiveNote.isFieldMissing("archiveNote")),
     FieldInfo("usageCount", "使用次数", usageCount, isDisplayed = true, isMissing = usageCount.isFieldMissing("usageCount")),
 )
 
@@ -48,6 +49,7 @@ fun Tag.toFieldInfoList(): List<FieldInfo> = listOf(
     FieldInfo("keywords", "关键词", keywords, isDisplayed = false, isMissing = keywords.isFieldMissing("keywords")),
     FieldInfo("isArchived", "归档", isArchived, isDisplayed = false, isMissing = false),
     FieldInfo("archivedAt", "归档时间", archivedAt, isDisplayed = false, isMissing = archivedAt.isFieldMissing("archivedAt")),
+    FieldInfo("archiveNote", "归档感想", archiveNote, isDisplayed = false, isMissing = archiveNote.isFieldMissing("archiveNote")),
 )
 
 fun List<FieldInfo>.toJsonString(): String = buildString {

@@ -16,7 +16,7 @@ class ModelConversionTest {
         val activity = Activity(
             id = 42, name = "测试活动", iconKey = "icon", keywords = "关键词",
             groupId = 5L, isPreset = true, isArchived = false, archivedAt = null,
-            color = 0xFF0000, usageCount = 10,
+            archiveNote = "看完了", color = 0xFF0000, usageCount = 10,
         )
 
         val entity = activity.toEntity()
@@ -29,6 +29,7 @@ class ModelConversionTest {
         assertTrue(entity.isPreset)
         assertEquals(false, entity.isArchived)
         assertNull(entity.archivedAt)
+        assertEquals("看完了", entity.archiveNote)
         assertEquals(0xFF0000L, entity.color)
         assertEquals(10, entity.usageCount)
     }
@@ -38,7 +39,7 @@ class ModelConversionTest {
         val entity = ActivityEntity(
             id = 7, name = "实体活动", iconKey = "emoji", keywords = "key",
             groupId = 3L, isPreset = false, isArchived = true, archivedAt = 1000L,
-            color = 0x00FF00, usageCount = 5,
+            archiveNote = "阶段性结束", color = 0x00FF00, usageCount = 5,
         )
 
         val activity = Activity.fromEntity(entity)
@@ -51,6 +52,7 @@ class ModelConversionTest {
         assertEquals(false, activity.isPreset)
         assertTrue(activity.isArchived)
         assertEquals(1000L, activity.archivedAt)
+        assertEquals("阶段性结束", activity.archiveNote)
         assertEquals(0x00FF00L, activity.color)
         assertEquals(5, activity.usageCount)
     }
@@ -60,7 +62,7 @@ class ModelConversionTest {
         val original = Activity(
             id = 1, name = "往返测试", iconKey = null, keywords = null,
             groupId = null, isPreset = false, isArchived = true, archivedAt = 999L,
-            color = null, usageCount = 0,
+            archiveNote = "可空感想", color = null, usageCount = 0,
         )
 
         val entity = original.toEntity()
@@ -74,6 +76,7 @@ class ModelConversionTest {
         assertEquals(original.isPreset, restored.isPreset)
         assertEquals(original.isArchived, restored.isArchived)
         assertEquals(original.archivedAt, restored.archivedAt)
+        assertEquals(original.archiveNote, restored.archiveNote)
         assertEquals(original.color, restored.color)
         assertEquals(original.usageCount, restored.usageCount)
     }
@@ -89,6 +92,7 @@ class ModelConversionTest {
         assertEquals(false, activity.isPreset)
         assertEquals(false, activity.isArchived)
         assertNull(activity.archivedAt)
+        assertNull(activity.archiveNote)
         assertNull(activity.color)
         assertEquals(0, activity.usageCount)
     }
@@ -98,7 +102,7 @@ class ModelConversionTest {
         val activity = Activity(
             id = 1, name = "空值测试",
             iconKey = null, keywords = null, groupId = null,
-            color = null, archivedAt = null,
+            color = null, archivedAt = null, archiveNote = null,
         )
 
         val entity = activity.toEntity()
@@ -108,6 +112,7 @@ class ModelConversionTest {
         assertNull(entity.groupId)
         assertNull(entity.color)
         assertNull(entity.archivedAt)
+        assertNull(entity.archiveNote)
     }
 
     // --- ActivityGroup <-> ActivityGroupEntity ---
@@ -254,10 +259,38 @@ class ModelConversionTest {
             id = 1, name = "标签", color = 0xFF0000, iconKey = null,
             category = "分类", groupId = null, priority = 1, usageCount = 5,
             sortOrder = 0, keywords = null, isArchived = false, archivedAt = null,
+            archiveNote = "看完后的想法",
         )
         val t2 = t1.copy()
 
         assertEquals(t1, t2)
+    }
+
+    @Test
+    fun `Tag toEntity and fromEntity roundtrip archiveNote`() {
+        val original = Tag(
+            id = 9, name = "轻小说", color = null, iconKey = null,
+            category = "文学", groupId = null, priority = 0, usageCount = 0,
+            sortOrder = 0, keywords = null, isArchived = true, archivedAt = 2000L,
+            archiveNote = "这本书看完了",
+        )
+
+        val restored = Tag.fromEntity(original.toEntity())
+
+        assertEquals(original.archiveNote, restored.archiveNote)
+        assertEquals(original.archivedAt, restored.archivedAt)
+        assertEquals(original.isArchived, restored.isArchived)
+    }
+
+    @Test
+    fun `Tag archiveNote defaults to null`() {
+        val tag = Tag(
+            id = 1, name = "无感想", color = null, iconKey = null,
+            category = null, groupId = null, priority = 0, usageCount = 0,
+            sortOrder = 0, keywords = null, isArchived = true, archivedAt = 1L,
+        )
+        assertNull(tag.archiveNote)
+        assertNull(tag.toEntity().archiveNote)
     }
 
     // --- BehaviorWithDetails ---

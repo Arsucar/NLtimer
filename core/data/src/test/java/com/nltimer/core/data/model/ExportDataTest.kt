@@ -21,13 +21,14 @@ class ExportDataTest {
                     color = 4280391411,
                     usageCount = 15,
                     tagNames = listOf("专注"),
+                    archiveNote = "阶段性结束",
                 ),
             ),
             activityGroups = listOf(
                 ExportedActivityGroup(name = "学习", sortOrder = 0),
             ),
             tags = listOf(
-                ExportedTag(name = "专注", category = "状态", priority = 1),
+                ExportedTag(name = "专注", category = "状态", priority = 1, archiveNote = "看完了"),
             ),
             tagCategories = listOf("状态", "场景"),
         )

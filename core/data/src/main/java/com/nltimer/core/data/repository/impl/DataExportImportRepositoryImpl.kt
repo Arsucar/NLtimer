@@ -395,6 +395,7 @@ private fun ActivityEntity.toExported(
         isPreset = isPreset,
         isArchived = isArchived,
         archivedAt = archivedAt,
+        archiveNote = archiveNote,
         color = color,
         usageCount = usageCount,
         tagNames = activityIdToTagNames[id] ?: emptyList(),
@@ -422,6 +423,7 @@ private fun TagEntity.toExported(): ExportedTag {
         keywords = keywords,
         isArchived = isArchived,
         archivedAt = archivedAt,
+        archiveNote = archiveNote,
     )
 }
 
@@ -446,6 +448,7 @@ private fun ExportedTag.toEntity(): TagEntity {
         keywords = keywords,
         isArchived = isArchived,
         archivedAt = archivedAt,
+        archiveNote = archiveNote,
     )
 }
 
@@ -458,6 +461,7 @@ private fun ExportedActivity.toEntity(groupId: Long?): ActivityEntity {
         isPreset = isPreset,
         isArchived = isArchived,
         archivedAt = archivedAt,
+        archiveNote = archiveNote,
         color = color,
         usageCount = usageCount,
     )
@@ -482,6 +486,7 @@ private fun TagEntity.mergeFrom(other: ExportedTag): TagEntity {
         keywords = other.keywords ?: keywords,
         isArchived = other.isArchived,
         archivedAt = other.archivedAt ?: archivedAt,
+        archiveNote = other.archiveNote ?: archiveNote,
     )
 }
 
@@ -492,6 +497,7 @@ private fun ActivityEntity.mergeFrom(other: ExportedActivity, groupId: Long?): A
         groupId = groupId ?: this.groupId,
         isArchived = other.isArchived,
         archivedAt = other.archivedAt ?: archivedAt,
+        archiveNote = other.archiveNote ?: archiveNote,
         color = other.color ?: color,
         usageCount = if (other.usageCount != 0) other.usageCount else usageCount,
     )

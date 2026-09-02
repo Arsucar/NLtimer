@@ -122,6 +122,22 @@ Both must pass before committing.
 
 ---
 
+### Pattern: Activity / Tag archive zone
+
+**Problem**: Users could archive items, but there was no list to view or restore them, and the edit-form Switch mixed archive with Save.
+
+**Solution**:
+1. Gear menu on `MANAGEMENT_ACTIVITIES` / `TAG_MANAGEMENT` adds `"归档区"`.
+2. Navigate with `navController.navigate(archiveRoute)` — **not** `navigateToRoute` (that `popUpTo` start destination).
+3. Routes `activity_archive` / `tag_archive` live in `SETTINGS_FULLSCREEN_ROUTES` (outer TopAppBar + back).
+4. Archive screens: `Box` + `SnackbarHost` + `navigationBarsPadding()`. **No inner Scaffold.**
+5. Restore = `setArchived(id, false)`; list is Flow-driven.
+6. Edit form: no Switch / `archiveNote` fields. Trailing row is `归档` + delete. `归档` opens `ArchiveConfirmDialog` (`minLines = 6`, 取消 / 确认归档). Confirm writes `isArchived` + `archivedAt` + `archiveNote` and dismisses the sheet. Save does not toggle archive.
+
+**Don't**: Merge activity/tag archives into one Tab page. Don't hard-delete from the archive zone. Don't put the archive Switch back on edit forms.
+
+---
+
 ## Testing Requirements
 
 (To be filled by the team)

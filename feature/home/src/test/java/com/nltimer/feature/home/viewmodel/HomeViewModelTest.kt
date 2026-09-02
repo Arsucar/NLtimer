@@ -21,10 +21,11 @@ import com.nltimer.core.data.util.TimeSnapService
 import com.nltimer.core.data.usecase.AddActivityUseCase
 import com.nltimer.core.data.usecase.AddBehaviorUseCase
 import com.nltimer.core.data.usecase.AddTagUseCase
+import com.nltimer.core.tools.event.ToolEventBus
 import com.nltimer.core.tools.match.ApplyNoteDirectivesUseCase
 import com.nltimer.core.tools.match.NoteMatcher
-import com.nltimer.feature.home.match.KeywordMatchStrategy
 import com.nltimer.feature.home.model.GridCellUiState
+import androidx.lifecycle.ViewModel
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -32,7 +33,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -62,6 +64,7 @@ class HomeViewModelTest {
     private lateinit var applyNoteDirectivesUseCase: ApplyNoteDirectivesUseCase
     private lateinit var activityManagementRepository: FakeActivityManagementRepository
     private lateinit var viewModel: HomeViewModel
+    private val createdViewModels = mutableListOf<HomeViewModel>()
 
     private var frozenTime: Long = 0
 
@@ -81,20 +84,7 @@ class HomeViewModelTest {
         addTagUseCase = AddTagUseCase(tagRepository)
         addActivityUseCase = AddActivityUseCase(activityManagementRepository)
         applyNoteDirectivesUseCase = ApplyNoteDirectivesUseCase(addActivityUseCase, addTagUseCase)
-        viewModel = HomeViewModel(
-            behaviorRepository,
-            activityRepository,
-            activityManagementRepository,
-            tagRepository,
-            settingsPrefs,
-            KeywordMatchStrategy(),
-            NoteMatcher(),
-            addBehaviorUseCase,
-            addTagUseCase,
-            addActivityUseCase,
-            applyNoteDirectivesUseCase,
-            clockService
-        )
+        viewModel = createHomeViewModel()
     }
 
     @After
@@ -102,9 +92,42 @@ class HomeViewModelTest {
         Dispatchers.resetMain()
     }
 
+    private fun createHomeViewModel(): HomeViewModel =
+        HomeViewModel(
+            behaviorRepository,
+            activityRepository,
+            activityManagementRepository,
+            tagRepository,
+            settingsPrefs,
+            NoteMatcher(),
+            addBehaviorUseCase,
+            addTagUseCase,
+            addActivityUseCase,
+            applyNoteDirectivesUseCase,
+            clockService,
+            ToolEventBus(),
+        ).also { createdViewModels.add(it) }
+
+    private fun homeRunTest(testBody: suspend TestScope.() -> Unit) = runTest {
+        try {
+            testBody()
+        } finally {
+            createdViewModels.forEach { it.clearForTest() }
+            createdViewModels.clear()
+        }
+    }
+
+    private fun ViewModel.clearForTest() {
+        val method = generateSequence(javaClass as Class<*>?) { it.superclass }
+            .flatMap { it.declaredMethods.asSequence() }
+            .first { it.parameterCount == 0 && (it.name == "clear" || it.name.startsWith("clear$")) }
+        method.isAccessible = true
+        method.invoke(this)
+    }
+
     @Test
-    fun `initial state loading`() = runTest {
-        advanceUntilIdle()
+    fun `initial state loading`() = homeRunTest {
+        runCurrent()
         val uiState = viewModel.uiState.value
         assertFalse(uiState.isLoading)
         assertEquals(1, uiState.gridSections.size)
@@ -112,36 +135,36 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun `addActivity calls repository`() = runTest {
+    fun `addActivity calls repository`() = homeRunTest {
         viewModel.addActivity("Test Activity", "😊", null, null, null, emptyList())
-        advanceUntilIdle()
+        runCurrent()
         assertEquals(1, activityManagementRepository.addedActivities.size)
         assertEquals("Test Activity", activityManagementRepository.addedActivities[0].name)
     }
 
     @Test
-    fun `addTag calls repository`() = runTest {
+    fun `addTag calls repository`() = homeRunTest {
         viewModel.addTag("Test Tag", null, null, 0, null, null, null)
-        advanceUntilIdle()
+        runCurrent()
         assertEquals(1, tagRepository.insertedTags.size)
         assertEquals("Test Tag", tagRepository.insertedTags[0].name)
     }
 
     @Test
-    fun `showAddSheet updates uiState`() = runTest {
+    fun `showAddSheet updates uiState`() = homeRunTest {
         viewModel.showAddSheet()
         assertNotNull(viewModel.uiState.value.addSheetMode)
     }
 
     @Test
-    fun `hideAddSheet updates uiState`() = runTest {
+    fun `hideAddSheet updates uiState`() = homeRunTest {
         viewModel.showAddSheet()
         viewModel.hideAddSheet()
         assertEquals(null, viewModel.uiState.value.addSheetMode)
     }
 
     @Test
-    fun `onActivitySelected loads tags`() = runTest {
+    fun `onActivitySelected loads tags`() = homeRunTest {
         val tags = listOf(Tag(1, "Tag1", null, null, null, null, 0, 0, 0, null, false))
         tagRepository.tagsByActivityId[1L] = tags
         
@@ -150,17 +173,17 @@ class HomeViewModelTest {
         }
         
         viewModel.onActivitySelected(1L)
-        advanceUntilIdle()
+        runCurrent()
         
         assertEquals(tags, viewModel.tagsForSelectedActivity.value)
         collectJob.cancel()
     }
 
     @Test
-    fun `addBehavior calls repository and hides sheet`() = runTest {
+    fun `addBehavior calls repository and hides sheet`() = homeRunTest {
         viewModel.showAddSheet()
         viewModel.addBehavior(1L, listOf(10L), 1000L, null, BehaviorNature.ACTIVE, "Note")
-        advanceUntilIdle()
+        runCurrent()
 
         assertTrue(behaviorRepository.endCurrentBehaviorCalled)
         assertEquals(1, behaviorRepository.insertedBehaviors.size)
@@ -169,7 +192,7 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun `addBehavior with COMPLETED endTime in future should show error`() = runTest {
+    fun `addBehavior with COMPLETED endTime in future should show error`() = homeRunTest {
         val futureTime = frozenTime + 3600_000
         val startTime = frozenTime - 7200_000
 
@@ -186,7 +209,7 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun `addBehavior with ACTIVE startTime in future should show error`() = runTest {
+    fun `addBehavior with ACTIVE startTime in future should show error`() = homeRunTest {
         val futureTime = frozenTime + 3600_000
 
         val result = addBehaviorUseCase(
@@ -202,7 +225,7 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun `addBehavior should insert at correct sequence based on startTime`() = runTest {
+    fun `addBehavior should insert at correct sequence based on startTime`() = homeRunTest {
         val existingBehavior = Behavior(
             id = 1L,
             activityId = 1L,
@@ -245,28 +268,28 @@ class HomeViewModelTest {
 
 
     @Test
-    fun `completeBehavior calls repository`() = runTest {
+    fun `completeBehavior calls repository`() = homeRunTest {
         viewModel.completeBehavior(1L)
-        advanceUntilIdle()
+        runCurrent()
         assertTrue(behaviorRepository.completeCurrentAndStartNextCalled)
     }
 
     @Test
-    fun `toggleIdleMode updates uiState`() = runTest {
+    fun `toggleIdleMode updates uiState`() = homeRunTest {
         val initial = viewModel.uiState.value.isIdleMode
         viewModel.toggleIdleMode()
         assertEquals(!initial, viewModel.uiState.value.isIdleMode)
     }
 
     @Test
-    fun `deleteBehavior calls repository`() = runTest {
+    fun `deleteBehavior calls repository`() = homeRunTest {
         viewModel.deleteBehavior(1L)
-        advanceUntilIdle()
+        runCurrent()
         assertTrue(behaviorRepository.deleteCalled)
     }
 
     @Test
-    fun `startNextPending calls repository`() = runTest {
+    fun `startNextPending calls repository`() = homeRunTest {
         val pending = Behavior(
             id = 1L,
             activityId = 1L,
@@ -283,21 +306,21 @@ class HomeViewModelTest {
         )
         behaviorRepository.nextPending = pending
         viewModel.startNextPending()
-        advanceUntilIdle()
+        runCurrent()
         assertTrue(behaviorRepository.setStatusCalled)
         assertTrue(behaviorRepository.setStartTimeCalled)
     }
 
     @Test
-    fun `reorderGoals calls repository`() = runTest {
+    fun `reorderGoals calls repository`() = homeRunTest {
         val orderedIds = listOf(3L, 1L, 2L)
         viewModel.reorderGoals(orderedIds)
-        advanceUntilIdle()
+        runCurrent()
         assertEquals(orderedIds, behaviorRepository.reorderedIds)
     }
 
     @Test
-    fun `toggleIdleMode toggles state`() = runTest {
+    fun `toggleIdleMode toggles state`() = homeRunTest {
         val initial = viewModel.uiState.value.isIdleMode
         viewModel.toggleIdleMode()
         assertEquals(!initial, viewModel.uiState.value.isIdleMode)
@@ -306,28 +329,28 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun `scrollToTime updates selectedTimeHour`() = runTest {
+    fun `scrollToTime updates selectedTimeHour`() = homeRunTest {
         viewModel.scrollToTime(14)
         assertEquals(14, viewModel.uiState.value.selectedTimeHour)
     }
 
     @Test
-    fun `onHomeLayoutChange updates theme`() = runTest {
+    fun `onHomeLayoutChange updates theme`() = homeRunTest {
         viewModel.onHomeLayoutChange(com.nltimer.core.designsystem.theme.HomeLayout.GRID)
-        advanceUntilIdle()
+        runCurrent()
         assertTrue(settingsPrefs.updateThemeCalled)
     }
 
     @Test
-    fun `onTimeLabelConfigChange updates config`() = runTest {
+    fun `onTimeLabelConfigChange updates config`() = homeRunTest {
         val config = TimeLabelConfig()
         viewModel.onTimeLabelConfigChange(config)
-        advanceUntilIdle()
+        runCurrent()
         assertTrue(settingsPrefs.updateTimeLabelConfigCalled)
     }
 
     @Test
-    fun `addBehavior with time conflict shows error`() = runTest {
+    fun `addBehavior with time conflict shows error`() = homeRunTest {
         val startTime = frozenTime - 7200_000
         val endTime = frozenTime - 3600_000
         val activeBehavior = Behavior(
@@ -360,7 +383,7 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun `addBehavior PENDING status does not check time conflict`() = runTest {
+    fun `addBehavior PENDING status does not check time conflict`() = homeRunTest {
         val startTime = frozenTime
         val overlapping = Behavior(
             id = 1L,
@@ -386,14 +409,14 @@ class HomeViewModelTest {
             status = BehaviorNature.PENDING,
             note = null,
         )
-        advanceUntilIdle()
+        runCurrent()
 
         assertEquals(1, behaviorRepository.insertedBehaviors.size)
         assertEquals(BehaviorNature.PENDING, behaviorRepository.insertedBehaviors[0].status)
     }
 
     @Test
-    fun `addBehavior with editBehaviorId calls updateBehavior`() = runTest {
+    fun `addBehavior with editBehaviorId calls updateBehavior`() = homeRunTest {
         viewModel.showEditSheet(GridCellUiState(
             behaviorId = 42L,
             activityIconKey = null,
@@ -411,39 +434,39 @@ class HomeViewModelTest {
             status = BehaviorNature.COMPLETED,
             note = "edited note",
         )
-        advanceUntilIdle()
+        runCurrent()
 
         assertTrue(behaviorRepository.updateBehaviorCalled)
     }
 
     @Test
-    fun `startBehavior sets ACTIVE status and start time`() = runTest {
+    fun `startBehavior sets ACTIVE status and start time`() = homeRunTest {
         viewModel.startBehavior(5L)
-        advanceUntilIdle()
+        runCurrent()
 
         assertTrue(behaviorRepository.setStatusCalled)
         assertTrue(behaviorRepository.setStartTimeCalled)
     }
 
     @Test
-    fun `startNextPending does nothing when no pending behavior`() = runTest {
+    fun `startNextPending does nothing when no pending behavior`() = homeRunTest {
         viewModel.startNextPending()
-        advanceUntilIdle()
+        runCurrent()
 
         assertFalse(behaviorRepository.setStatusCalled)
     }
 
     @Test
-    fun `completeBehavior passes idleMode state to repository`() = runTest {
+    fun `completeBehavior passes idleMode state to repository`() = homeRunTest {
         viewModel.toggleIdleMode()
         viewModel.completeBehavior(1L)
-        advanceUntilIdle()
+        runCurrent()
 
         assertTrue(behaviorRepository.completeCurrentAndStartNextCalled)
     }
 
     @Test
-    fun `hideAddSheet clears edit state`() = runTest {
+    fun `hideAddSheet clears edit state`() = homeRunTest {
         viewModel.showAddSheet()
         viewModel.hideAddSheet()
 
@@ -454,53 +477,27 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun `loadMore is no-op when earliestRecord is null`() = runTest {
-        val vm = HomeViewModel(
-            behaviorRepository,
-            activityRepository,
-            activityManagementRepository,
-            tagRepository,
-            settingsPrefs,
-            KeywordMatchStrategy(),
-            NoteMatcher(),
-            addBehaviorUseCase,
-            addTagUseCase,
-            addActivityUseCase,
-            applyNoteDirectivesUseCase,
-            clockService,
-        )
-        advanceUntilIdle()
+    fun `loadMore is no-op when earliestRecord is null`() = homeRunTest {
+        val vm = createHomeViewModel()
+        runCurrent()
         val before = vm.uiState.value.items.size
 
         vm.loadMore()
-        advanceUntilIdle()
+        runCurrent()
 
         assertEquals(before, vm.uiState.value.items.size)
     }
 
     @Test
-    fun `loadMore stops at earliestRecord boundary`() = runTest {
+    fun `loadMore stops at earliestRecord boundary`() = homeRunTest {
         val earliest = java.time.LocalDate.now().minusDays(3)
         behaviorRepository.earliestDate = earliest
-        val vm = HomeViewModel(
-            behaviorRepository,
-            activityRepository,
-            activityManagementRepository,
-            tagRepository,
-            settingsPrefs,
-            KeywordMatchStrategy(),
-            NoteMatcher(),
-            addBehaviorUseCase,
-            addTagUseCase,
-            addActivityUseCase,
-            applyNoteDirectivesUseCase,
-            clockService,
-        )
-        advanceUntilIdle()
+        val vm = createHomeViewModel()
+        runCurrent()
 
         repeat(5) {
             vm.loadMore()
-            advanceUntilIdle()
+            runCurrent()
         }
 
         assertTrue(vm.uiState.value.hasReachedEarliest)
@@ -583,6 +580,7 @@ class HomeViewModelTest {
         
         override fun getAllActive(): Flow<List<Activity>> = flowOf(emptyList())
         override fun getAll(): Flow<List<Activity>> = flowOf(emptyList())
+        override fun getArchived(): Flow<List<Activity>> = flowOf(emptyList())
         override fun getAllGroups(): Flow<List<ActivityGroup>> = flowOf(emptyList())
         override fun search(query: String): Flow<List<Activity>> = flowOf(emptyList())
         override suspend fun getById(id: Long): Activity? = null
@@ -601,6 +599,7 @@ class HomeViewModelTest {
 
         override fun getAllActive(): Flow<List<Tag>> = flowOf(emptyList())
         override fun getAll(): Flow<List<Tag>> = flowOf(emptyList())
+        override fun getArchived(): Flow<List<Tag>> = flowOf(emptyList())
         override fun getByCategory(category: String): Flow<List<Tag>> = flowOf(emptyList())
         override fun search(query: String): Flow<List<Tag>> = flowOf(emptyList())
         override fun getByActivityId(activityId: Long): Flow<List<Tag>> = flowOf(tagsByActivityId[activityId] ?: emptyList())
@@ -649,11 +648,15 @@ class HomeViewModelTest {
         override suspend fun updateTagDisplayConfig(config: com.nltimer.core.data.model.TagDisplayConfig) {}
         override fun getFocusCardConfigFlow(): Flow<com.nltimer.core.data.model.FocusCardConfig> = flowOf(com.nltimer.core.data.model.FocusCardConfig())
         override suspend fun updateFocusCardConfig(config: com.nltimer.core.data.model.FocusCardConfig) {}
+        override fun getStatsDashboardConfigFlow(): Flow<com.nltimer.core.data.model.StatsDashboardConfig> =
+            flowOf(com.nltimer.core.data.model.StatsDashboardConfig())
+        override suspend fun updateStatsDashboardConfig(config: com.nltimer.core.data.model.StatsDashboardConfig) {}
     }
 
     private class FakeActivityManagementRepository : ActivityManagementRepository {
         val addedActivities = mutableListOf<Activity>()
         override fun getAllActivities(): Flow<List<Activity>> = flowOf(emptyList())
+        override fun getArchived(): Flow<List<Activity>> = flowOf(emptyList())
         override fun getUncategorizedActivities(): Flow<List<Activity>> = flowOf(emptyList())
         override fun getActivitiesByGroup(groupId: Long): Flow<List<Activity>> = flowOf(emptyList())
         override fun getAllGroups(): Flow<List<ActivityGroup>> = flowOf(emptyList())
@@ -663,6 +666,7 @@ class HomeViewModelTest {
             return 1L
         }
         override suspend fun updateActivity(activity: Activity) {}
+        override suspend fun setArchived(id: Long, archived: Boolean) {}
         override suspend fun deleteActivity(id: Long) {}
         override suspend fun moveActivityToGroup(activityId: Long, groupId: Long?) {}
         override suspend fun addGroup(name: String): Long = 1L

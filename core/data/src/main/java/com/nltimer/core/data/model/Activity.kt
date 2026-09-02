@@ -17,6 +17,7 @@ data class Activity(
     val isPreset: Boolean = false,
     val isArchived: Boolean = false,
     val archivedAt: Long? = null,
+    val archiveNote: String? = null,
     val color: Long? = null,
     val usageCount: Int = 0,
 ) {
@@ -29,6 +30,7 @@ data class Activity(
         isPreset = isPreset,
         isArchived = isArchived,
         archivedAt = archivedAt,
+        archiveNote = archiveNote,
         color = color,
         usageCount = usageCount,
     )
@@ -43,6 +45,7 @@ data class Activity(
             isPreset = entity.isPreset,
             isArchived = entity.isArchived,
             archivedAt = entity.archivedAt,
+            archiveNote = entity.archiveNote,
             color = entity.color,
             usageCount = entity.usageCount,
         )

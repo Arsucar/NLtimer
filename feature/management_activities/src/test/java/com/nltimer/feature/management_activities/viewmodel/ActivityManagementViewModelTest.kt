@@ -180,11 +180,66 @@ class ActivityManagementViewModelTest {
     }
 
     @Test
+    fun `updateActivity does not toggle archive fields`() = runTest {
+        val activity = Activity(
+            id = 1L,
+            name = "改名",
+            isArchived = false,
+            archivedAt = null,
+            archiveNote = null,
+        )
+        viewModel.updateActivity(activity, emptyList())
+        advanceUntilIdle()
+
+        val updated = repository.updatedActivities.single()
+        assertFalse(updated.isArchived)
+        assertNull(updated.archivedAt)
+        assertNull(updated.archiveNote)
+    }
+
+    @Test
     fun `deleteActivity calls repository`() = runTest {
         viewModel.deleteActivity(1L)
         advanceUntilIdle()
 
         assertEquals(1L, repository.deletedActivityId)
+    }
+
+    @Test
+    fun `archiveActivity sets archived and note`() = runTest {
+        val activity = Activity(
+            id = 1L,
+            name = "活动A",
+            isArchived = false,
+            archivedAt = null,
+            archiveNote = null,
+        )
+        viewModel.showEditActivityDialog(activity)
+        advanceUntilIdle()
+
+        viewModel.archiveActivity(activity, "看完了")
+        advanceUntilIdle()
+
+        assertEquals(1, repository.updatedActivities.size)
+        val updated = repository.updatedActivities[0]
+        assertEquals(1L, updated.id)
+        assertEquals("活动A", updated.name)
+        assertTrue(updated.isArchived)
+        assertNotNull(updated.archivedAt)
+        assertEquals("看完了", updated.archiveNote)
+        assertNull(viewModel.uiState.value.dialogState)
+    }
+
+    @Test
+    fun `archiveActivity with null note still archives`() = runTest {
+        val activity = Activity(id = 2L, name = "活动B")
+        viewModel.archiveActivity(activity, null)
+        advanceUntilIdle()
+
+        val updated = repository.updatedActivities.single()
+        assertTrue(updated.isArchived)
+        assertNotNull(updated.archivedAt)
+        assertNull(updated.archiveNote)
     }
 
     @Test
@@ -295,6 +350,7 @@ class ActivityManagementViewModelTest {
             activitiesByGroupId.getOrPut(groupId) { MutableStateFlow(emptyList()) }
 
         override fun getAllActivities(): Flow<List<Activity>> = flowOf(emptyList())
+        override fun getArchived(): Flow<List<Activity>> = flowOf(emptyList())
         override fun getUncategorizedActivities(): Flow<List<Activity>> = _uncategorized
         override fun getAllGroups(): Flow<List<ActivityGroup>> = _groups
         override fun getActivitiesByGroup(groupId: Long): Flow<List<Activity>> = activitiesFlowForGroup(groupId)
@@ -306,6 +362,7 @@ class ActivityManagementViewModelTest {
         override suspend fun updateActivity(activity: Activity) {
             updatedActivities.add(activity)
         }
+        override suspend fun setArchived(id: Long, archived: Boolean) {}
         override suspend fun deleteActivity(id: Long) {
             deletedActivityId = id
         }
@@ -339,6 +396,7 @@ class ActivityManagementViewModelTest {
     private class FakeTagRepository : TagRepository {
         override fun getAllActive(): Flow<List<Tag>> = flowOf(emptyList())
         override fun getAll(): Flow<List<Tag>> = flowOf(emptyList())
+        override fun getArchived(): Flow<List<Tag>> = flowOf(emptyList())
         override fun getByCategory(category: String): Flow<List<Tag>> = flowOf(emptyList())
         override fun search(query: String): Flow<List<Tag>> = flowOf(emptyList())
         override fun getByActivityId(activityId: Long): Flow<List<Tag>> = flowOf(emptyList())
@@ -375,6 +433,9 @@ class ActivityManagementViewModelTest {
         override suspend fun updateFocusCardConfig(config: com.nltimer.core.data.model.FocusCardConfig) {}
         override fun getHasSeenIntroFlow(): Flow<Boolean> = flowOf(false)
         override suspend fun setHasSeenIntro(seen: Boolean) {}
+        override fun getStatsDashboardConfigFlow(): Flow<com.nltimer.core.data.model.StatsDashboardConfig> =
+            flowOf(com.nltimer.core.data.model.StatsDashboardConfig())
+        override suspend fun updateStatsDashboardConfig(config: com.nltimer.core.data.model.StatsDashboardConfig) {}
     }
 
     @Test

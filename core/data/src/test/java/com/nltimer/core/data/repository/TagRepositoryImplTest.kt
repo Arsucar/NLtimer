@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -52,6 +53,12 @@ class TagRepositoryImplTest {
 
         override fun getAll(): Flow<List<TagEntity>> = tagFlow
 
+        override fun getArchived(): Flow<List<TagEntity>> =
+            tagFlow.map { list ->
+                list.filter { it.isArchived }
+                    .sortedWith(compareByDescending<TagEntity> { it.archivedAt ?: Long.MIN_VALUE }.thenBy { it.name })
+            }
+
         override fun getByCategory(category: String): Flow<List<TagEntity>> =
             tagFlow.map { list -> list.filter { it.category == category } }
 
@@ -66,9 +73,13 @@ class TagRepositoryImplTest {
         override suspend fun getByName(name: String): TagEntity? =
             tagEntities.find { it.name == name }
 
-        override suspend fun setArchived(id: Long, archived: Boolean) {
+        override suspend fun setArchived(id: Long, archived: Boolean, now: Long) {
             tagEntities.replaceAll {
-                if (it.id == id) it.copy(isArchived = archived) else it
+                if (it.id == id) {
+                    it.copy(isArchived = archived, archivedAt = if (archived) now else null)
+                } else {
+                    it
+                }
             }
             tagFlow.value = tagEntities.toList()
         }
@@ -246,6 +257,41 @@ class TagRepositoryImplTest {
 
         val result = repository.getById(1L)
         assertTrue(result?.isArchived == true)
+        assertTrue(result?.archivedAt != null)
+    }
+
+    @Test
+    fun `getArchived returns only archived tags`() = runTest {
+        fakeTagDao.insert(TagEntity(name = "标签A", isArchived = false))
+        fakeTagDao.insert(TagEntity(name = "标签B", isArchived = true, archivedAt = 2000L))
+
+        val result = repository.getArchived().first()
+
+        assertEquals(1, result.size)
+        assertEquals("标签B", result[0].name)
+    }
+
+    @Test
+    fun `setArchived true sets archivedAt non-null`() = runTest {
+        fakeTagDao.insert(TagEntity(name = "标签A", isArchived = false, archivedAt = null))
+
+        repository.setArchived(1L, true)
+
+        val result = repository.getById(1L)
+        assertTrue(result?.isArchived == true)
+        assertTrue(result?.archivedAt != null)
+    }
+
+    @Test
+    fun `setArchived false clears archivedAt and item leaves getArchived`() = runTest {
+        fakeTagDao.insert(TagEntity(name = "标签A", isArchived = true, archivedAt = 1000L))
+
+        repository.setArchived(1L, false)
+
+        val restored = repository.getById(1L)
+        assertFalse(restored?.isArchived == true)
+        assertNull(restored?.archivedAt)
+        assertTrue(repository.getArchived().first().isEmpty())
     }
 
     @Test

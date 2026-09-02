@@ -32,11 +32,7 @@ object ActivityFormSpecs {
     fun editActivity() = FormSpec(
         title = "编辑活动",
         submitLabel = "保存",
-        sections = createActivity.sections + FormSection(
-            rows = listOf(
-                FormRow.Switch(key = "isArchived", label = "归档"),
-            ),
-        ),
+        sections = createActivity.sections,
     )
 
     val createTag = FormSpec(
@@ -71,10 +67,6 @@ object ActivityFormSpecs {
     fun editTag() = FormSpec(
         title = "编辑标签",
         submitLabel = "保存",
-        sections = createTag.sections + FormSection(
-            rows = listOf(
-                FormRow.Switch(key = "isArchived", label = "归档"),
-            ),
-        ),
+        sections = createTag.sections,
     )
 }

@@ -1,6 +1,8 @@
 package com.nltimer.feature.tag_management.ui.components.dialogs
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -26,6 +28,7 @@ import com.nltimer.core.behaviorui.sheet.ActivityCategorizable
 import com.nltimer.core.behaviorui.sheet.CategoryGroup
 import com.nltimer.core.behaviorui.sheet.CategoryPickerDialog
 import com.nltimer.core.behaviorui.sheet.StringCategoryCategorizable
+import com.nltimer.core.designsystem.component.ArchiveConfirmDialog
 import com.nltimer.core.designsystem.form.ActivityFormSpecs
 import com.nltimer.core.designsystem.form.FormRow
 import com.nltimer.core.designsystem.form.GenericFormSheet
@@ -44,12 +47,14 @@ fun EditTagFormSheet(
     onDismiss: () -> Unit,
     onConfirm: (Tag, Long?) -> Unit,
     onDelete: () -> Unit = {},
+    onArchive: (note: String?) -> Unit = {},
 ) {
     var selectedCategory by remember { mutableStateOf(tag.category) }
     var selectedActivityId by remember { mutableStateOf(initialActivityId) }
     var showCategoryPicker by remember { mutableStateOf(false) }
     var showActivityPicker by remember { mutableStateOf(false) }
     var showFieldDetail by remember { mutableStateOf(false) }
+    var showArchiveDialog by remember { mutableStateOf(false) }
 
     val activityName = allActivities.find { it.id == selectedActivityId }?.name
     val activityCountText = activityName ?: "+ 增加"
@@ -81,7 +86,6 @@ fun EditTagFormSheet(
         "name" to tag.name,
         "keywords" to (tag.keywords ?: ""),
         "priority" to tag.priority.toString(),
-        "isArchived" to tag.isArchived.toString(),
     )
 
     GenericFormSheet(
@@ -93,7 +97,6 @@ fun EditTagFormSheet(
             val icon = formState["icon"]?.trim()?.ifBlank { null }
             val colorHex = formState["color"]?.trim()?.ifBlank { null }
             val priority = formState["priority"]?.toIntOrNull() ?: tag.priority
-            val isArchived = formState["isArchived"]?.toBooleanStrictOrNull() ?: tag.isArchived
             val keywords = formState["keywords"]?.trim()?.ifBlank { null }
             val color = parseColorHex(colorHex)
             onConfirm(
@@ -104,7 +107,6 @@ fun EditTagFormSheet(
                     priority = priority,
                     category = selectedCategory,
                     keywords = keywords,
-                    isArchived = isArchived,
                 ),
                 selectedActivityId,
             )
@@ -217,13 +219,31 @@ fun EditTagFormSheet(
                     onDismiss = { showActivityPicker = false },
                 )
             }
+            if (showArchiveDialog) {
+                ArchiveConfirmDialog(
+                    title = "归档标签",
+                    initialNote = tag.archiveNote ?: "",
+                    onDismiss = { showArchiveDialog = false },
+                    onConfirm = { note ->
+                        onArchive(note)
+                        onDismiss()
+                    },
+                )
+            }
         },
         trailing = {
-            TextButton(
-                onClick = { onDismiss(); onDelete() },
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 48.dp),
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly,
             ) {
-                Text("删除标签", color = MaterialTheme.colorScheme.error)
+                TextButton(onClick = { showArchiveDialog = true }) {
+                    Text("归档")
+                }
+                TextButton(onClick = { onDismiss(); onDelete() }) {
+                    Text("删除标签", color = MaterialTheme.colorScheme.error)
+                }
             }
         },
     )

@@ -100,5 +100,8 @@ fun formatGridDurationHours(ms: Long): String {
 fun formatTimestamp(timestamp: Long): String =
     yyyyMMddHHmmFormatter.format(Instant.ofEpochMilli(timestamp).atZone(ZoneId.systemDefault()).toLocalDateTime())
 
+fun formatArchiveDate(archivedAt: Long?): String =
+    archivedAt?.let { "归档于 ${formatTimestamp(it)}" } ?: "日期未知"
+
 fun formatExportTimestamp(): String =
     exportTimestampFormatter.format(LocalDateTime.now())

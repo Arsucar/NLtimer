@@ -149,5 +149,8 @@ class DialogConfigViewModelTest {
         override suspend fun updateTagDisplayConfig(config: com.nltimer.core.data.model.TagDisplayConfig) {}
         override fun getFocusCardConfigFlow(): Flow<com.nltimer.core.data.model.FocusCardConfig> = flowOf(com.nltimer.core.data.model.FocusCardConfig())
         override suspend fun updateFocusCardConfig(config: com.nltimer.core.data.model.FocusCardConfig) {}
+        override fun getStatsDashboardConfigFlow(): Flow<com.nltimer.core.data.model.StatsDashboardConfig> =
+            flowOf(com.nltimer.core.data.model.StatsDashboardConfig())
+        override suspend fun updateStatsDashboardConfig(config: com.nltimer.core.data.model.StatsDashboardConfig) {}
     }
 }

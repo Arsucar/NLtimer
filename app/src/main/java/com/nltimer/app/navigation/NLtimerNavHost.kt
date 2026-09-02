@@ -12,6 +12,7 @@ import androidx.navigation.compose.composable
 import com.nltimer.feature.ai.navigation.aiNavGraph
 import com.nltimer.feature.categories.ui.CategoriesRoute
 import com.nltimer.feature.home.ui.HomeRoute
+import com.nltimer.feature.management_activities.ui.ActivityArchiveRoute
 import com.nltimer.feature.management_activities.ui.ActivityManagementRoute
 import com.nltimer.feature.settings.ui.ColorPaletteRoute
 import com.nltimer.feature.settings.ui.DialogConfigRoute
@@ -24,6 +25,7 @@ import com.nltimer.feature.settings.ui.ThemeSettingsRoute
 import com.nltimer.feature.stats.ui.StatsRoute
 import com.nltimer.feature.behavior_management.ui.BehaviorManagementRoute
 import com.nltimer.feature.settings.ui.DataManagementRoute
+import com.nltimer.feature.tag_management.ui.TagArchiveRoute
 import com.nltimer.feature.tag_management.ui.TagManagementRoute
 
 /**
@@ -60,6 +62,12 @@ fun NLtimerNavHost(
             TagManagementRoute(
                 _onNavigateBack = { navController.popBackStack() },
             )
+        }
+        slideComposable(NLtimerRoutes.ACTIVITY_ARCHIVE) {
+            ActivityArchiveRoute()
+        }
+        slideComposable(NLtimerRoutes.TAG_ARCHIVE) {
+            TagArchiveRoute()
         }
         slideComposable(NLtimerRoutes.BEHAVIOR_MANAGEMENT) {
             BehaviorManagementRoute(

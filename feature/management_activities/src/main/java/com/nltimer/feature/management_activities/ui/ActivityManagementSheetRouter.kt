@@ -53,6 +53,7 @@ fun ActivityManagementSheetRouter(
                     viewModel.updateActivity(updatedActivity, tagIds)
                 },
                 onDelete = { viewModel.showDeleteActivityDialog(dialog.activity) },
+                onArchive = { note -> viewModel.archiveActivity(dialog.activity, note) },
             )
         }
 

@@ -92,3 +92,14 @@ catch (e: Exception) {
     // 处理业务异常
 }
 ```
+
+## 8. 归档必须同时写 `archivedAt`
+
+**出现时机**：`setArchived` 或编辑表单 `update()` 只改 `isArchived`。
+
+**现象**：归档区按 `archivedAt DESC` 排序时全部挤在一起；无法区分归档先后。
+
+**避免方式**：
+- DAO：`archivedAt = CASE WHEN :archived THEN :now ELSE NULL END`
+- 归档确认弹窗：`archiveActivity` / `archiveTag` 同时写 `isArchived=true`、`archivedAt=now`、`archiveNote`
+- 编辑表单「保存」不得改 `isArchived` / `archivedAt` / `archiveNote`

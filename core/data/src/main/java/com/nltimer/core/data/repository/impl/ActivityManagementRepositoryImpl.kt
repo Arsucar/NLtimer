@@ -42,6 +42,9 @@ class ActivityManagementRepositoryImpl @Inject constructor(
     override fun getAllActivities(): Flow<List<Activity>> =
         activityDao.getAllActive().mapList { Activity.fromEntity(it) }
 
+    override fun getArchived(): Flow<List<Activity>> =
+        activityDao.getArchived().mapList { Activity.fromEntity(it) }
+
     override fun getUncategorizedActivities(): Flow<List<Activity>> =
         activityDao.getUncategorized().mapList { Activity.fromEntity(it) }
 
@@ -65,6 +68,9 @@ class ActivityManagementRepositoryImpl @Inject constructor(
 
     override suspend fun updateActivity(activity: Activity) =
         activityDao.update(activity.toEntity())
+
+    override suspend fun setArchived(id: Long, archived: Boolean) =
+        activityDao.setArchived(id, archived, System.currentTimeMillis())
 
     override suspend fun deleteActivity(id: Long) {
         database.withTransaction {

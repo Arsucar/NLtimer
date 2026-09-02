@@ -41,6 +41,7 @@ fun TagManagementSheetRouter(
                         viewModel.updateTag(tag, activityId)
                     },
                     onDelete = { viewModel.showDeleteTagDialog(dialog.tag) },
+                    onArchive = { note -> viewModel.archiveTag(dialog.tag, note) },
                 )
             }
             is DialogState.DeleteTag -> {

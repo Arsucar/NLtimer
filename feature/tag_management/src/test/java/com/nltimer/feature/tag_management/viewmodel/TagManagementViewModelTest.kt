@@ -137,6 +137,37 @@ class TagManagementViewModelTest {
     }
 
     @Test
+    fun `archiveTag updates isArchived and archiveNote`() = runTest {
+        val tag = Tag(1L, "待归档", null, null, null, null, 0, 0, 0, null, false)
+        viewModel.showEditTagDialog(tag)
+        advanceUntilIdle()
+
+        viewModel.archiveTag(tag, "这本书看完了")
+        advanceUntilIdle()
+
+        assertEquals(1, tagRepository.updatedTags.size)
+        val updated = tagRepository.updatedTags[0]
+        assertEquals(1L, updated.id)
+        assertEquals("待归档", updated.name)
+        assertTrue(updated.isArchived)
+        assertNotNull(updated.archivedAt)
+        assertEquals("这本书看完了", updated.archiveNote)
+        assertNull(viewModel.uiState.value.dialogState)
+    }
+
+    @Test
+    fun `archiveTag with null note still archives`() = runTest {
+        val tag = Tag(2L, "空感想", null, null, null, null, 0, 0, 0, null, false)
+        viewModel.archiveTag(tag, null)
+        advanceUntilIdle()
+
+        val updated = tagRepository.updatedTags.single()
+        assertTrue(updated.isArchived)
+        assertNotNull(updated.archivedAt)
+        assertNull(updated.archiveNote)
+    }
+
+    @Test
     fun `moveTagToCategory with null tag does not call update`() = runTest {
         tagRepository.tagById = null
         viewModel.moveTagToCategory(999L, "新分类")
@@ -309,6 +340,32 @@ class TagManagementViewModelTest {
     }
 
     @Test
+    fun `updateTag does not toggle archive fields`() = runTest {
+        val tag = Tag(
+            id = 1L,
+            name = "改名",
+            color = null,
+            iconKey = null,
+            category = null,
+            groupId = null,
+            priority = 0,
+            usageCount = 0,
+            sortOrder = 0,
+            keywords = null,
+            isArchived = false,
+            archivedAt = null,
+            archiveNote = null,
+        )
+        viewModel.updateTag(tag, null)
+        advanceUntilIdle()
+
+        val updated = tagRepository.updatedTags.single()
+        assertFalse(updated.isArchived)
+        assertNull(updated.archivedAt)
+        assertNull(updated.archiveNote)
+    }
+
+    @Test
     fun `deleteTag dismisses dialog after archive`() = runTest {
         val tag = Tag(1L, "标签", null, null, null, null, 0, 0, 0, null, false)
         viewModel.showDeleteTagDialog(tag)
@@ -341,6 +398,7 @@ class TagManagementViewModelTest {
 
         override fun getAllActive(): Flow<List<Tag>> = _tags
         override fun getAll(): Flow<List<Tag>> = _tags
+        override fun getArchived(): Flow<List<Tag>> = _tags.map { list -> list.filter { it.isArchived } }
         override fun getByCategory(category: String): Flow<List<Tag>> = flowOf(emptyList())
         override fun search(query: String): Flow<List<Tag>> = flowOf(emptyList())
         override fun getByActivityId(activityId: Long): Flow<List<Tag>> = flowOf(emptyList())
@@ -372,12 +430,14 @@ class TagManagementViewModelTest {
 
     private class FakeActivityManagementRepository : ActivityManagementRepository {
         override fun getAllActivities(): Flow<List<Activity>> = flowOf(emptyList())
+        override fun getArchived(): Flow<List<Activity>> = flowOf(emptyList())
         override fun getUncategorizedActivities(): Flow<List<Activity>> = flowOf(emptyList())
         override fun getActivitiesByGroup(groupId: Long): Flow<List<Activity>> = flowOf(emptyList())
         override fun getAllGroups(): Flow<List<com.nltimer.core.data.model.ActivityGroup>> = flowOf(emptyList())
         override fun getActivityStats(activityId: Long): Flow<com.nltimer.core.data.model.ActivityStats> = flowOf(com.nltimer.core.data.model.ActivityStats())
         override suspend fun addActivity(activity: Activity): Long = 1L
         override suspend fun updateActivity(activity: Activity) {}
+        override suspend fun setArchived(id: Long, archived: Boolean) {}
         override suspend fun deleteActivity(id: Long) {}
         override suspend fun moveActivityToGroup(activityId: Long, groupId: Long?) {}
         override suspend fun addGroup(name: String): Long = 1L
@@ -428,5 +488,8 @@ class TagManagementViewModelTest {
         override suspend fun updateFocusCardConfig(config: com.nltimer.core.data.model.FocusCardConfig) {}
         override fun getHasSeenIntroFlow(): Flow<Boolean> = flowOf(false)
         override suspend fun setHasSeenIntro(seen: Boolean) {}
+        override fun getStatsDashboardConfigFlow(): Flow<com.nltimer.core.data.model.StatsDashboardConfig> =
+            flowOf(com.nltimer.core.data.model.StatsDashboardConfig())
+        override suspend fun updateStatsDashboardConfig(config: com.nltimer.core.data.model.StatsDashboardConfig) {}
     }
 }

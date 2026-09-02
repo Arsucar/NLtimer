@@ -22,6 +22,9 @@ class TagRepositoryImpl @Inject constructor(
     override fun getAll(): Flow<List<Tag>> =
         tagDao.getAll().mapList { Tag.fromEntity(it) }
 
+    override fun getArchived(): Flow<List<Tag>> =
+        tagDao.getArchived().mapList { Tag.fromEntity(it) }
+
     override fun getByCategory(category: String): Flow<List<Tag>> =
         tagDao.getByCategory(category).mapList { Tag.fromEntity(it) }
 
@@ -44,7 +47,7 @@ class TagRepositoryImpl @Inject constructor(
         tagDao.update(tag.toEntity())
 
     override suspend fun setArchived(id: Long, archived: Boolean) =
-        tagDao.setArchived(id, archived)
+        tagDao.setArchived(id, archived, System.currentTimeMillis())
 
     override fun getDistinctCategories(): Flow<List<String>> =
         tagDao.getDistinctCategories()

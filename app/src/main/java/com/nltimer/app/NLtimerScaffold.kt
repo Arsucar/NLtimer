@@ -119,6 +119,8 @@ fun NLtimerScaffold(
         NLtimerRoutes.ICON_MISS_LOG -> "图标库"
         NLtimerRoutes.ADVANCED_SETTINGS -> "高级"
         NLtimerRoutes.LOG_LIST -> "日志记录"
+        NLtimerRoutes.ACTIVITY_ARCHIVE -> "活动归档区"
+        NLtimerRoutes.TAG_ARCHIVE -> "标签归档区"
         AiRoutes.AI_INTER -> "AI Inter"
         NLtimerRoutes.STATS -> "统计"
         else -> visibleDateLabelState.value ?: "NLtimer"
@@ -196,6 +198,7 @@ fun NLtimerScaffold(
                 add(if (mode == DisplayColorMode.BACKGROUND) "✓ 图标：背景色" else "图标：背景色")
                 add(if (mode == DisplayColorMode.TEXT) "✓ 图标：文字色" else "图标：文字色")
                 add(if (mode == DisplayColorMode.NORMAL) "✓ 图标：正常" else "图标：正常")
+                add("归档区")
             }
             if (currentRoute == NLtimerRoutes.TAG_MANAGEMENT) {
                 val mode = displayColorConfig.tagDisplayColorMode
@@ -203,6 +206,7 @@ fun NLtimerScaffold(
                 add(if (mode == DisplayColorMode.TEXT) "✓ 标签：文字色" else "标签：文字色")
                 add(if (mode == DisplayColorMode.NORMAL) "✓ 标签：正常" else "标签：正常")
                 add(if (displayColorConfig.showTagIcon) "✓ 显示图标" else "显示图标")
+                add("归档区")
             }
         }
     }
@@ -259,6 +263,16 @@ fun NLtimerScaffold(
             }
             option == "标签配置" -> showTagDisplayConfigDialog = true
             option == "专注卡片配置" -> showFocusCardConfigDialog = true
+            option == "归档区" -> {
+                val archiveRoute = when (currentRoute) {
+                    NLtimerRoutes.MANAGEMENT_ACTIVITIES -> NLtimerRoutes.ACTIVITY_ARCHIVE
+                    NLtimerRoutes.TAG_MANAGEMENT -> NLtimerRoutes.TAG_ARCHIVE
+                    else -> null
+                }
+                if (archiveRoute != null) {
+                    navController.navigate(archiveRoute)
+                }
+            }
         }
     }
 

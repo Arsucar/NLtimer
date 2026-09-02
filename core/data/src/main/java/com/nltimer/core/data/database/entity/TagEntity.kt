@@ -26,5 +26,6 @@ data class TagEntity(
     val sortOrder: Int = 0,
     val isArchived: Boolean = false,
     val archivedAt: Long? = null,
+    val archiveNote: String? = null,
     val keywords: String? = null,
 )

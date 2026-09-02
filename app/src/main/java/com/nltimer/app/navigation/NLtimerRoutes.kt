@@ -9,6 +9,8 @@ object NLtimerRoutes {
     const val CATEGORIES = "categories"
     const val MANAGEMENT_ACTIVITIES = "management_activities"
     const val TAG_MANAGEMENT = "tag_management"
+    const val ACTIVITY_ARCHIVE = "activity_archive"
+    const val TAG_ARCHIVE = "tag_archive"
     const val SETTINGS = "settings"
     const val THEME_SETTINGS = "theme_settings"
     const val DIALOG_CONFIG = "dialog_config"
@@ -24,7 +26,7 @@ object NLtimerRoutes {
     val SETTINGS_FULLSCREEN_ROUTES = setOf(
         THEME_SETTINGS, DIALOG_CONFIG, BEHAVIOR_MANAGEMENT, DATA_MANAGEMENT,
         HOME_LAYOUT_CONFIG, COLOR_PALETTE, ICON_MISS_LOG, ADVANCED_SETTINGS,
-        LOG_LIST, CATEGORIES, AiRoutes.AI_INTER,
+        LOG_LIST, CATEGORIES, ACTIVITY_ARCHIVE, TAG_ARCHIVE, AiRoutes.AI_INTER,
         AiRoutes.AI_PROVIDER_CONFIG, AiRoutes.AI_TOOLS_LIST, AiRoutes.AI_CALL_LOGS, AiRoutes.AI_PROMPT_CONFIG,
         AiRoutes.AI_TEST_CHAT, AiRoutes.AI_CALL_LOG_DETAIL_PATTERN
     )

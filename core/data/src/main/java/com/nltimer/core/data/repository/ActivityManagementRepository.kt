@@ -12,6 +12,8 @@ import kotlinx.coroutines.flow.Flow
 interface ActivityManagementRepository {
     /** 获取所有未归档的活动 */
     fun getAllActivities(): Flow<List<Activity>>
+    /** 获取所有已归档的活动 */
+    fun getArchived(): Flow<List<Activity>>
     /** 获取未分组的活动 */
     fun getUncategorizedActivities(): Flow<List<Activity>>
     /** 获取指定分组下的活动 */
@@ -23,6 +25,7 @@ interface ActivityManagementRepository {
 
     suspend fun addActivity(activity: Activity): Long
     suspend fun updateActivity(activity: Activity)
+    suspend fun setArchived(id: Long, archived: Boolean)
     suspend fun deleteActivity(id: Long)
     suspend fun moveActivityToGroup(activityId: Long, groupId: Long?)
 

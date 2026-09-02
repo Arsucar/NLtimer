@@ -210,6 +210,19 @@ class ActivityManagementViewModel @Inject constructor(
         }
     }
 
+    fun archiveActivity(activity: Activity, note: String?) {
+        viewModelScope.launch {
+            repository.updateActivity(
+                activity.copy(
+                    isArchived = true,
+                    archivedAt = System.currentTimeMillis(),
+                    archiveNote = note,
+                ),
+            )
+            dismissDialog()
+        }
+    }
+
     fun moveActivityToGroup(activityId: Long, groupId: Long?) {
         viewModelScope.launch {
             repository.moveActivityToGroup(activityId, groupId)

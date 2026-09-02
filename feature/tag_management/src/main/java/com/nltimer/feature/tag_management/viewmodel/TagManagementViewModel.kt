@@ -185,6 +185,19 @@ class TagManagementViewModel @Inject constructor(
         }
     }
 
+    fun archiveTag(tag: Tag, note: String?) {
+        viewModelScope.launch {
+            tagRepository.update(
+                tag.copy(
+                    isArchived = true,
+                    archivedAt = System.currentTimeMillis(),
+                    archiveNote = note,
+                ),
+            )
+            dismissDialog()
+        }
+    }
+
     fun moveTagToCategory(tagId: Long, newCategory: String?) {
         viewModelScope.launch {
             val updatedTag = tagRepository.getById(tagId)?.copy(category = newCategory)

@@ -4,7 +4,7 @@
 |---|---|
 | 名称 | NLtimer |
 | 定位 | Android 行为记录与时间管理应用 |
-| 版本 | 0.1.5 (build 105) |
+| 版本 | 0.3.11 (build 311) |
 | 包名 | `com.nltimer.app` |
 | 语言 | Kotlin 2.3.21 |
 | UI | Jetpack Compose + Material 3 (Expressive) |
