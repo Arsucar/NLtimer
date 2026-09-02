@@ -1,0 +1,8 @@
+{"file": ".trellis/spec/backend/index.md", "reason": "Quality checklist"}
+{"file": ".trellis/spec/backend/directory-structure.md", "reason": "Module boundaries: feature must not depend on other features"}
+{"file": ".trellis/spec/backend/quality-guidelines.md", "reason": "Forbidden patterns and compile verification"}
+{"file": ".trellis/spec/backend/error-handling.md", "reason": "CancellationException and error mapping"}
+{"file": "docs/agent/06-common-bug.md", "reason": "Nested Scaffold and catch rules"}
+{"file": ".trellis/tasks/08-31-issues-and-release/prd.md", "reason": "AC1-AC8 must hold; do not change delete/archive actions"}
+{"file": ".trellis/tasks/08-31-issues-and-release/research/archive-data-layer.md", "reason": "getArchived + archivedAt contract"}
+{"file": ".trellis/tasks/08-31-issues-and-release/research/archive-ui-nav.md", "reason": "Gear-menu entry and fullscreen routes"}

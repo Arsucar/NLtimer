@@ -1,0 +1,9 @@
+{"file": ".trellis/spec/backend/index.md", "reason": "Backend spec index and pre-dev checklist"}
+{"file": ".trellis/spec/backend/directory-structure.md", "reason": "Feature vs core module layout and navigation extraction"}
+{"file": ".trellis/spec/backend/quality-guidelines.md", "reason": "No nested experimental code; feature routes; compile --no-daemon"}
+{"file": ".trellis/spec/backend/error-handling.md", "reason": "Rethrow CancellationException; log errors in ViewModel"}
+{"file": "docs/agent/06-common-bug.md", "reason": "No nested Scaffold; CancellationException"}
+{"file": ".trellis/tasks/08-31-issues-and-release/prd.md", "reason": "Confirmed requirements for archive zone + release"}
+{"file": ".trellis/tasks/08-31-issues-and-release/research/archive-data-layer.md", "reason": "DAO/repo gaps, unique name, archivedAt unused"}
+{"file": ".trellis/tasks/08-31-issues-and-release/research/archive-ui-nav.md", "reason": "Gear menu entry, routes, no inner Scaffold"}
+{"file": ".trellis/tasks/08-31-issues-and-release/research/release-process.md", "reason": "Version bump and tag release process"}
