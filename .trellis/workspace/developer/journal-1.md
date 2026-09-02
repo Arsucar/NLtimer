@@ -604,3 +604,37 @@ cherry-pick noble-raccoon 分支的 overnight refactor 提交到 dev-v5，补上
 ### Next Steps
 
 - None - task complete
+
+
+## Session 19: 处理 Issue #7 并发布 v0.3.11
+
+**Date**: 2026-09-02
+**Task**: 处理 Issue #7 并发布 v0.3.11
+**Branch**: `dev-v6`
+
+### Summary
+
+实现活动/标签归档区（分组、感想弹窗、恢复），关闭 #7，发布 v0.3.11。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `97b8461b` | (see git log) |
+| `10880822` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete

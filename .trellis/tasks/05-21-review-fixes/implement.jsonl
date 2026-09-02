@@ -1,0 +1,8 @@
+{"file": ".trellis/spec/backend/quality-guidelines.md", "reason": "feature 模块结构/导航抽取/禁止 experimental 长期驻留等审查标准"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "全链路审查必须考虑层边界数据流"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "优化时优先复用已有工具/组件，避免重复"}
+{"file": "docs/agent/02-architecture-digest.md", "reason": "三层架构与数据流基线"}
+{"file": "docs/agent/03-module-map.md", "reason": "模块→类→文件路径映射"}
+{"file": "docs/agent/05-data-model.md", "reason": "Room 实体/领域模型速查"}
+{"file": "docs/agent/06-common-bug.md", "reason": "已知常见 bug 模式（嵌套 Scaffold/工具 JSON 返回等）"}
+{"file": ".trellis/tasks/05-21-review-fixes/research/detekt-report.md", "reason": "detekt 335 issue 基线分类与 P0/P1/P2 优先级"}

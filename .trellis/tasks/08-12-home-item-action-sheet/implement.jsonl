@@ -1,0 +1,6 @@
+{"_example": "Fill with {\"file\": \"<path>\", \"reason\": \"<why>\"}. Put spec/research files only — no code paths. Run `python .trellis/scripts/get_context.py --mode packages` to list available specs. Delete this line once real entries are added."}
+{"file": ".trellis/spec/backend/index.md", "reason": "Backend guideline index / pre-dev checklist"}
+{"file": ".trellis/spec/backend/quality-guidelines.md", "reason": "Code quality and forbidden patterns"}
+{"file": ".trellis/spec/backend/directory-structure.md", "reason": "Where to place new UI components"}
+{"file": ".trellis/spec/backend/error-handling.md", "reason": "Error handling conventions"}
+{"file": ".trellis/tasks/08-12-home-item-action-sheet/research/home-item-click-detail-flow.md", "reason": "Current click/detail flow and file map"}

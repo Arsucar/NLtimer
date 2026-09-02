@@ -1,0 +1,11 @@
+{"file": ".trellis/spec/backend/quality-guidelines.md", "reason": "质量审查：模块结构/禁止模式/Review Checklist"}
+{"file": ".trellis/spec/backend/error-handling.md", "reason": "错误处理规范（当前待填，作为审查项）"}
+{"file": "docs/agent/04-patterns.md", "reason": "设计模式与代码约定审查基准"}
+{"file": "docs/agent/06-common-bug.md", "reason": "已知 bug 模式核查清单"}
+{"file": ".trellis/tasks/05-21-review-fixes/research/detekt-report.md", "reason": "detekt 基线对照"}
+{"file": ".trellis/tasks/05-21-review-fixes/research/data-review.md", "reason": "数据层审查结果与已修复项"}
+{"file": ".trellis/tasks/05-21-review-fixes/research/tools-review.md", "reason": "工具层审查结果与已修复项"}
+{"file": ".trellis/tasks/05-21-review-fixes/research/home-behaviorui-review.md", "reason": "首页/行为面板审查结果"}
+{"file": ".trellis/tasks/05-21-review-fixes/research/ui-b-review.md", "reason": "统计设置管理审查结果"}
+{"file": ".trellis/tasks/05-21-review-fixes/research/ai-review.md", "reason": "AI链路审查结果"}
+{"file": ".trellis/tasks/05-21-review-fixes/research/nav-shell-review.md", "reason": "导航壳审查结果"}

@@ -8,8 +8,8 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 18
-- **Last Active**: 2026-05-26
+- **Total Sessions**: 19
+- **Last Active**: 2026-09-02
 <!-- @@@/auto:current-status -->
 
 ---
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~606 | Active |
+| `journal-1.md` | ~640 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 19 | 2026-09-02 | 处理 Issue #7 并发布 v0.3.11 | `97b8461b`, `10880822` | `dev-v6` |
 | 18 | 2026-05-26 | 解耦标签活动双向绑定 | `c0457536` | `dev-v5` |
 | 17 | 2026-05-25 | cherry-pick noble-raccoon + 工作树清理规划 | `6cf787e9` | `dev-v5` |
 | 16 | 2026-05-25 | 添加 Node.js 工具链支持 | `4adbdeae` | `dev-v5` |
