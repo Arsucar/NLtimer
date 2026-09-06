@@ -638,3 +638,43 @@ cherry-pick noble-raccoon 分支的 overnight refactor 提交到 dev-v5，补上
 ### Next Steps
 
 - None - task complete
+
+## Session  审查并提交未变更 + 归档 developer 任务
+
+**Date**:2026-09-07
+**Task**:审查未提交变更并发布新版本
+**Branch**: `dev-v6`
+
+### Summary
+
+审查并提交两处功能：时间调整"上尾"快捷按钮、Stats 拖拽排序重构与配置持久化优化。另归档 3 个 developer 任务。
+
+
+
+### Main Changes
+
+- 时间调整组件新增"上尾"按钮，跳转到上一条记录结束时间（behaviorui/home/management）
+- Stats 网格拖拽改为指针位置计算插入点（`computeGridDropIndex`），并改为拖拽仅更新内存、drop 时才 persist
+- StatsViewModel 新增 `persistPanels` 与竞态保护（`dashboardPersistInFlight`/`persistGeneration`）
+- 新增 `StatsGridDropIndexTest`、`StatsViewModelTest` 单元测试
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `e3f3b2e5` | feat(行为):时间调整添加上尾快捷按钮 |
+| `884644f3` | feat(stats):重构拖拽排序算法并优化配置持久化 |
+| `89f1e8cb` | chore: 添加发布流程技能文档 |
+| `(see git log)` | chore(task): archive 08-12 / 08-16 / 09-05 |
+
+### Testing
+
+- [OK] 审查 diff 并确认拖拽算法、竞态保护、测试覆盖正确
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
