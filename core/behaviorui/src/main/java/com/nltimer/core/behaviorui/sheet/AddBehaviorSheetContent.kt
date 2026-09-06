@@ -78,6 +78,7 @@ internal fun AddBehaviorSheetContent(
     dialogConfig: DialogGridConfig,
     initialStartTime: LocalDateTime? = null,
     initialEndTime: LocalDateTime? = null,
+    prevEndTime: LocalDateTime? = null,
     initialActivityId: Long? = null,
     initialTagIds: List<Long> = emptyList(),
     initialNote: String? = null,
@@ -161,6 +162,7 @@ internal fun AddBehaviorSheetContent(
                 boxPositionInWindow = state.boxPositionInWindow,
                 onStartTimeChanged = { state.startTime = it },
                 onEndTimeChanged = { state.endTime = it },
+                prevEndTime = prevEndTime,
                 onUserAdjusted = { state.markUserAdjustedTime() },
             )
         }

@@ -251,6 +251,7 @@ editBehavior?.let { bwd ->
             allTags = allTags,
             initialStartTime = initialStartTime,
             initialEndTime = initialEndTime,
+            prevEndTime = null,
             initialActivityId = bwd.activity.id,
             initialTagIds = initialTagIds,
             initialNote = bwd.behavior.note,

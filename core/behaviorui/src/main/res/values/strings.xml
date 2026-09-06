@@ -13,4 +13,8 @@
     <string name="add_behavior_type">类型</string>
     <string name="add_behavior_add_action">+ 添加</string>
     <string name="add_behavior_confirm">完成</string>
+
+    <string name="time_adjustment_prev_end">上尾</string>
+    <string name="time_adjustment_prev_end_cd">定位到上一条记录的结束时间</string>
+    <string name="time_adjustment_now">现在</string>
 </resources>
