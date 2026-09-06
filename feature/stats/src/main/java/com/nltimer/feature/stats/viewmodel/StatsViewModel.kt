@@ -1,5 +1,6 @@
 package com.nltimer.feature.stats.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nltimer.core.data.SettingsPrefs
@@ -15,6 +16,7 @@ import com.nltimer.core.data.usecase.StatsQueryUseCase
 import com.nltimer.feature.stats.model.StatsUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -22,7 +24,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -39,6 +40,10 @@ class StatsViewModel @Inject constructor(
     private val settingsPrefs: SettingsPrefs,
 ) : ViewModel() {
 
+    companion object {
+        private const val TAG = "StatsViewModel"
+    }
+
     private val _uiState = MutableStateFlow(StatsUiState())
     val uiState: StateFlow<StatsUiState> = _uiState.asStateFlow()
 
@@ -47,6 +52,11 @@ class StatsViewModel @Inject constructor(
 
     val dashboardConfig: StateFlow<StatsDashboardConfig> = settingsPrefs.getStatsDashboardConfigFlow()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), defaultStatsDashboardConfig())
+
+    @Volatile
+    private var dashboardPersistInFlight = false
+
+    private var persistGeneration = 0
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val statsResult: StateFlow<StatsResult?> = _currentTimeRange
@@ -57,9 +67,10 @@ class StatsViewModel @Inject constructor(
                     _uiState.update { it.copy(isLoading = true) }
                     val result = try {
                         statsQueryUseCase.query(startMs, endMs)
-                    } catch (e: kotlinx.coroutines.CancellationException) {
+                    } catch (e: CancellationException) {
                         throw e
-                    } catch (_: Exception) {
+                    } catch (e: Exception) {
+                        Log.e(TAG, "stats query failed", e)
                         null
                     }
                     _uiState.update { it.copy(isLoading = false) }
@@ -74,6 +85,7 @@ class StatsViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             dashboardConfig.collect { config ->
+                if (dashboardPersistInFlight) return@collect
                 _uiState.update { it.copy(dashboardConfig = config) }
             }
         }
@@ -99,25 +111,31 @@ class StatsViewModel @Inject constructor(
 
     fun movePanel(fromIndex: Int, toIndex: Int) {
         val current = _uiState.value.dashboardConfig.panels
-        if (fromIndex !in current.indices || toIndex !in current.indices) return
+        if (fromIndex !in current.indices) return
+        val insertBefore = toIndex.coerceIn(0, current.size)
+        if (fromIndex == insertBefore || fromIndex + 1 == insertBefore) return
         val mutable = current.toMutableList()
         val panel = mutable.removeAt(fromIndex)
-        mutable.add(toIndex, panel)
-        viewModelScope.launch {
-            settingsPrefs.updateStatsDashboardConfig(
-                _uiState.value.dashboardConfig.copy(panels = mutable.toImmutableList()),
-            )
-        }
+        val dest = if (insertBefore > fromIndex) insertBefore - 1 else insertBefore
+        mutable.add(dest, panel)
+        applyDashboard(
+            _uiState.value.dashboardConfig.copy(panels = mutable.toImmutableList()),
+            persist = false,
+        )
+    }
+
+    fun persistPanels() {
+        applyDashboard(_uiState.value.dashboardConfig, persist = true)
     }
 
     fun removePanel(panelId: String) {
-        val current = _uiState.value.dashboardConfig.panels
-        val updated = current.filter { it.id != panelId }.toImmutableList()
-        viewModelScope.launch {
-            settingsPrefs.updateStatsDashboardConfig(
-                _uiState.value.dashboardConfig.copy(panels = updated),
-            )
-        }
+        val updated = _uiState.value.dashboardConfig.panels
+            .filter { it.id != panelId }
+            .toImmutableList()
+        applyDashboard(
+            _uiState.value.dashboardConfig.copy(panels = updated),
+            persist = true,
+        )
     }
 
     fun addPanel(type: StatsPanelType) {
@@ -127,21 +145,35 @@ class StatsViewModel @Inject constructor(
             title = type.defaultTitle(),
         )
         val updated = (_uiState.value.dashboardConfig.panels + newPanel).toImmutableList()
-        viewModelScope.launch {
-            settingsPrefs.updateStatsDashboardConfig(
-                _uiState.value.dashboardConfig.copy(panels = updated),
-            )
-        }
+        applyDashboard(
+            _uiState.value.dashboardConfig.copy(panels = updated),
+            persist = true,
+        )
     }
 
     fun resetToDefault() {
-        viewModelScope.launch {
-            settingsPrefs.updateStatsDashboardConfig(defaultStatsDashboardConfig())
-        }
+        applyDashboard(defaultStatsDashboardConfig(), persist = true)
     }
 
     fun selectActivity(activity: ActivityStat?) {
         _uiState.update { it.copy(selectedActivity = activity) }
+    }
+
+    private fun applyDashboard(config: StatsDashboardConfig, persist: Boolean) {
+        val generation = ++persistGeneration
+        dashboardPersistInFlight = true
+        _uiState.update { it.copy(dashboardConfig = config) }
+        if (persist) {
+            viewModelScope.launch {
+                try {
+                    settingsPrefs.updateStatsDashboardConfig(_uiState.value.dashboardConfig)
+                } finally {
+                    if (generation == persistGeneration) {
+                        dashboardPersistInFlight = false
+                    }
+                }
+            }
+        }
     }
 
     private fun computeTimeRangeMs(range: StatsTimeRange): Pair<Long?, Long?> {

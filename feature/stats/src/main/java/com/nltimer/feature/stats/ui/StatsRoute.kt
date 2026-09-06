@@ -18,6 +18,7 @@ fun StatsRoute(
         onTimeRangeChange = viewModel::updateTimeRange,
         onToggleEditMode = viewModel::toggleEditMode,
         onMovePanel = viewModel::movePanel,
+        onPersistPanels = viewModel::persistPanels,
         onRemovePanel = viewModel::removePanel,
         onAddPanel = viewModel::addPanel,
         onResetToDefault = viewModel::resetToDefault,

@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -48,17 +47,22 @@ internal fun StatsGridContainer(
     panels: List<StatsPanelConfig>,
     isEditMode: Boolean,
     onReorder: (fromIndex: Int, toIndex: Int) -> Unit,
+    onReorderPersist: () -> Unit,
     onRemove: (panelId: String) -> Unit,
     panelContent: @Composable (StatsPanelConfig) -> Unit,
     modifier: Modifier = Modifier,
     headerContent: (@Composable () -> Unit)? = null,
     topPadding: Dp = 0.dp,
+    bottomContentPadding: Dp = 100.dp,
 ) {
     val gridState = rememberLazyGridState()
     val coroutineScope = rememberCoroutineScope()
 
-    var dragIndex by remember { mutableStateOf<Int?>(null) }
+    var dragPanelId by remember { mutableStateOf<String?>(null) }
+    var dragOffsetX by remember { mutableFloatStateOf(0f) }
     var dragOffsetY by remember { mutableFloatStateOf(0f) }
+    var pointerX by remember { mutableFloatStateOf(0f) }
+    var pointerY by remember { mutableFloatStateOf(0f) }
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(GridColumns),
@@ -68,7 +72,7 @@ internal fun StatsGridContainer(
             start = 16.dp,
             end = 16.dp,
             top = topPadding,
-            bottom = if (isEditMode) 160.dp else 100.dp,
+            bottom = bottomContentPadding,
         ),
         verticalArrangement = Arrangement.spacedBy(14.dp),
         horizontalArrangement = Arrangement.spacedBy(14.dp),
@@ -88,50 +92,73 @@ internal fun StatsGridContainer(
             },
         ) { index ->
             val panel = panels[index]
-            val isDragging = dragIndex == index
+            val isDragging = dragPanelId == panel.id
 
             if (isEditMode) {
                 val editableModifier = Modifier
-                    .pointerInput(index) {
+                    .pointerInput(panel.id) {
                         detectDragGestures(
-                            onDragStart = {
-                                dragIndex = index
+                            onDragStart = { startOffset ->
+                                val itemInfo = gridState.layoutInfo.visibleItemsInfo
+                                    .firstOrNull { it.key == panel.id }
+                                pointerX = (itemInfo?.offset?.x ?: 0) + startOffset.x
+                                pointerY = (itemInfo?.offset?.y ?: 0) + startOffset.y
+                                dragPanelId = panel.id
+                                dragOffsetX = 0f
                                 dragOffsetY = 0f
                             },
                             onDrag = { change, dragAmount ->
                                 change.consume()
+                                dragOffsetX += dragAmount.x
                                 dragOffsetY += dragAmount.y
+                                pointerX += dragAmount.x
+                                pointerY += dragAmount.y
                                 coroutineScope.launch {
                                     val visibleItemsInfo = gridState.layoutInfo.visibleItemsInfo
-                                    val lastVisible = visibleItemsInfo.lastOrNull()
-                                    if (lastVisible != null && index == lastVisible.index) {
+                                    val lastVisible = visibleItemsInfo.lastOrNull { it.key is String }
+                                    if (lastVisible != null && lastVisible.key == panel.id) {
                                         gridState.scrollBy(dragAmount.y * 0.5f)
                                     }
-                                    val firstVisible = visibleItemsInfo.firstOrNull()
-                                    if (firstVisible != null && index == firstVisible.index) {
+                                    val firstVisible = visibleItemsInfo.firstOrNull { it.key is String }
+                                    if (firstVisible != null && firstVisible.key == panel.id) {
                                         gridState.scrollBy(dragAmount.y * 0.5f)
                                     }
-                                }
-
-                                val itemHeight = 180f
-                                val threshold = itemHeight * 0.6f
-                                val targetIndex = when {
-                                    dragOffsetY < -threshold && index > 0 -> index - 1
-                                    dragOffsetY > threshold && index < panels.size - 1 -> index + 1
-                                    else -> null
-                                }
-                                if (targetIndex != null && targetIndex != index) {
-                                    onReorder(index, targetIndex)
-                                    dragIndex = targetIndex
-                                    dragOffsetY = 0f
                                 }
                             },
                             onDragEnd = {
-                                dragIndex = null
+                                val fromIndex = panels.indexOfFirst { it.id == panel.id }
+                                val dropItems = gridState.layoutInfo.visibleItemsInfo.mapNotNull { info ->
+                                    val panelIndex = panels.indexOfFirst { it.id == info.key }
+                                    if (panelIndex < 0) return@mapNotNull null
+                                    val target = panels[panelIndex]
+                                    GridDropItem(
+                                        index = panelIndex,
+                                        offsetX = info.offset.x,
+                                        offsetY = info.offset.y,
+                                        width = info.size.width,
+                                        height = info.size.height,
+                                        colSpan = target.colSpan.coerceIn(1, GridColumns),
+                                    )
+                                }
+                                if (fromIndex >= 0) {
+                                    val insertBefore = computeGridDropIndex(
+                                        pointerX = pointerX,
+                                        pointerY = pointerY,
+                                        items = dropItems,
+                                        itemCount = panels.size,
+                                    )
+                                    if (fromIndex != insertBefore && fromIndex + 1 != insertBefore) {
+                                        onReorder(fromIndex, insertBefore)
+                                        onReorderPersist()
+                                    }
+                                }
+                                dragPanelId = null
+                                dragOffsetX = 0f
                                 dragOffsetY = 0f
                             },
                             onDragCancel = {
-                                dragIndex = null
+                                dragPanelId = null
+                                dragOffsetX = 0f
                                 dragOffsetY = 0f
                             },
                         )
@@ -144,7 +171,8 @@ internal fun StatsGridContainer(
                                     scaleX = 1.04f
                                     scaleY = 1.04f
                                     shadowElevation = 16.dp.toPx()
-                                    translationY = dragOffsetY * 0.3f
+                                    translationX = dragOffsetX
+                                    translationY = dragOffsetY
                                 }
                         } else {
                             Modifier.graphicsLayer {

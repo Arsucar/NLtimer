@@ -5,9 +5,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -47,7 +50,10 @@ import com.nltimer.core.data.model.StatsPanelType
 import com.nltimer.core.data.model.StatsResult
 import com.nltimer.core.data.model.StatsTimeRange
 import com.nltimer.core.data.model.StatsTimeRangeType
+import com.nltimer.core.designsystem.component.LocalNavBarWidth
+import com.nltimer.core.designsystem.theme.BottomBarMode
 import com.nltimer.core.designsystem.theme.LocalImmersiveTopPadding
+import com.nltimer.core.designsystem.theme.LocalTheme
 import com.nltimer.feature.stats.model.StatsUiState
 import com.nltimer.feature.stats.ui.component.ActivityRankSection
 import com.nltimer.feature.stats.ui.component.BarChartCard
@@ -62,6 +68,10 @@ internal val CardShape = RoundedCornerShape(22.dp)
 internal val CardSpacing = 14.dp
 internal val CardInnerPadding = 18.dp
 internal val ContentHorizontalPadding = 16.dp
+private val OverlayNavBarHeight = 72.dp
+private val EditBarContentHeight = 72.dp
+private val MinEditGridBottomPadding = 160.dp
+private val MinBrowseGridBottomPadding = 100.dp
 
 private val ImplementedPanelTypes = setOf(
     StatsPanelType.SUMMARY_CARD,
@@ -91,6 +101,7 @@ fun StatsScreen(
     onTimeRangeChange: (StatsTimeRange) -> Unit,
     onToggleEditMode: () -> Unit,
     onMovePanel: (fromIndex: Int, toIndex: Int) -> Unit,
+    onPersistPanels: () -> Unit,
     onRemovePanel: (panelId: String) -> Unit,
     onAddPanel: (StatsPanelType) -> Unit,
     onResetToDefault: () -> Unit,
@@ -99,6 +110,18 @@ fun StatsScreen(
     modifier: Modifier = Modifier,
 ) {
     val immersiveTopPadding = LocalImmersiveTopPadding.current
+    val isCenterFab = LocalTheme.current.bottomBarMode == BottomBarMode.CENTER_FAB
+    val navBarWidth = LocalNavBarWidth.current.value
+    val overlayNavClearance = if (isCenterFab || navBarWidth > 0.dp) OverlayNavBarHeight else 0.dp
+    val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    val gridBottomPadding = if (uiState.isEditMode) {
+        maxOf(
+            MinEditGridBottomPadding,
+            EditBarContentHeight + overlayNavClearance + navBarBottom + 16.dp,
+        )
+    } else {
+        maxOf(MinBrowseGridBottomPadding, overlayNavClearance + navBarBottom + 16.dp)
+    }
     var showAddPanelDialog by remember { mutableStateOf(false) }
 
     if (showAddPanelDialog) {
@@ -119,6 +142,7 @@ fun StatsScreen(
                 panels = panels,
                 isEditMode = uiState.isEditMode,
                 onReorder = onMovePanel,
+                onReorderPersist = onPersistPanels,
                 onRemove = onRemovePanel,
                 panelContent = { panel ->
                     PanelContent(
@@ -129,6 +153,7 @@ fun StatsScreen(
                 },
                 modifier = Modifier.weight(1f),
                 topPadding = 16.dp + immersiveTopPadding,
+                bottomContentPadding = gridBottomPadding,
                 headerContent = {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -196,7 +221,8 @@ fun StatsScreen(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth()
-                    .navigationBarsPadding(),
+                    .navigationBarsPadding()
+                    .padding(bottom = overlayNavClearance),
                 color = MaterialTheme.colorScheme.surfaceContainerHigh,
                 shadowElevation = 8.dp,
             ) {
@@ -204,7 +230,7 @@ fun StatsScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = ContentHorizontalPadding, vertical = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     FilledTonalButton(
                         onClick = { showAddPanelDialog = true },
@@ -221,6 +247,12 @@ fun StatsScreen(
                         ),
                     ) {
                         Text("恢复默认")
+                    }
+                    FilledTonalButton(
+                        onClick = onToggleEditMode,
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        Text("取消编辑")
                     }
                 }
             }
