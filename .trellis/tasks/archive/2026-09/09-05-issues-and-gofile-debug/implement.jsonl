@@ -1,0 +1,14 @@
+{"file": ".trellis/spec/backend/index.md", "reason": "Backend pre-dev checklist and guideline index"}
+{"file": ".trellis/spec/backend/database-guidelines.md", "reason": "Room archive/query conventions; #15 migration must follow DB patterns"}
+{"file": ".trellis/spec/backend/error-handling.md", "reason": "Rethrow CancellationException; repository/usecase error style"}
+{"file": ".trellis/spec/backend/quality-guidelines.md", "reason": "Forbidden patterns and feature module structure"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "Search before adding helpers; reuse CategoriesScreen inset and conversation_message order pattern"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "#15 spans Entity/DAO/Repo/UseCase/VM/UI"}
+{"file": "docs/agent/04-patterns.md", "reason": "MVVM, Entity/DAO/Repo/UseCase naming and file layout"}
+{"file": "docs/agent/05-data-model.md", "reason": "Current schema; #15 adds behavior_event and bumps DB version"}
+{"file": "docs/agent/06-common-bug.md", "reason": "Nested Scaffold, CancellationException, BehaviorNature.key, archiveAt"}
+{"file": ".trellis/tasks/09-05-issues-and-gofile-debug/prd.md", "reason": "Task requirements and AC for issues #8 #9 #14 #15"}
+{"file": ".trellis/tasks/09-05-issues-and-gofile-debug/research/stats-edit-bugs.md", "reason": "#8/#9 current code, line numbers, reverted-fix reconstruction"}
+{"file": ".trellis/tasks/09-05-issues-and-gofile-debug/research/prev-end-button.md", "reason": "#14 param thread from HomeSheetRouter to TimeAdjustmentComponent"}
+{"file": ".trellis/tasks/09-05-issues-and-gofile-debug/research/behavior-event-recorder.md", "reason": "#15 file list, conversation_message analog, DB v16"}
+{"file": ".trellis/tasks/09-05-issues-and-gofile-debug/research/debug-apk-gofile.md", "reason": assembleDebug --no-daemon and APK output path"}

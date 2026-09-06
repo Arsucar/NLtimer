@@ -1,0 +1,11 @@
+{"file": ".trellis/spec/backend/index.md", "reason": "Quality gate checklist"}
+{"file": ".trellis/spec/backend/database-guidelines.md", "reason": "Verify migration and archive conventions"}
+{"file": ".trellis/spec/backend/error-handling.md", "reason": "CancellationException and error handling"}
+{"file": ".trellis/spec/backend/quality-guidelines.md", "reason": "Forbidden patterns"}
+{"file": "docs/agent/04-patterns.md", "reason": "Layering and naming"}
+{"file": "docs/agent/05-data-model.md", "reason": "Schema docs must match DB 17"}
+{"file": "docs/agent/06-common-bug.md", "reason": "Known bug patterns"}
+{"file": ".trellis/tasks/09-05-issues-and-gofile-debug/prd.md", "reason": "Acceptance criteria"}
+{"file": ".trellis/tasks/09-05-issues-and-gofile-debug/research/stats-edit-bugs.md", "reason": "#8/#9 expected behavior"}
+{"file": ".trellis/tasks/09-05-issues-and-gofile-debug/research/prev-end-button.md", "reason": "#14 expected wiring"}
+{"file": ".trellis/tasks/09-05-issues-and-gofile-debug/research/behavior-event-recorder.md", "reason": "#15 completeness vs file list"}
