@@ -48,9 +48,9 @@ internal fun summarizeValues(values: List<BehaviorEventValue>): String =
     values.summarizeEventValues()
 
 /**
- * 事件 BottomSheet（「+ 记一笔」/ 摘要行列表）
- * 默认停在 PartiallyExpanded（约半屏），上滑看更多内容才进入 Expanded。
- * dragHandle 保留以便手势提示；内部双页态（列表 ↔ 表单）。
+ * 事件 BottomSheet（「+ 记一笔」/ 摘要行列表）。
+ * 与其它 Sheet 一样 skipPartiallyExpanded，直接 Expanded，避免半屏嵌套滚动吞点击。
+ * dragHandle 保留；内部双页态（列表 ↔ 表单）。
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -66,7 +66,7 @@ internal fun EventSheet(
     onQueryFields: suspend (Long) -> List<EventTemplateField>,
     onQueryEvent: suspend (Long) -> BehaviorEventWithValues?,
 ) {
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var page by remember(target) { mutableStateOf(target.initialPage) }
 
     ModalBottomSheet(

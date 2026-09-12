@@ -17,10 +17,12 @@ import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -202,7 +204,11 @@ fun AiAssistantChatRoute(
     }
 
     if (showModelSheet) {
-        androidx.compose.material3.ModalBottomSheet(onDismissRequest = { showModelSheet = false }) {
+        val modelSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        ModalBottomSheet(
+            onDismissRequest = { showModelSheet = false },
+            sheetState = modelSheetState,
+        ) {
             androidx.compose.foundation.layout.Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
                 androidx.compose.material3.Text("选择模型", style = MaterialTheme.typography.titleMedium)
                 androidx.compose.foundation.layout.Spacer(Modifier.height(8.dp))

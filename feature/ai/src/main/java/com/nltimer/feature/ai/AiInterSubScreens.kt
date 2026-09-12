@@ -54,6 +54,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -271,8 +272,10 @@ fun AiProviderConfigRoute(
     }
 
     if (showModelSheet) {
+        val modelSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
         ModalBottomSheet(
-            onDismissRequest = { showModelSheet = false }
+            onDismissRequest = { showModelSheet = false },
+            sheetState = modelSheetState,
         ) {
             Column(
                 modifier = Modifier

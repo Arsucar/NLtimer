@@ -160,3 +160,19 @@ catch (e: Exception) {
 - DualTimePicker `onTimesChanged` 仅在该侧分钟变化时回写
 - 「上尾」写入真实 `prevEndTime`，不要先 `withSecond(0)`
 - `TimeSnapService` 对 COMPLETED：同时钟分钟且 `newStart < prevEnd` 时吸附 `adjustedStart = prevEnd`，再跑 `hasTimeConflict`
+
+## 14. ModalBottomSheet skipPartiallyExpanded=false 吞点击
+
+**出现时机**：`ModalBottomSheet` 使用 `rememberModalBottomSheetState(skipPartiallyExpanded = false)`，停在 PartiallyExpanded。
+
+**典型场景**：事件记录器 `EventSheet` 曾为了半屏上滑展开而关掉 skip。
+
+**现象**：Sheet 可见，但 chips、按钮、输入框点击无反应。
+
+**原因**：PartiallyExpanded 下 Material3 嵌套滚动与 sheet 拖动手势抢指针，子组件收不到点击。
+
+**避免方式**：
+- 本项目一律 `rememberModalBottomSheetState(skipPartiallyExpanded = true)`（与 `AddBehaviorSheet` 等其它 Sheet 一致）
+- 不要省略 `sheetState`：`ModalBottomSheet` 默认 `rememberModalBottomSheetState()` 的 skip 为 `false`，同样会停在 PartiallyExpanded
+- 需要提示可拖时保留默认 `dragHandle` 即可，上滑关闭仍可用
+- 不要为了半屏展示关掉 skip

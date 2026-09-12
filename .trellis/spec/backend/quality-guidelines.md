@@ -165,6 +165,19 @@ Both must pass before committing.
 
 ---
 
+### Pattern: ModalBottomSheet skipPartiallyExpanded
+
+**Problem**: `rememberModalBottomSheetState(skipPartiallyExpanded = false)` (Material3 default when `sheetState` is omitted) parks the sheet in PartiallyExpanded. Nested scroll then steals pointer events; chips/buttons/fields look tappable but do nothing. `EventSheet` hit this after turning skip off for a half-screen peek.
+
+**Solution**:
+1. Every `ModalBottomSheet` must pass `sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)`.
+2. Keep the default `dragHandle` if a drag hint is wanted; swipe-down still dismisses.
+3. Do not omit `sheetState` to "use defaults".
+
+**Don't**: Set `skipPartiallyExpanded = false` for a half-screen first frame. Don't assume omitting `sheetState` is equivalent to skip=true.
+
+---
+
 ## Testing Requirements
 
 (To be filled by the team)
