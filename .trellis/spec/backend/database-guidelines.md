@@ -46,17 +46,28 @@ Archive confirm (`archiveActivity` / `archiveTag`) must set `isArchived`, `archi
 
 ## Migrations
 
-<!-- How to create and run migrations -->
+New-table migrations: inline FK in `CREATE TABLE` (see `feature/ai/.../Migrations.kt` style; core/data precedents `Migration6To7` composite-PK binding table, `Migration11To12` full-column-list write). No `PRAGMA foreign_keys` toggle unless rebuilding an existing table.
 
-(To be filled by the team)
-
----
+- **Registration is mandatory**: `DatabaseModule` uses `fallbackToDestructiveMigration(true)` — a missing entry in `ALL_MIGRATIONS` silently wipes user data on first launch after update.
+- **Schema verification**: KSP exports `core/data/schemas/com.nltimer.core.data.database.NLtimerDatabase/{N}.json`. Compare migration SQL column order/type/not-null/default + index names (incl. `DESC` ordering) against it. core/data has no androidTest/room-testing — no instrumented migration tests possible.
+- DESC index: `@Index(value=["activityId","timestamp"], orders=[ASC, DESC])` (Room 2.6+); SQL uses `CREATE INDEX ... (activityId, timestamp DESC)` and Room's generated index name.
+- Do not write `DEFAULT` in CREATE TABLE unless the entity also has `@ColumnInfo(defaultValue)`.
+- Room's schema validation is strict about index names: `index_<table>_<column>` for every FK column indexed or not.
 
 ## Naming Conventions
 
-<!-- Table names, column names, index names -->
+| Item | Rule | Example |
+|------|------|---------|
+| Index | `index_<table>_<col1>[_<col2>]` | `index_behavior_event_activityId_timestamp` |
+| Enum column | TEXT storing `.key`, never `.name` | `status TEXT` `'active'` |
+| Reserved words | Backtick in queries | `` MAX(`order`) `` |
+| JSON in TEXT column | nullable `String?` + manual kotlinx encode/decode in domain layer | `optionsJson` |
+| Composite reference table | `primaryKeys=["aId","bId"]` + one FK CASCADE per side + per-side index | `event_template_tag_binding`, `behavior_tag_cross_ref` |
 
-(To be filled by the team)
+## Testing
+
+- Repository transactions go in Impl via `database.withTransaction {}` — DAO layer uses **zero `@Transaction` annotations**.
+- **MockK cannot mock Room's inline `withTransaction` returning non-Unit**: `mockkStatic("androidx.room.RoomDatabaseKt")` + `coAnswers { (args[1] as suspend () -> Unit).invoke() }` pattern works for Unit-returning blocks only; tests hitting non-Unit transaction paths are `@Ignore`d (see `BehaviorRepositoryImplTest`). Design new transaction methods to return `Unit` for testability, or accept instrumented-only coverage.
 
 ---
 

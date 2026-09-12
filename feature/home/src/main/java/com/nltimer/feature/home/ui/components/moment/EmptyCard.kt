@@ -1,6 +1,7 @@
 package com.nltimer.feature.home.ui.components.moment
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -33,6 +34,7 @@ internal fun EmptyCard(
     onClick: () -> Unit,
     _momentStyle: MomentLayoutStyle = MomentLayoutStyle(),
     focusCardConfig: FocusCardConfig = FocusCardConfig(),
+    onAddEvent: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val cornerDp = focusCardConfig.resolvedCornerDp()
@@ -42,37 +44,46 @@ internal fun EmptyCard(
     val contentColor = focusCardConfig.resolvedContentColor()
     val effectivePadding = focusCardConfig.cardPadding.dp
 
-    if (focusCardConfig.enableCardStyle) {
-        Card(
-            onClick = onClick,
-            modifier = modifier
-                .fillMaxWidth()
-                .height(cardHeight),
-            shape = cardShape,
-            colors = CardDefaults.cardColors(containerColor = containerColor),
-            elevation = CardDefaults.cardElevation(defaultElevation = focusCardConfig.resolvedElevation().dp),
-        ) {
-            EmptyCardContent(
-                contentColor = contentColor,
-                effectivePadding = effectivePadding,
-                cardHeight = cardHeight,
-            )
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(cardHeight),
+    ) {
+        if (focusCardConfig.enableCardStyle) {
+            Card(
+                onClick = onClick,
+                modifier = Modifier.fillMaxSize(),
+                shape = cardShape,
+                colors = CardDefaults.cardColors(containerColor = containerColor),
+                elevation = CardDefaults.cardElevation(defaultElevation = focusCardConfig.resolvedElevation().dp),
+            ) {
+                EmptyCardContent(
+                    contentColor = contentColor,
+                    effectivePadding = effectivePadding,
+                    cardHeight = cardHeight,
+                )
+            }
+        } else {
+            Surface(
+                onClick = onClick,
+                modifier = Modifier.fillMaxSize(),
+                color = Color.Transparent,
+                shape = cardShape,
+            ) {
+                EmptyCardContent(
+                    contentColor = contentColor,
+                    effectivePadding = effectivePadding,
+                    cardHeight = cardHeight,
+                )
+            }
         }
-    } else {
-        Surface(
-            onClick = onClick,
-            modifier = modifier
-                .fillMaxWidth()
-                .height(cardHeight),
-            color = Color.Transparent,
-            shape = cardShape,
-        ) {
-            EmptyCardContent(
-                contentColor = contentColor,
-                effectivePadding = effectivePadding,
-                cardHeight = cardHeight,
-            )
-        }
+        AddEventEntryButton(
+            onClick = onAddEvent,
+            contentColor = contentColor,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 12.dp),
+        )
     }
 }
 

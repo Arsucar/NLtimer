@@ -33,4 +33,8 @@ data class GridCellUiState(
     val pomodoroCount: Int = 0,
     val formattedDuration: String = "",
     val platinumStrength: Float = 0f,
+    /** 已挂事件数（活跃卡片摘要行徽标；仅当前活跃 cell 由 VM 填充，其余 cell 保持默认 0） */
+    val eventCount: Int = 0,
+    /** 最新一条事件摘要（如 "12:35 模板 · 值"）；null = 未打点 */
+    val latestEventSummary: String? = null,
 )

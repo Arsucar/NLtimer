@@ -4,6 +4,7 @@ import androidx.compose.runtime.Immutable
 import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
 import com.nltimer.core.data.model.DisplayColorConfig
+import com.nltimer.core.data.model.EventTemplate
 import com.nltimer.core.data.model.Tag
 
 /**
@@ -22,6 +23,7 @@ data class TagManagementUiState(
     val expandedCategoryNames: Set<String> = emptySet(),
     val allActivities: List<Activity> = emptyList(),
     val activityGroups: List<ActivityGroup> = emptyList(),
+    val allTemplates: List<EventTemplate> = emptyList(),
     val isLoading: Boolean = true,
     val dialogState: DialogState? = null,
     val displayColorConfig: DisplayColorConfig = DisplayColorConfig(),
@@ -45,7 +47,7 @@ data class CategoryWithTags(
 sealed interface DialogState {
     /** 添加标签对话框，可选指定初始分类 */
     data class AddTag(val category: String? = null) : DialogState
-    data class EditTag(val tag: Tag, val activityId: Long? = null) : DialogState
+    data class EditTag(val tag: Tag, val activityId: Long? = null, val boundTemplateId: Long? = null) : DialogState
     /** 删除标签确认对话框 */
     data class DeleteTag(val tag: Tag) : DialogState
     /** 移动标签到其他分类对话框 */
@@ -56,4 +58,6 @@ sealed interface DialogState {
     data class RenameCategory(val name: String) : DialogState
     /** 删除分类确认对话框 */
     data class DeleteCategory(val name: String, val tagCount: Int) : DialogState
+    /** 标签关联事件弹层（R4 查看端：时间戳 + 模板徽标 + 字段值摘要，可删除单条） */
+    data class TagEvents(val tag: Tag) : DialogState
 }

@@ -5,10 +5,14 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.material3.DrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.navigation.NamedNavArgument
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.nltimer.feature.ai.navigation.aiNavGraph
 import com.nltimer.feature.categories.ui.CategoriesRoute
 import com.nltimer.feature.home.ui.HomeRoute
@@ -22,6 +26,8 @@ import com.nltimer.feature.settings.ui.LogListRoute
 import com.nltimer.feature.settings.ui.AdvancedSettingsRoute
 import com.nltimer.feature.settings.ui.SettingsRoute
 import com.nltimer.feature.settings.ui.ThemeSettingsRoute
+import com.nltimer.feature.settings.ui.eventtemplate.EventTemplateEditRoute
+import com.nltimer.feature.settings.ui.eventtemplate.EventTemplateListRoute
 import com.nltimer.feature.stats.ui.StatsRoute
 import com.nltimer.feature.behavior_management.ui.BehaviorManagementRoute
 import com.nltimer.feature.settings.ui.DataManagementRoute
@@ -82,10 +88,33 @@ fun NLtimerNavHost(
                 onNavigateToHomeLayoutConfig = { navController.navigate(NLtimerRoutes.HOME_LAYOUT_CONFIG) },
                 onNavigateToColorPalette = { navController.navigate(NLtimerRoutes.COLOR_PALETTE) },
                 onNavigateToAdvancedSettings = { navController.navigate(NLtimerRoutes.ADVANCED_SETTINGS) },
+                onNavigateToEventTemplates = { navController.navigate(NLtimerRoutes.EVENT_TEMPLATE) },
             )
         }
         slideComposable(NLtimerRoutes.THEME_SETTINGS) {
             ThemeSettingsRoute()
+        }
+        slideComposable(NLtimerRoutes.EVENT_TEMPLATE) {
+            EventTemplateListRoute(
+                onOpenEditor = { templateId ->
+                    val dest = if (templateId == null) {
+                        "${NLtimerRoutes.EVENT_TEMPLATE_EDIT}/new"
+                    } else {
+                        "${NLtimerRoutes.EVENT_TEMPLATE_EDIT}/$templateId"
+                    }
+                    navController.navigate(dest)
+                },
+            )
+        }
+        slideComposable(
+            route = "${NLtimerRoutes.EVENT_TEMPLATE_EDIT}/{templateId}",
+            arguments = listOf(navArgument("templateId") { type = NavType.StringType }),
+        ) { entry ->
+            val templateId = entry.arguments?.getString("templateId")?.let { it.toLongOrNull() } ?: -1L
+            EventTemplateEditRoute(
+                templateId = templateId.takeIf { it >= 0 },
+                _onNavigateBack = { navController.popBackStack() },
+            )
         }
         slideComposable(NLtimerRoutes.DIALOG_CONFIG) {
             DialogConfigRoute()
@@ -127,16 +156,18 @@ fun NLtimerNavHost(
  */
 private fun NavGraphBuilder.slideComposable(
     route: String,
-    content: @Composable () -> Unit,
+    arguments: List<NamedNavArgument> = emptyList(),
+    content: @Composable (NavBackStackEntry) -> Unit,
 ) {
     composable(
         route,
+        arguments = arguments,
         enterTransition = { slideInHorizontally { it } },
         exitTransition = { slideOutHorizontally { -it } },
         popEnterTransition = { slideInHorizontally { -it } },
         popExitTransition = { slideOutHorizontally { it } },
-    ) {
-        content()
+    ) { entry ->
+        content(entry)
     }
 }
 

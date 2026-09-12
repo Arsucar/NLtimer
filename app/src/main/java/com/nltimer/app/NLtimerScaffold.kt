@@ -94,7 +94,10 @@ fun NLtimerScaffold(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
     val scope = rememberCoroutineScope()
-    val isSecondaryPage = currentRoute in NLtimerRoutes.SETTINGS_FULLSCREEN_ROUTES
+
+    // 带参数路由（event_template_edit/{id}）整串不匹配常量集合，需前缀判断
+    val isEventTemplateEditRoute = currentRoute?.startsWith(NLtimerRoutes.EVENT_TEMPLATE_EDIT + "/") == true
+    val isSecondaryPage = currentRoute in NLtimerRoutes.SETTINGS_FULLSCREEN_ROUTES || isEventTemplateEditRoute
     val isAiInter = currentRoute == AiRoutes.AI_INTER
     val isAiAssistantChat = currentRoute == AiRoutes.AI_ASSISTANT_CHAT
     val isStats = currentRoute == NLtimerRoutes.STATS
@@ -105,25 +108,30 @@ fun NLtimerScaffold(
             visibleDateLabelState.value = null
         }
     }
-    val isHomePage = currentRoute !in NLtimerRoutes.SETTINGS_FULLSCREEN_ROUTES && currentRoute != NLtimerRoutes.SETTINGS && !isAiInter && !isStats && !isAiAssistantChat
+    val isHomePage = currentRoute !in NLtimerRoutes.SETTINGS_FULLSCREEN_ROUTES && currentRoute != NLtimerRoutes.SETTINGS && !isAiInter && !isStats && !isAiAssistantChat && !isEventTemplateEditRoute
     val isDateTitle = isHomePage && visibleDateLabelState.value != null
-    val topBarTitle = when (currentRoute) {
-        NLtimerRoutes.SETTINGS -> "设置"
-        NLtimerRoutes.THEME_SETTINGS -> "主题配置"
-        NLtimerRoutes.DIALOG_CONFIG -> "弹窗配置"
-        NLtimerRoutes.BEHAVIOR_MANAGEMENT -> "行为管理"
-        NLtimerRoutes.CATEGORIES -> "分类管理"
-        NLtimerRoutes.DATA_MANAGEMENT -> "数据管理"
-        NLtimerRoutes.HOME_LAYOUT_CONFIG -> "主页布局配置"
-        NLtimerRoutes.COLOR_PALETTE -> "色板"
-        NLtimerRoutes.ICON_MISS_LOG -> "图标库"
-        NLtimerRoutes.ADVANCED_SETTINGS -> "高级"
-        NLtimerRoutes.LOG_LIST -> "日志记录"
-        NLtimerRoutes.ACTIVITY_ARCHIVE -> "活动归档区"
-        NLtimerRoutes.TAG_ARCHIVE -> "标签归档区"
-        AiRoutes.AI_INTER -> "AI Inter"
-        NLtimerRoutes.STATS -> "统计"
-        else -> visibleDateLabelState.value ?: "NLtimer"
+    val topBarTitle = when {
+        isEventTemplateEditRoute ->
+            if (currentRoute.endsWith("/new")) "新建打点模板" else "编辑打点模板"
+        else -> when (currentRoute) {
+            NLtimerRoutes.SETTINGS -> "设置"
+            NLtimerRoutes.THEME_SETTINGS -> "主题配置"
+            NLtimerRoutes.EVENT_TEMPLATE -> "打点模板"
+            NLtimerRoutes.DIALOG_CONFIG -> "弹窗配置"
+            NLtimerRoutes.BEHAVIOR_MANAGEMENT -> "行为管理"
+            NLtimerRoutes.CATEGORIES -> "分类管理"
+            NLtimerRoutes.DATA_MANAGEMENT -> "数据管理"
+            NLtimerRoutes.HOME_LAYOUT_CONFIG -> "主页布局配置"
+            NLtimerRoutes.COLOR_PALETTE -> "色板"
+            NLtimerRoutes.ICON_MISS_LOG -> "图标库"
+            NLtimerRoutes.ADVANCED_SETTINGS -> "高级"
+            NLtimerRoutes.LOG_LIST -> "日志记录"
+            NLtimerRoutes.ACTIVITY_ARCHIVE -> "活动归档区"
+            NLtimerRoutes.TAG_ARCHIVE -> "标签归档区"
+            AiRoutes.AI_INTER -> "AI Inter"
+            NLtimerRoutes.STATS -> "统计"
+            else -> visibleDateLabelState.value ?: "NLtimer"
+        }
     }
     var showLayoutPopup by remember { mutableStateOf(false) }
     var showLayoutConfigDialog by remember { mutableStateOf(false) }

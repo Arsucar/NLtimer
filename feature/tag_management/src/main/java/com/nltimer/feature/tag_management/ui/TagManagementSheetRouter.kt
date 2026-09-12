@@ -1,6 +1,8 @@
 package com.nltimer.feature.tag_management.ui
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nltimer.feature.tag_management.model.DialogState
 import com.nltimer.feature.tag_management.model.TagManagementUiState
 import com.nltimer.feature.tag_management.ui.components.dialogs.AddCategoryDialog
@@ -8,6 +10,7 @@ import com.nltimer.feature.tag_management.ui.components.dialogs.AddTagFormSheet
 import com.nltimer.core.designsystem.component.ConfirmDialog
 import com.nltimer.feature.tag_management.ui.components.dialogs.EditTagFormSheet
 import com.nltimer.feature.tag_management.ui.components.dialogs.RenameCategoryDialog
+import com.nltimer.feature.tag_management.ui.components.dialogs.TagEventsDialog
 import com.nltimer.feature.tag_management.viewmodel.TagManagementViewModel
 
 @Composable
@@ -36,12 +39,26 @@ fun TagManagementSheetRouter(
                     allActivities = uiState.allActivities,
                     activityGroups = uiState.activityGroups,
                     initialActivityId = dialog.activityId,
+                    templates = uiState.allTemplates,
+                    boundTemplateId = dialog.boundTemplateId,
+                    onBindTemplate = viewModel::bindTagTemplate,
                     onDismiss = { viewModel.dismissDialog() },
                     onConfirm = { tag, activityId ->
                         viewModel.updateTag(tag, activityId)
                     },
                     onDelete = { viewModel.showDeleteTagDialog(dialog.tag) },
                     onArchive = { note -> viewModel.archiveTag(dialog.tag, note) },
+                    onViewEvents = { viewModel.showTagEvents(dialog.tag) },
+                )
+            }
+            is DialogState.TagEvents -> {
+                val events by viewModel.currentTagEvents.collectAsStateWithLifecycle()
+                TagEventsDialog(
+                    tag = dialog.tag,
+                    events = events,
+                    templates = uiState.allTemplates,
+                    onDismiss = { viewModel.dismissDialog() },
+                    onDeleteEvent = viewModel::deleteTagEvent,
                 )
             }
             is DialogState.DeleteTag -> {

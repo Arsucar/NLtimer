@@ -4,9 +4,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -23,6 +27,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
+import com.nltimer.core.data.model.EventTemplate
 import com.nltimer.core.data.model.Tag
 import com.nltimer.core.behaviorui.sheet.ActivityCategorizable
 import com.nltimer.core.behaviorui.sheet.CategoryGroup
@@ -44,6 +49,10 @@ fun EditTagFormSheet(
     allActivities: List<Activity>,
     activityGroups: List<ActivityGroup>,
     initialActivityId: Long?,
+    templates: List<EventTemplate>,
+    boundTemplateId: Long?,
+    onBindTemplate: (tagId: Long, newTemplateId: Long?, previousTemplateId: Long?) -> Unit,
+    onViewEvents: (Tag) -> Unit = {},
     onDismiss: () -> Unit,
     onConfirm: (Tag, Long?) -> Unit,
     onDelete: () -> Unit = {},
@@ -51,13 +60,16 @@ fun EditTagFormSheet(
 ) {
     var selectedCategory by remember { mutableStateOf(tag.category) }
     var selectedActivityId by remember { mutableStateOf(initialActivityId) }
+    var selectedTemplateId by remember { mutableStateOf(boundTemplateId) }
     var showCategoryPicker by remember { mutableStateOf(false) }
     var showActivityPicker by remember { mutableStateOf(false) }
+    var showTemplatePicker by remember { mutableStateOf(false) }
     var showFieldDetail by remember { mutableStateOf(false) }
     var showArchiveDialog by remember { mutableStateOf(false) }
 
     val activityName = allActivities.find { it.id == selectedActivityId }?.name
     val activityCountText = activityName ?: "+ 增加"
+    val templateName = templates.find { it.id == selectedTemplateId }?.name
 
     // DIFF: 复杂多字段变更，无法用 withUpdatedLabelAction 简化
     val specWithCategory = ActivityFormSpecs.editTag().copy(
@@ -80,6 +92,32 @@ fun EditTagFormSheet(
         },
     )
 
+    // 注入「绑定打点模板」+「查看关联事件」行（与 category 行同型，动态追加到分类行所在 section）
+    val specWithTemplate = specWithCategory.copy(
+        sections = specWithCategory.sections.mapIndexed { index, section ->
+            if (index == specWithCategory.sections.lastIndex) {
+                section.copy(
+                    rows = section.rows + listOf(
+                        FormRow.LabelAction(
+                            key = "eventTemplate",
+                            label = "绑定打点模板",
+                            actionText = templateName ?: "未绑定",
+                            onClick = { showTemplatePicker = true },
+                        ),
+                        FormRow.LabelAction(
+                            key = "viewTagEvents",
+                            label = "查看关联事件",
+                            actionText = "查看",
+                            onClick = { onViewEvents(tag) },
+                        ),
+                    ),
+                )
+            } else {
+                section
+            }
+        },
+    )
+
     val initialData = mapOf(
         "icon" to (tag.iconKey ?: "🏷️"),
         "color" to (tag.color?.let { (it and 0xFFFFFFFF.toLong()).toString(16) } ?: ""),
@@ -89,7 +127,7 @@ fun EditTagFormSheet(
     )
 
     GenericFormSheet(
-        spec = specWithCategory,
+        spec = specWithTemplate,
         initialData = initialData,
         onDismiss = onDismiss,
         onSubmit = { formState ->
@@ -217,6 +255,53 @@ fun EditTagFormSheet(
                         showActivityPicker = false
                     },
                     onDismiss = { showActivityPicker = false },
+                )
+            }
+            if (showTemplatePicker) {
+                AlertDialog(
+                    onDismissRequest = { showTemplatePicker = false },
+                    title = { Text("绑定打点模板") },
+                    text = {
+                        LazyColumn(modifier = Modifier.heightIn(max = 360.dp)) {
+                            item {
+                                TextButton(onClick = {
+                                    onBindTemplate(tag.id, null, selectedTemplateId)
+                                    selectedTemplateId = null
+                                    showTemplatePicker = false
+                                }) {
+                                    Text(
+                                        text = (if (selectedTemplateId == null) "✓ " else "") + "不绑定模板",
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                    )
+                                }
+                            }
+                            items(templates, key = { it.id }) { template ->
+                                TextButton(onClick = {
+                                    onBindTemplate(tag.id, template.id, selectedTemplateId)
+                                    selectedTemplateId = template.id
+                                    showTemplatePicker = false
+                                }) {
+                                    Text(
+                                        text = (if (template.id == selectedTemplateId) "✓ " else "") + template.name,
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                    )
+                                }
+                            }
+                            if (templates.isEmpty()) {
+                                item {
+                                    Text(
+                                        text = "还没有打点模板，可在 设置 → 打点模板 中创建",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.padding(8.dp),
+                                    )
+                                }
+                            }
+                        }
+                    },
+                    confirmButton = {
+                        TextButton(onClick = { showTemplatePicker = false }) { Text("取消") }
+                    },
                 )
             }
             if (showArchiveDialog) {

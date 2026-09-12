@@ -5,7 +5,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.nltimer.core.data.model.BehaviorEventValue
+import com.nltimer.core.data.model.BehaviorEventWithValues
+import com.nltimer.core.data.model.EventTemplateField
 import com.nltimer.feature.home.model.AddSheetMode
+import com.nltimer.feature.home.model.EventSheetTarget
 import com.nltimer.feature.home.viewmodel.HomeViewModel
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -28,6 +32,8 @@ fun HomeRoute(
     val homeLayoutConfig by viewModel.homeLayoutConfig.collectAsStateWithLifecycle()
     val tagDisplayConfig by viewModel.tagDisplayConfig.collectAsStateWithLifecycle()
     val focusCardConfig by viewModel.focusCardConfig.collectAsStateWithLifecycle()
+    val eventTemplates by viewModel.eventTemplates.collectAsStateWithLifecycle()
+    val sheetEvents by viewModel.sheetEvents.collectAsStateWithLifecycle()
 
     val onEmptyCellClick = remember(viewModel) {
         { idleStart: LocalDateTime?, idleEnd: LocalDateTime? ->
@@ -47,6 +53,17 @@ fun HomeRoute(
     }
     val onDeleteBehavior = remember(viewModel) {
         { id: Long -> viewModel.deleteBehavior(id) }
+    }
+    val onDeleteBehaviorKeepEvents = remember(viewModel) {
+        { id: Long -> viewModel.deleteBehavior(id, keepEvents = true) }
+    }
+    val onQueryEventCount = remember(viewModel) {
+        val lambda: suspend (Long) -> Int = { id -> viewModel.queryEventCountForBehavior(id) }
+        lambda
+    }
+    val onQueryBehaviorEvents = remember(viewModel) {
+        val lambda: suspend (Long) -> List<BehaviorEventWithValues> = { id -> viewModel.queryBehaviorEvents(id) }
+        lambda
     }
     val onAddBehavior = remember(viewModel) {
         { activityId: Long, tagIds: List<Long>, startTime: LocalDateTime, endTime: LocalDateTime?, nature: com.nltimer.core.data.model.BehaviorNature, note: String?, estimatedDurationMs: Long? ->
@@ -114,6 +131,33 @@ fun HomeRoute(
         { viewModel.hideAiQuickInput() }
     }
 
+    // ---- 事件（打点）----
+    val onOpenEventAddSheet = remember(viewModel) {
+        { cell: com.nltimer.feature.home.model.GridCellUiState? -> viewModel.openEventAddSheet(cell) }
+    }
+    val onOpenEventListSheet = remember(viewModel) {
+        { cell: com.nltimer.feature.home.model.GridCellUiState -> viewModel.openEventListSheet(cell) }
+    }
+    val onHideEventSheet = remember(viewModel) { { viewModel.hideEventSheet() } }
+    val onSaveEvent = remember(viewModel) {
+        { target: EventSheetTarget, templateId: Long, attachToBehavior: Boolean, values: List<BehaviorEventValue> ->
+            viewModel.saveEvent(target, templateId, attachToBehavior, values)
+        }
+    }
+    val onDeleteEvent = remember(viewModel) { { id: Long -> viewModel.deleteEvent(id) } }
+    val onOpenEventEdit = remember(viewModel) { { id: Long -> viewModel.openEventEditSheet(id) } }
+    val onOpenEventNew = remember(viewModel) { { viewModel.openEventNewSheetFromList() } }
+    val onQueryEvent: suspend (Long) -> BehaviorEventWithValues? = remember(viewModel) {
+        val lambda: suspend (Long) -> BehaviorEventWithValues? = { id -> viewModel.queryEventWithValues(id) }
+        lambda
+    }
+    val onQueryTemplateFields: suspend (Long) -> List<EventTemplateField> = remember(viewModel) {
+        val lambda: suspend (Long) -> List<EventTemplateField> = { id -> viewModel.queryTemplateFields(id) }
+        lambda
+    }
+    val onClearEventFeedback = remember(viewModel) { { viewModel.clearEventFeedback() } }
+    val onClearErrorMessage = remember(viewModel) { { viewModel.clearErrorMessage() } }
+
     HomeScreen(
         uiState = uiState,
         activities = activities,
@@ -130,6 +174,9 @@ fun HomeRoute(
         onShowAddSheet = onShowAddSheet,
         onCellLongClick = onCellLongClick,
         onDeleteBehavior = onDeleteBehavior,
+        onDeleteBehaviorKeepEvents = onDeleteBehaviorKeepEvents,
+        onQueryEventCount = onQueryEventCount,
+        onQueryBehaviorEvents = onQueryBehaviorEvents,
         onAddBehavior = onAddBehavior,
         onDismissSheet = onDismissSheet,
         onCompleteBehavior = onCompleteBehavior,
@@ -153,5 +200,18 @@ fun HomeRoute(
         onQueryActivitiesForTag = onQueryActivitiesForTag,
         onShowAiQuickInput = onShowAiQuickInput,
         onHideAiQuickInput = onHideAiQuickInput,
+        eventTemplates = eventTemplates,
+        sheetEvents = sheetEvents,
+        onOpenEventAddSheet = onOpenEventAddSheet,
+        onOpenEventListSheet = onOpenEventListSheet,
+        onHideEventSheet = onHideEventSheet,
+        onSaveEvent = onSaveEvent,
+        onDeleteEvent = onDeleteEvent,
+        onOpenEventEdit = onOpenEventEdit,
+        onOpenEventNew = onOpenEventNew,
+        onQueryEvent = onQueryEvent,
+        onQueryTemplateFields = onQueryTemplateFields,
+        onClearEventFeedback = onClearEventFeedback,
+        onClearErrorMessage = onClearErrorMessage,
     )
 }

@@ -30,7 +30,7 @@ interface BehaviorRepository {
     suspend fun endCurrentBehavior(endTime: Long)
     suspend fun completeCurrentAndStartNext(currentId: Long, idleMode: Boolean): Behavior?
     suspend fun reorderGoals(orderedIds: List<Long>)
-    suspend fun delete(id: Long)
+    suspend fun delete(id: Long, keepEvents: Boolean = false)
     suspend fun settleDay(dayStart: Long, dayEnd: Long)
 
     suspend fun updateBehavior(

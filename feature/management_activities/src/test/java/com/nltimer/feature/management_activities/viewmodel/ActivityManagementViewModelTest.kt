@@ -43,7 +43,14 @@ class ActivityManagementViewModelTest {
         repository = FakeActivityManagementRepository()
         tagRepository = FakeTagRepository()
         settingsPrefs = FakeSettingsPrefs()
-        viewModel = ActivityManagementViewModel(repository, AddActivityUseCase(repository), tagRepository, settingsPrefs)
+        viewModel = ActivityManagementViewModel(
+            repository,
+            AddActivityUseCase(repository),
+            tagRepository,
+            settingsPrefs,
+            FakeBehaviorEventRepository(),
+            FakeEventTemplateRepository(),
+        )
     }
 
     @After
@@ -436,6 +443,79 @@ class ActivityManagementViewModelTest {
         override fun getStatsDashboardConfigFlow(): Flow<com.nltimer.core.data.model.StatsDashboardConfig> =
             flowOf(com.nltimer.core.data.model.StatsDashboardConfig())
         override suspend fun updateStatsDashboardConfig(config: com.nltimer.core.data.model.StatsDashboardConfig) {}
+        override fun getLastEventTemplateIdFlow(): Flow<Long?> = flowOf(null)
+        override suspend fun updateLastEventTemplateId(id: Long?) {}
+    }
+
+    private class FakeBehaviorEventRepository : com.nltimer.core.data.repository.BehaviorEventRepository {
+        override fun observeEvents(scope: com.nltimer.core.data.model.EventQueryScope) =
+            flowOf(emptyList<com.nltimer.core.data.model.BehaviorEvent>())
+
+        override fun observeEventsWithValues(scope: com.nltimer.core.data.model.EventQueryScope) =
+            flowOf(emptyList<com.nltimer.core.data.model.BehaviorEventWithValues>())
+
+        override suspend fun getEventById(id: Long): com.nltimer.core.data.model.BehaviorEvent? = null
+        override suspend fun getEventWithValues(id: Long): com.nltimer.core.data.model.BehaviorEventWithValues? = null
+        override fun observeLatestEventByBehavior(behaviorId: Long) =
+            flowOf(null as com.nltimer.core.data.model.BehaviorEvent?)
+
+        override fun observeLatestEventWithValuesByBehavior(behaviorId: Long) =
+            flowOf(null as com.nltimer.core.data.model.BehaviorEventWithValues?)
+
+        override fun observeEventCountByBehavior(behaviorId: Long) = flowOf(0)
+        override fun observeSummariesForBehaviors(behaviorIds: List<Long>) =
+            flowOf(emptyMap<Long, com.nltimer.core.data.model.BehaviorEventSummary>())
+
+        override fun observeEventsByOptionValue(fieldId: Long, optionText: String) =
+            flowOf(emptyList<com.nltimer.core.data.model.BehaviorEvent>())
+
+        override fun observeEventsByNumberRange(fieldId: Long, min: Double, max: Double) =
+            flowOf(emptyList<com.nltimer.core.data.model.BehaviorEvent>())
+
+        override fun observeEventsByTextLike(fieldId: Long, query: String) =
+            flowOf(emptyList<com.nltimer.core.data.model.BehaviorEvent>())
+
+        override suspend fun addEvent(
+            event: com.nltimer.core.data.model.BehaviorEvent,
+            values: List<com.nltimer.core.data.model.BehaviorEventValue>,
+        ) = 1L
+
+        override suspend fun saveEventValues(eventId: Long, values: List<com.nltimer.core.data.model.BehaviorEventValue>) {}
+        override suspend fun updateEvent(
+            event: com.nltimer.core.data.model.BehaviorEvent,
+            values: List<com.nltimer.core.data.model.BehaviorEventValue>,
+        ) {}
+
+        override suspend fun deleteEvent(id: Long) {}
+        override suspend fun setEventBehaviorId(eventId: Long, behaviorId: Long?) {}
+    }
+
+    private class FakeEventTemplateRepository : com.nltimer.core.data.repository.EventTemplateRepository {
+        override fun observeAll(): Flow<List<com.nltimer.core.data.model.EventTemplate>> = flowOf(emptyList())
+        override fun observeTemplatesByTag(tagId: Long): Flow<List<com.nltimer.core.data.model.EventTemplate>> =
+            flowOf(emptyList())
+
+        override suspend fun getTemplateById(id: Long): com.nltimer.core.data.model.EventTemplate? = null
+        override suspend fun getTemplateByName(name: String): com.nltimer.core.data.model.EventTemplate? = null
+        override suspend fun getMaxSortOrder(): Int = -1
+        override suspend fun getFieldsByTemplateSync(templateId: Long): List<com.nltimer.core.data.model.EventTemplateField> =
+            emptyList()
+
+        override suspend fun getFieldsForTemplatesSync(templateIds: List<Long>):
+            Map<Long, List<com.nltimer.core.data.model.EventTemplateField>> = emptyMap()
+        override suspend fun getTagIdsForTemplateSync(templateId: Long): List<Long> = emptyList()
+        override suspend fun insertTemplate(template: com.nltimer.core.data.model.EventTemplate): Long = 1L
+        override suspend fun updateTemplate(template: com.nltimer.core.data.model.EventTemplate) {}
+        override suspend fun deleteTemplate(id: Long) {}
+        override suspend fun saveTemplateFields(
+            templateId: Long,
+            fields: List<com.nltimer.core.data.model.EventTemplateField>,
+        ) {}
+
+        override suspend fun saveTemplateBindings(templateId: Long, tagIds: List<Long>) {}
+        override suspend fun addTagBinding(templateId: Long, tagId: Long) {}
+        override suspend fun removeTagBinding(templateId: Long, tagId: Long) {}
+        override suspend fun matchTemplateByTags(tagIds: List<Long>): com.nltimer.core.data.model.EventTemplate? = null
     }
 
     @Test

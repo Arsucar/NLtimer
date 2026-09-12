@@ -17,8 +17,12 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
+import com.nltimer.core.data.model.BehaviorEventWithValues
+import com.nltimer.core.data.model.EventTemplate
 import com.nltimer.core.data.util.formatDuration
+import com.nltimer.core.data.util.hhmmFormatter
 import com.nltimer.core.data.util.hhmmssFormatter
+import com.nltimer.core.data.util.summarizeEventValues
 import com.nltimer.feature.home.model.GridCellUiState
 import java.time.Instant
 import java.time.ZoneId
@@ -60,6 +64,8 @@ private fun buildExportText(cell: GridCellUiState): String {
 @Composable
 fun BehaviorDetailDialog(
     cell: GridCellUiState,
+    events: List<BehaviorEventWithValues> = emptyList(),
+    templates: List<EventTemplate> = emptyList(),
     onDismiss: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -104,6 +110,23 @@ fun BehaviorDetailDialog(
                 DetailRow("achievementLevel", cell.achievementLevel?.toString() ?: "(空)")
                 DetailRow("pomodoroCount", "${cell.pomodoroCount}")
                 DetailRow("note", cell.note.let { it ?: "(空)" })
+                // 复盘事件分区（R5）：note 在上、事件时间轴在下；无事件整分区不渲染
+                if (events.isNotEmpty()) {
+                    DetailRow("复盘事件", "${events.size} 条")
+                    events.sortedByDescending { it.event.timestamp }.forEach { item ->
+                        val timeText = Instant.ofEpochMilli(item.event.timestamp)
+                            .atZone(ZoneId.systemDefault())
+                            .format(hhmmFormatter)
+                        val summary = listOf(
+                            templates.firstOrNull { it.id == item.event.templateId }?.name,
+                            item.values.summarizeEventValues().ifBlank { null },
+                        ).filterNotNull().joinToString(" · ")
+                        DetailRow(
+                            label = timeText,
+                            value = summary.ifEmpty { "无字段值" },
+                        )
+                    }
+                }
             }
         },
         dismissButton = {

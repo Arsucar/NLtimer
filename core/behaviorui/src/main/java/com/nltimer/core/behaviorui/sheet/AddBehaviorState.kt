@@ -75,7 +75,9 @@ internal class AddBehaviorState(
 
     val sheetOpenTime: LocalDateTime = LocalDateTime.now()
     private val now = sheetOpenTime
-    var userAdjustedTime by mutableStateOf(false)
+    var userAdjustedStart by mutableStateOf(false)
+        private set
+    var userAdjustedEnd by mutableStateOf(false)
         private set
     var startTime by mutableStateOf(initialStartTime ?: now)
     var endTime by mutableStateOf(initialEndTime ?: now)
@@ -92,8 +94,13 @@ internal class AddBehaviorState(
     )
         private set
 
-    fun markUserAdjustedTime() {
-        userAdjustedTime = true
+    fun markUserAdjustedStart() {
+        userAdjustedStart = true
+        endTimeAutoTracking = false
+    }
+
+    fun markUserAdjustedEnd() {
+        userAdjustedEnd = true
         endTimeAutoTracking = false
     }
 
@@ -129,24 +136,25 @@ internal class AddBehaviorState(
     var innerBoxPositionInWindow by mutableStateOf(Offset.Zero)
 
     fun resolveStartTime(strategy: SecondsStrategy, confirmTime: LocalDateTime): LocalDateTime {
-        // 补记空闲段会携带毫秒级边界；用户未改时间时必须保留，避免边界重叠。
-        if (mode == BehaviorNature.COMPLETED) {
-            return if (userAdjustedTime) startTime.withSecond(0).withNano(0) else initialStartTime ?: startTime
-        }
-        return if (userAdjustedTime) {
-            startTime.withSecond(0).withNano(0)
-        } else {
-            val sourceSeconds = when (strategy) {
-                SecondsStrategy.OPEN_TIME -> sheetOpenTime.second
-                SecondsStrategy.CONFIRM_TIME -> confirmTime.second
-            }
-            startTime.withSecond(sourceSeconds).withNano(0)
-        }
+        // 补记空闲段会携带毫秒级边界；用户未改开始分钟时必须保留，避免同分钟截断误冲突。
+        return resolveBehaviorStartTime(
+            mode = mode,
+            userAdjustedStart = userAdjustedStart,
+            startTime = startTime,
+            initialStartTime = initialStartTime,
+            strategy = strategy,
+            sheetOpenTime = sheetOpenTime,
+            confirmTime = confirmTime,
+        )
     }
 
     fun resolveEndTime(): LocalDateTime? {
-        if (mode != BehaviorNature.COMPLETED) return null
-        return if (userAdjustedTime) endTime.withSecond(0).withNano(0) else initialEndTime ?: endTime
+        return resolveBehaviorEndTime(
+            mode = mode,
+            userAdjustedEnd = userAdjustedEnd,
+            endTime = endTime,
+            initialEndTime = initialEndTime,
+        )
     }
 
     /**

@@ -5,13 +5,22 @@ import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
 import com.nltimer.core.data.model.ActivityStats
 import com.nltimer.core.data.model.Behavior
+import com.nltimer.core.data.model.BehaviorEvent
+import com.nltimer.core.data.model.BehaviorEventSummary
+import com.nltimer.core.data.model.BehaviorEventValue
+import com.nltimer.core.data.model.BehaviorEventWithValues
 import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.model.BehaviorWithDetails
 import com.nltimer.core.data.model.DialogGridConfig
+import com.nltimer.core.data.model.EventQueryScope
+import com.nltimer.core.data.model.EventTemplate
+import com.nltimer.core.data.model.EventTemplateField
 import com.nltimer.core.data.model.Tag
 import com.nltimer.core.data.repository.ActivityManagementRepository
 import com.nltimer.core.data.repository.ActivityRepository
+import com.nltimer.core.data.repository.BehaviorEventRepository
 import com.nltimer.core.data.repository.BehaviorRepository
+import com.nltimer.core.data.repository.EventTemplateRepository
 import com.nltimer.core.data.repository.TagRepository
 import com.nltimer.core.designsystem.theme.Theme
 import com.nltimer.core.designsystem.theme.TimeLabelConfig
@@ -20,7 +29,11 @@ import com.nltimer.core.data.util.SystemClockService
 import com.nltimer.core.data.util.TimeSnapService
 import com.nltimer.core.data.usecase.AddActivityUseCase
 import com.nltimer.core.data.usecase.AddBehaviorUseCase
+import com.nltimer.core.data.usecase.AddEventUseCase
 import com.nltimer.core.data.usecase.AddTagUseCase
+import com.nltimer.core.data.usecase.DeleteEventUseCase
+import com.nltimer.core.data.usecase.MatchTemplateByTagsUseCase
+import com.nltimer.core.data.usecase.UpdateEventUseCase
 import com.nltimer.core.tools.event.ToolEventBus
 import com.nltimer.core.tools.match.ApplyNoteDirectivesUseCase
 import com.nltimer.core.tools.match.NoteMatcher
@@ -57,6 +70,12 @@ class HomeViewModelTest {
     private lateinit var activityRepository: FakeActivityRepository
     private lateinit var tagRepository: FakeTagRepository
     private lateinit var settingsPrefs: FakeSettingsPrefs
+    private lateinit var eventTemplateRepository: FakeEventTemplateRepository
+    private lateinit var behaviorEventRepository: FakeBehaviorEventRepository
+    private lateinit var matchTemplateByTagsUseCase: MatchTemplateByTagsUseCase
+    private lateinit var addEventUseCase: AddEventUseCase
+    private lateinit var updateEventUseCase: UpdateEventUseCase
+    private lateinit var deleteEventUseCase: DeleteEventUseCase
     private lateinit var clockService: ClockService
     private lateinit var addBehaviorUseCase: AddBehaviorUseCase
     private lateinit var addTagUseCase: AddTagUseCase
@@ -80,6 +99,12 @@ class HomeViewModelTest {
         clockService = object : ClockService {
             override fun currentTimeMillis(): Long = frozenTime
         }
+        eventTemplateRepository = FakeEventTemplateRepository()
+        behaviorEventRepository = FakeBehaviorEventRepository()
+        matchTemplateByTagsUseCase = MatchTemplateByTagsUseCase(eventTemplateRepository)
+        addEventUseCase = AddEventUseCase(behaviorEventRepository, eventTemplateRepository, clockService)
+        updateEventUseCase = UpdateEventUseCase(behaviorEventRepository, eventTemplateRepository, clockService)
+        deleteEventUseCase = DeleteEventUseCase(behaviorEventRepository)
         addBehaviorUseCase = AddBehaviorUseCase(behaviorRepository, TimeSnapService(), clockService)
         addTagUseCase = AddTagUseCase(tagRepository)
         addActivityUseCase = AddActivityUseCase(activityManagementRepository)
@@ -98,12 +123,18 @@ class HomeViewModelTest {
             activityRepository,
             activityManagementRepository,
             tagRepository,
+            eventTemplateRepository,
+            behaviorEventRepository,
             settingsPrefs,
             NoteMatcher(),
             addBehaviorUseCase,
             addTagUseCase,
             addActivityUseCase,
             applyNoteDirectivesUseCase,
+            matchTemplateByTagsUseCase,
+            addEventUseCase,
+            updateEventUseCase,
+            deleteEventUseCase,
             clockService,
             ToolEventBus(),
         ).also { createdViewModels.add(it) }
@@ -286,6 +317,36 @@ class HomeViewModelTest {
         viewModel.deleteBehavior(1L)
         runCurrent()
         assertTrue(behaviorRepository.deleteCalled)
+        assertEquals(false, behaviorRepository.lastDeleteKeepEvents)
+    }
+
+    @Test
+    fun `deleteBehavior keepEvents true is forwarded`() = homeRunTest {
+        viewModel.deleteBehavior(1L, keepEvents = true)
+        runCurrent()
+        assertTrue(behaviorRepository.deleteCalled)
+        assertEquals(true, behaviorRepository.lastDeleteKeepEvents)
+    }
+
+    @Test
+    fun `openEventAddSheet with null cell opens independent event`() = homeRunTest {
+        viewModel.openEventAddSheet(null)
+        runCurrent()
+        val sheet = viewModel.uiState.value.eventSheet
+        assertNotNull(sheet)
+        assertEquals(null, sheet?.behaviorId)
+        assertEquals(null, sheet?.activityId)
+        assertEquals(null, sheet?.activityName)
+    }
+
+    @Test
+    fun `openStandaloneEventSheet opens independent event`() = homeRunTest {
+        viewModel.openStandaloneEventSheet()
+        runCurrent()
+        val sheet = viewModel.uiState.value.eventSheet
+        assertNotNull(sheet)
+        assertEquals(null, sheet?.behaviorId)
+        assertEquals(null, sheet?.activityId)
     }
 
     @Test
@@ -347,6 +408,42 @@ class HomeViewModelTest {
         viewModel.onTimeLabelConfigChange(config)
         runCurrent()
         assertTrue(settingsPrefs.updateTimeLabelConfigCalled)
+    }
+
+    @Test
+    fun `clearErrorMessage clears conflict errorMessage`() = homeRunTest {
+        val startTime = frozenTime - 7200_000
+        val endTime = frozenTime - 3600_000
+        val activeBehavior = Behavior(
+            id = 1L,
+            activityId = 1L,
+            startTime = startTime,
+            endTime = null,
+            status = BehaviorNature.ACTIVE,
+            note = null,
+            pomodoroCount = 0,
+            sequence = 0,
+            estimatedDuration = null,
+            actualDuration = null,
+            achievementLevel = null,
+            wasPlanned = false,
+        )
+        behaviorRepository.overlappingBehaviors.add(activeBehavior)
+        behaviorRepository._currentBehavior = activeBehavior
+
+        viewModel.addBehavior(
+            activityId = 2L,
+            tagIds = emptyList(),
+            startTime = endTime - 1000L,
+            endTime = endTime,
+            status = BehaviorNature.COMPLETED,
+            note = null,
+        )
+        runCurrent()
+        assertEquals("该时间段与已有行为记录冲突", viewModel.uiState.value.errorMessage)
+
+        viewModel.clearErrorMessage()
+        assertEquals(null, viewModel.uiState.value.errorMessage)
     }
 
     @Test
@@ -511,6 +608,7 @@ class HomeViewModelTest {
         var endCurrentBehaviorCalled = false
         var completeCurrentAndStartNextCalled = false
         var deleteCalled = false
+        var lastDeleteKeepEvents: Boolean? = null
         var nextPending: Behavior? = null
         var setStatusCalled = false
         var setStartTimeCalled = false
@@ -557,8 +655,9 @@ class HomeViewModelTest {
         override suspend fun reorderGoals(orderedIds: List<Long>) {
             this.reorderedIds = orderedIds
         }
-        override suspend fun delete(id: Long) {
+        override suspend fun delete(id: Long, keepEvents: Boolean) {
             deleteCalled = true
+            lastDeleteKeepEvents = keepEvents
         }
         override suspend fun settleDay(dayStart: Long, dayEnd: Long) {}
         override suspend fun updateBehavior(id: Long, activityId: Long, startTime: Long, endTime: Long?, status: String, note: String?) {
@@ -620,8 +719,10 @@ class HomeViewModelTest {
 
     private class FakeSettingsPrefs : SettingsPrefs {
         private val _theme = MutableStateFlow(Theme())
+        private val _lastEventTemplateId = MutableStateFlow<Long?>(null)
         var updateThemeCalled = false
         var updateTimeLabelConfigCalled = false
+        var lastEventTemplateId: Long? = null
 
         override fun getThemeFlow(): Flow<Theme> = _theme
         override suspend fun updateTheme(theme: Theme) {
@@ -651,6 +752,104 @@ class HomeViewModelTest {
         override fun getStatsDashboardConfigFlow(): Flow<com.nltimer.core.data.model.StatsDashboardConfig> =
             flowOf(com.nltimer.core.data.model.StatsDashboardConfig())
         override suspend fun updateStatsDashboardConfig(config: com.nltimer.core.data.model.StatsDashboardConfig) {}
+        override fun getLastEventTemplateIdFlow(): Flow<Long?> = _lastEventTemplateId
+        override suspend fun updateLastEventTemplateId(id: Long?) {
+            lastEventTemplateId = id
+            _lastEventTemplateId.value = id
+        }
+    }
+
+    private class FakeEventTemplateRepository : EventTemplateRepository {
+        private val templates = mutableListOf<EventTemplate>()
+        private val fieldsByTemplateId = mutableMapOf<Long, List<EventTemplateField>>()
+        private val bindings = mutableMapOf<Long, MutableList<Long>>()
+
+        fun addTemplateForTest(template: EventTemplate, fields: List<EventTemplateField> = emptyList()) {
+            templates.add(template)
+            if (fields.isNotEmpty()) fieldsByTemplateId[template.id] = fields
+        }
+
+        override fun observeAll(): Flow<List<EventTemplate>> = MutableStateFlow(templates.toList())
+        override fun observeTemplatesByTag(tagId: Long): Flow<List<EventTemplate>> = MutableStateFlow(emptyList())
+        override suspend fun getTemplateById(id: Long): EventTemplate? = templates.firstOrNull { it.id == id }
+        override suspend fun getTemplateByName(name: String): EventTemplate? = templates.firstOrNull { it.name == name }
+        override suspend fun getMaxSortOrder(): Int = templates.maxOfOrNull { it.sortOrder } ?: -1
+        override suspend fun getFieldsByTemplateSync(templateId: Long): List<EventTemplateField> =
+            fieldsByTemplateId[templateId].orEmpty()
+
+        override suspend fun getFieldsForTemplatesSync(templateIds: List<Long>): Map<Long, List<EventTemplateField>> =
+            templateIds.mapNotNull { id -> fieldsByTemplateId[id]?.let { id to it } }.toMap()
+
+        override suspend fun getTagIdsForTemplateSync(templateId: Long): List<Long> =
+            bindings[templateId].orEmpty()
+
+        override suspend fun insertTemplate(template: EventTemplate): Long {
+            val newId = (templates.maxOfOrNull { it.id } ?: 0L) + 1
+            templates.add(template.copy(id = newId))
+            return newId
+        }
+
+        override suspend fun updateTemplate(template: EventTemplate) {
+            val index = templates.indexOfFirst { it.id == template.id }
+            if (index >= 0) templates[index] = template
+        }
+
+        override suspend fun deleteTemplate(id: Long) {
+            templates.removeAll { it.id == id }
+            fieldsByTemplateId.remove(id)
+            bindings.remove(id)
+        }
+
+        override suspend fun saveTemplateFields(templateId: Long, fields: List<EventTemplateField>) {
+            fieldsByTemplateId[templateId] = fields
+        }
+
+        override suspend fun saveTemplateBindings(templateId: Long, tagIds: List<Long>) {
+            bindings[templateId] = tagIds.distinct().toMutableList()
+        }
+
+        override suspend fun addTagBinding(templateId: Long, tagId: Long) {
+            bindings.getOrPut(templateId) { mutableListOf() }.add(tagId)
+        }
+
+        override suspend fun removeTagBinding(templateId: Long, tagId: Long) {
+            bindings[templateId]?.remove(tagId)
+        }
+
+        override suspend fun matchTemplateByTags(tagIds: List<Long>): EventTemplate? = null
+    }
+
+    private class FakeBehaviorEventRepository : BehaviorEventRepository {
+        override fun observeEvents(scope: EventQueryScope): Flow<List<BehaviorEvent>> = flowOf(emptyList())
+
+        override fun observeEventsWithValues(scope: EventQueryScope): Flow<List<BehaviorEventWithValues>> =
+            flowOf(emptyList())
+
+        override suspend fun getEventById(id: Long): BehaviorEvent? = null
+        override suspend fun getEventWithValues(id: Long): BehaviorEventWithValues? = null
+        override fun observeLatestEventByBehavior(behaviorId: Long): Flow<BehaviorEvent?> = MutableStateFlow(null)
+        override fun observeLatestEventWithValuesByBehavior(behaviorId: Long): Flow<BehaviorEventWithValues?> =
+            MutableStateFlow(null)
+
+        override fun observeEventCountByBehavior(behaviorId: Long): Flow<Int> = MutableStateFlow(0)
+
+        override fun observeSummariesForBehaviors(behaviorIds: List<Long>): Flow<Map<Long, BehaviorEventSummary>> =
+            flowOf(emptyMap())
+
+        override fun observeEventsByOptionValue(fieldId: Long, optionText: String): Flow<List<BehaviorEvent>> =
+            flowOf(emptyList())
+
+        override fun observeEventsByNumberRange(fieldId: Long, min: Double, max: Double): Flow<List<BehaviorEvent>> =
+            flowOf(emptyList())
+
+        override fun observeEventsByTextLike(fieldId: Long, query: String): Flow<List<BehaviorEvent>> =
+            flowOf(emptyList())
+
+        override suspend fun addEvent(event: BehaviorEvent, values: List<BehaviorEventValue>): Long = 1L
+        override suspend fun saveEventValues(eventId: Long, values: List<BehaviorEventValue>) {}
+        override suspend fun updateEvent(event: BehaviorEvent, values: List<BehaviorEventValue>) {}
+        override suspend fun deleteEvent(id: Long) {}
+        override suspend fun setEventBehaviorId(eventId: Long, behaviorId: Long?) {}
     }
 
     private class FakeActivityManagementRepository : ActivityManagementRepository {

@@ -19,53 +19,59 @@ class TimeSnapService {
         ignoreBehaviorId: Long? = null,
     ): SnapResult {
         var adjustedStart = newStart
-        var adjustedEnd = newEnd
+        val adjustedEnd = newEnd
 
         if (newStatus == BehaviorNature.COMPLETED) {
+            val sameMinutePrevEnd = overlappingBehaviors
+                .asSequence()
+                .filter { ignoreBehaviorId == null || it.id != ignoreBehaviorId }
+                .filter { it.status == BehaviorNature.COMPLETED }
+                .mapNotNull { it.endTime }
+                .filter { prevEnd ->
+                    adjustedStart < prevEnd &&
+                        adjustedStart / MILLIS_PER_MINUTE == prevEnd / MILLIS_PER_MINUTE
+                }
+                .maxOrNull()
+            if (sameMinutePrevEnd != null) {
+                adjustedStart = sameMinutePrevEnd
+            }
+            val snapInvertedEnd = sameMinutePrevEnd != null &&
+                adjustedEnd != null &&
+                adjustedEnd <= adjustedStart
             val effectiveNewEnd = adjustedEnd ?: adjustedStart
-            val hasConflict = effectiveNewEnd > adjustedStart &&
-                hasTimeConflict(
-                    newStart = adjustedStart,
-                    newEnd = adjustedEnd,
-                    newStatus = newStatus,
-                    existingBehaviors = overlappingBehaviors,
-                    currentTime = currentTime,
-                    ignoreBehaviorId = ignoreBehaviorId,
+            val hasConflict = snapInvertedEnd || (
+                effectiveNewEnd > adjustedStart &&
+                    hasTimeConflict(
+                        newStart = adjustedStart,
+                        newEnd = adjustedEnd,
+                        newStatus = newStatus,
+                        existingBehaviors = overlappingBehaviors,
+                        currentTime = currentTime,
+                        ignoreBehaviorId = ignoreBehaviorId,
+                    )
                 )
             return SnapResult(adjustedStart, adjustedEnd, hasConflict)
         }
 
-        if (newStatus != BehaviorNature.PENDING) {
-            val prevBehavior = overlappingBehaviors
-                .filter { it.endTime != null && it.endTime >= adjustedStart }
-                .maxByOrNull { it.endTime ?: 0L }
-            val prevEnd = prevBehavior?.endTime
-            if (prevEnd != null && prevEnd >= adjustedStart) {
+        if (newStatus == BehaviorNature.ACTIVE) {
+            val prevEnd = overlappingBehaviors
+                .mapNotNull { it.endTime }
+                .filter { it >= adjustedStart }
+                .maxOrNull()
+            if (prevEnd != null) {
                 adjustedStart = prevEnd + 1
-                if (newStatus == BehaviorNature.COMPLETED && adjustedEnd != null) {
-                    if (newEnd / MILLIS_PER_MINUTE == prevEnd / MILLIS_PER_MINUTE) {
-                        adjustedEnd = prevEnd / MILLIS_PER_MINUTE * MILLIS_PER_MINUTE + MILLIS_PER_MINUTE - 1
-                    }
-                }
             }
         }
 
-        val hasConflict = if (newStatus != BehaviorNature.PENDING) {
-            val effectiveNewEnd = when (newStatus) {
-                BehaviorNature.ACTIVE -> Long.MAX_VALUE
-                BehaviorNature.COMPLETED -> adjustedEnd ?: adjustedStart
-                BehaviorNature.PENDING -> null
-            }
-            effectiveNewEnd != null && effectiveNewEnd > adjustedStart &&
-                hasTimeConflict(
-                    newStart = adjustedStart,
-                    newEnd = adjustedEnd,
-                    newStatus = newStatus,
-                    existingBehaviors = overlappingBehaviors,
-                    currentTime = currentTime,
-                    ignoreBehaviorId = ignoreBehaviorId,
-                )
-        } else false
+        val hasConflict = newStatus == BehaviorNature.ACTIVE &&
+            hasTimeConflict(
+                newStart = adjustedStart,
+                newEnd = adjustedEnd,
+                newStatus = newStatus,
+                existingBehaviors = overlappingBehaviors,
+                currentTime = currentTime,
+                ignoreBehaviorId = ignoreBehaviorId,
+            )
 
         return SnapResult(adjustedStart, adjustedEnd, hasConflict)
     }

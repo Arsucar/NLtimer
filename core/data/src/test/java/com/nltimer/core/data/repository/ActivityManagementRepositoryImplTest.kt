@@ -52,7 +52,8 @@ class ActivityManagementRepositoryImplTest {
         fakeDatabase = mockk<NLtimerDatabase>(relaxed = true)
         mockkStatic("androidx.room.RoomDatabaseKt")
         coEvery { fakeDatabase.withTransaction(any<suspend () -> Any>()) } coAnswers {
-            (args[0] as suspend () -> Any).invoke()
+            // args[0] = Receiver（mock 数据库本体），args[1] = 事务 block
+            (args[1] as suspend () -> Any).invoke()
         }
         repository = ActivityManagementRepositoryImpl(fakeActivityDao, fakeGroupDao, fakeBehaviorDao, fakeDatabase)
     }

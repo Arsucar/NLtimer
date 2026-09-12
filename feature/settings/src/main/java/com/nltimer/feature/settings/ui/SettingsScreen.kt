@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ColorLens
 import androidx.compose.material.icons.filled.Dashboard
+import androidx.compose.material.icons.filled.NoteAlt
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material.icons.filled.Tune
@@ -25,6 +26,7 @@ fun SettingsRoute(
     onNavigateToHomeLayoutConfig: () -> Unit = {},
     onNavigateToColorPalette: () -> Unit = {},
     onNavigateToAdvancedSettings: () -> Unit = {},
+    onNavigateToEventTemplates: () -> Unit = {},
 ) {
     SettingsScreen(
         onNavigateToThemeSettings = onNavigateToThemeSettings,
@@ -33,6 +35,7 @@ fun SettingsRoute(
         onNavigateToHomeLayoutConfig = onNavigateToHomeLayoutConfig,
         onNavigateToColorPalette = onNavigateToColorPalette,
         onNavigateToAdvancedSettings = onNavigateToAdvancedSettings,
+        onNavigateToEventTemplates = onNavigateToEventTemplates,
     )
 }
 
@@ -45,6 +48,7 @@ fun SettingsScreen(
     onNavigateToHomeLayoutConfig: () -> Unit = {},
     onNavigateToColorPalette: () -> Unit = {},
     onNavigateToAdvancedSettings: () -> Unit = {},
+    onNavigateToEventTemplates: () -> Unit = {},
 ) {
     LazyColumn(
         modifier = modifier.fillMaxSize(),
@@ -75,6 +79,15 @@ fun SettingsScreen(
                 title = "弹窗配置",
                 subtitle = "调整弹窗网格布局与显示方式",
                 onClick = onNavigateToDialogConfig,
+            )
+        }
+
+        item {
+            SettingsEntryCard(
+                icon = Icons.Default.NoteAlt,
+                title = "打点模板",
+                subtitle = "自定义结构化事件字段，打点自动套用",
+                onClick = onNavigateToEventTemplates,
             )
         }
 

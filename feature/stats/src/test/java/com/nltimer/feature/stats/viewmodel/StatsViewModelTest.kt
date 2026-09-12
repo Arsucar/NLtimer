@@ -2,14 +2,24 @@ package com.nltimer.feature.stats.viewmodel
 
 import com.nltimer.core.data.SettingsPrefs
 import com.nltimer.core.data.model.Behavior
+import com.nltimer.core.data.model.BehaviorEvent
+import com.nltimer.core.data.model.BehaviorEventSummary
+import com.nltimer.core.data.model.BehaviorEventValue
+import com.nltimer.core.data.model.BehaviorEventWithValues
 import com.nltimer.core.data.model.BehaviorWithDetails
 import com.nltimer.core.data.model.DialogGridConfig
+import com.nltimer.core.data.model.EventQueryScope
+import com.nltimer.core.data.model.EventTemplate
+import com.nltimer.core.data.model.EventTemplateField
 import com.nltimer.core.data.model.StatsDashboardConfig
 import com.nltimer.core.data.model.StatsPanelConfig
 import com.nltimer.core.data.model.StatsPanelType
 import com.nltimer.core.data.model.Tag
 import com.nltimer.core.data.model.defaultStatsDashboardConfig
+import com.nltimer.core.data.repository.BehaviorEventRepository
 import com.nltimer.core.data.repository.BehaviorRepository
+import com.nltimer.core.data.repository.EventTemplateRepository
+import com.nltimer.core.data.usecase.ObserveEventsUseCase
 import com.nltimer.core.data.usecase.StatsQueryUseCase
 import com.nltimer.core.designsystem.theme.Theme
 import com.nltimer.core.designsystem.theme.TimeLabelConfig
@@ -52,6 +62,8 @@ class StatsViewModelTest {
         viewModel = StatsViewModel(
             statsQueryUseCase = StatsQueryUseCase(FakeBehaviorRepository()),
             settingsPrefs = settingsPrefs,
+            observeEventsUseCase = ObserveEventsUseCase(FakeBehaviorEventRepository()),
+            eventTemplateRepository = FakeEventTemplateRepository(),
         )
     }
 
@@ -209,6 +221,8 @@ class StatsViewModelTest {
             lastPersisted = config
             dashboardFlow.value = config
         }
+        override fun getLastEventTemplateIdFlow(): Flow<Long?> = flowOf(null)
+        override suspend fun updateLastEventTemplateId(id: Long?) {}
     }
 
     private class FakeBehaviorRepository : BehaviorRepository {
@@ -232,7 +246,7 @@ class StatsViewModelTest {
         override suspend fun endCurrentBehavior(endTime: Long) {}
         override suspend fun completeCurrentAndStartNext(currentId: Long, idleMode: Boolean): Behavior? = null
         override suspend fun reorderGoals(orderedIds: List<Long>) {}
-        override suspend fun delete(id: Long) {}
+        override suspend fun delete(id: Long, keepEvents: Boolean) {}
         override suspend fun settleDay(dayStart: Long, dayEnd: Long) {}
         override suspend fun updateBehavior(
             id: Long,
@@ -256,5 +270,55 @@ class StatsViewModelTest {
         override fun getTotalDurationAllBehaviors() = flowOf(0L)
         override fun getAllActivityLastUsed() = flowOf(emptyMap<Long, Long?>())
         override fun getAllTagLastUsed() = flowOf(emptyMap<Long, Long?>())
+    }
+
+    private class FakeBehaviorEventRepository : BehaviorEventRepository {
+        override fun observeEvents(scope: EventQueryScope) = flowOf(emptyList<BehaviorEvent>())
+        override fun observeEventsWithValues(scope: EventQueryScope) =
+            flowOf(emptyList<BehaviorEventWithValues>())
+
+        override suspend fun getEventById(id: Long): BehaviorEvent? = null
+        override suspend fun getEventWithValues(id: Long): BehaviorEventWithValues? = null
+        override fun observeLatestEventByBehavior(behaviorId: Long) = flowOf(null as BehaviorEvent?)
+        override fun observeLatestEventWithValuesByBehavior(behaviorId: Long) =
+            flowOf(null as BehaviorEventWithValues?)
+
+        override fun observeEventCountByBehavior(behaviorId: Long) = flowOf(0)
+        override fun observeSummariesForBehaviors(behaviorIds: List<Long>) =
+            flowOf(emptyMap<Long, BehaviorEventSummary>())
+
+        override fun observeEventsByOptionValue(fieldId: Long, optionText: String) =
+            flowOf(emptyList<BehaviorEvent>())
+
+        override fun observeEventsByNumberRange(fieldId: Long, min: Double, max: Double) =
+            flowOf(emptyList<BehaviorEvent>())
+
+        override fun observeEventsByTextLike(fieldId: Long, query: String) =
+            flowOf(emptyList<BehaviorEvent>())
+
+        override suspend fun addEvent(event: BehaviorEvent, values: List<BehaviorEventValue>) = 1L
+        override suspend fun saveEventValues(eventId: Long, values: List<BehaviorEventValue>) {}
+        override suspend fun updateEvent(event: BehaviorEvent, values: List<BehaviorEventValue>) {}
+        override suspend fun deleteEvent(id: Long) {}
+        override suspend fun setEventBehaviorId(eventId: Long, behaviorId: Long?) {}
+    }
+
+    private class FakeEventTemplateRepository : EventTemplateRepository {
+        override fun observeAll(): Flow<List<EventTemplate>> = flowOf(emptyList())
+        override fun observeTemplatesByTag(tagId: Long): Flow<List<EventTemplate>> = flowOf(emptyList())
+        override suspend fun getTemplateById(id: Long): EventTemplate? = null
+        override suspend fun getTemplateByName(name: String): EventTemplate? = null
+        override suspend fun getMaxSortOrder(): Int = -1
+        override suspend fun getFieldsByTemplateSync(templateId: Long): List<EventTemplateField> = emptyList()
+        override suspend fun getFieldsForTemplatesSync(templateIds: List<Long>): Map<Long, List<EventTemplateField>> = emptyMap()
+        override suspend fun getTagIdsForTemplateSync(templateId: Long): List<Long> = emptyList()
+        override suspend fun insertTemplate(template: EventTemplate): Long = 1L
+        override suspend fun updateTemplate(template: EventTemplate) {}
+        override suspend fun deleteTemplate(id: Long) {}
+        override suspend fun saveTemplateFields(templateId: Long, fields: List<EventTemplateField>) {}
+        override suspend fun saveTemplateBindings(templateId: Long, tagIds: List<Long>) {}
+        override suspend fun addTagBinding(templateId: Long, tagId: Long) {}
+        override suspend fun removeTagBinding(templateId: Long, tagId: Long) {}
+        override suspend fun matchTemplateByTags(tagIds: List<Long>): EventTemplate? = null
     }
 }

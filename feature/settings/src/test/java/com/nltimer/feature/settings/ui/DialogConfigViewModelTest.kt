@@ -152,5 +152,7 @@ class DialogConfigViewModelTest {
         override fun getStatsDashboardConfigFlow(): Flow<com.nltimer.core.data.model.StatsDashboardConfig> =
             flowOf(com.nltimer.core.data.model.StatsDashboardConfig())
         override suspend fun updateStatsDashboardConfig(config: com.nltimer.core.data.model.StatsDashboardConfig) {}
+        override fun getLastEventTemplateIdFlow(): Flow<Long?> = flowOf(null)
+        override suspend fun updateLastEventTemplateId(id: Long?) {}
     }
 }

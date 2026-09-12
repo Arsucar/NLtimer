@@ -67,35 +67,67 @@ class TimeSnapServiceTest {
     }
 
     @Test
-    fun `completed overlap returns conflict without changing requested times`() {
-        val prevEnd = 60_000L + 30_000L
+    fun `completed start truncated to same minute as prevEnd leftover snaps to prevEnd without conflict`() {
+        val prevEnd = 90_000L
         val prev = createBehavior(1, 60_000, prevEnd, BehaviorNature.COMPLETED)
-        val newEnd = 60_000L + 45_000L
         val result = service.snapAndCheckConflict(
             newStart = 60_000L,
-            newEnd = newEnd,
+            newEnd = 180_000L,
             newStatus = BehaviorNature.COMPLETED,
             overlappingBehaviors = listOf(prev),
-            currentTime = 120_000,
+            currentTime = 200_000,
         )
-        assertEquals(60_000L, result.adjustedStart)
-        assertEquals(newEnd, result.adjustedEnd)
+        assertEquals(prevEnd, result.adjustedStart)
+        assertEquals(180_000L, result.adjustedEnd)
+        assertFalse(result.hasConflict)
+    }
+
+    @Test
+    fun `completed same-minute leftover snap that inverts end remains conflict`() {
+        val prevEnd = 90_000L
+        val prev = createBehavior(1, 60_000, prevEnd, BehaviorNature.COMPLETED)
+        val result = service.snapAndCheckConflict(
+            newStart = 60_000L,
+            newEnd = 80_000L,
+            newStatus = BehaviorNature.COMPLETED,
+            overlappingBehaviors = listOf(prev),
+            currentTime = 200_000,
+        )
+        assertEquals(prevEnd, result.adjustedStart)
+        assertEquals(80_000L, result.adjustedEnd)
+        assertTrue(result.hasConflict)
+    }
+
+    @Test
+    fun `completed same-minute leftover then still overlaps another interval remains conflict`() {
+        val prevA = createBehavior(1, 60_000, 90_000, BehaviorNature.COMPLETED)
+        val prevB = createBehavior(2, 120_000, 180_000, BehaviorNature.COMPLETED)
+        val result = service.snapAndCheckConflict(
+            newStart = 60_000L,
+            newEnd = 200_000L,
+            newStatus = BehaviorNature.COMPLETED,
+            overlappingBehaviors = listOf(prevA, prevB),
+            currentTime = 250_000,
+        )
+        assertEquals(90_000L, result.adjustedStart)
+        assertEquals(200_000L, result.adjustedEnd)
         assertTrue(result.hasConflict)
     }
 
     @Test
     fun `completed overlap crossing minute boundary returns conflict without changing requested times`() {
-        val prevEnd = 60_000L + 30_000L
-        val prev = createBehavior(1, 60_000, prevEnd, BehaviorNature.COMPLETED)
-        val newEnd = 120_000L + 15_000L
+        val prevEnd = 90_000L
+        val prev = createBehavior(1, 10_000, prevEnd, BehaviorNature.COMPLETED)
+        val newStart = 30_000L
+        val newEnd = 180_000L
         val result = service.snapAndCheckConflict(
-            newStart = 60_000L,
+            newStart = newStart,
             newEnd = newEnd,
             newStatus = BehaviorNature.COMPLETED,
             overlappingBehaviors = listOf(prev),
             currentTime = 200_000,
         )
-        assertEquals(60_000L, result.adjustedStart)
+        assertEquals(newStart, result.adjustedStart)
         assertEquals(newEnd, result.adjustedEnd)
         assertTrue(result.hasConflict)
     }
@@ -154,6 +186,7 @@ class TimeSnapServiceTest {
             currentTime = 30_000,
             ignoreBehaviorId = 1,
         )
+        assertEquals(10_000L, result.adjustedStart)
         assertFalse(result.hasConflict)
     }
 
@@ -174,13 +207,13 @@ class TimeSnapServiceTest {
     @Test
     fun `multiple overlapping completed behaviors return conflict without snapping`() {
         val prev1 = createBehavior(1, 1_000, 8_000, BehaviorNature.COMPLETED)
-        val prev2 = createBehavior(2, 2_000, 12_000, BehaviorNature.COMPLETED)
+        val prev2 = createBehavior(2, 2_000, 75_000, BehaviorNature.COMPLETED)
         val result = service.snapAndCheckConflict(
             newStart = 10_000,
             newEnd = 20_000,
             newStatus = BehaviorNature.COMPLETED,
             overlappingBehaviors = listOf(prev1, prev2),
-            currentTime = 30_000,
+            currentTime = 80_000,
         )
         assertEquals(10_000L, result.adjustedStart)
         assertTrue(result.hasConflict)

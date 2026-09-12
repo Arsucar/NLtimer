@@ -117,16 +117,27 @@
 | TimelineReverseView | `feature/home/.../ui/` | 时间线布局 |
 | MomentView | `feature/home/.../ui/` | 此刻布局 |
 | BehaviorLogView | `feature/home/.../ui/` | 日志布局 |
+| EventSheet | `feature/home/.../ui/components/event/` | 事件 BottomSheet（列表/表单双页态） |
+| EventFormPage | `feature/home/.../ui/components/event/` | 事件录入表单（归属/模板切换/快速·完整模式） |
+| StarRatingBar | `feature/home/.../ui/components/event/` | 星级评分组件（1~5，重按清除） |
+| EventSummaryRow | `feature/home/.../ui/components/moment/` | ACTIVE 卡片事件摘要行（📝 N 笔 · 最新事件） |
 
 ## feature:settings
 
 | 关键类 | 路径 | 职责 |
 |--------|------|------|
-| SettingsScreen | `feature/settings/.../ui/` | 设置主页 |
+## feature:settings
+
+| 关键类 | 路径 | 职责 |
+|--------|------|------|
+| SettingsScreen | `feature/settings/.../ui/` | 设置主页（含「打点模板」入口） |
 | ThemeSettingsScreen | `feature/settings/.../ui/` | 主题设置 |
 | DialogConfigScreen | `feature/settings/.../ui/` | 弹窗配置 |
 | DataManagementScreen | `feature/settings/.../ui/` | 数据管理 |
 | HomeLayoutConfigScreen | `feature/settings/.../ui/` | 首页布局配置 |
+| EventTemplateListScreen | `feature/settings/.../ui/eventtemplate/` | 打点模板列表页（事件记录器） |
+| EventTemplateEditScreen | `feature/settings/.../ui/eventtemplate/` | 模板编辑页（字段/类型/选项/排序） |
+| EventTemplateViewModel | `feature/settings/.../ui/eventtemplate/` | 模板管理状态 |
 
 ## feature:behavior_management
 
@@ -150,7 +161,8 @@
 |--------|------|------|
 | TagManagementRoute | `feature/tag_management/.../ui/` | 标签管理路由 |
 | TagManagementScreen | `feature/tag_management/.../ui/` | 标签管理页 |
-| TagManagementViewModel | `feature/tag_management/.../viewmodel/` | 标签状态管理 |
+| TagManagementViewModel | `feature/tag_management/.../viewmodel/` | 标签状态管理（含绑定打点模板/关联事件流） |
+| TagEventsDialog | `feature/tag_management/.../dialogs/` | 标签关联事件弹层（只读列表+删除） |
 | TagArchiveRoute | `feature/tag_management/.../ui/` | 标签归档区路由 |
 | TagArchiveScreen | `feature/tag_management/.../ui/` | 标签归档区 UI |
 | TagArchiveViewModel | `feature/tag_management/.../viewmodel/` | 标签归档区状态 |
@@ -165,12 +177,17 @@
 | ActivityArchiveRoute | `feature/management_activities/.../ui/` | 活动归档区路由 |
 | ActivityArchiveScreen | `feature/management_activities/.../ui/` | 活动归档区 UI |
 | ActivityArchiveViewModel | `feature/management_activities/.../viewmodel/` | 活动归档区状态 |
+| ActivityDetailSheet | `feature/management_activities/.../components/` | 活动详情弹层（含「复盘事件」分区） |
 
 ## feature:stats
 
 | 关键类 | 路径 | 职责 |
 |--------|------|------|
-| StatsScreen | `feature/stats/.../ui/` | 统计页（占位） |
+| StatsScreen | `feature/stats/.../ui/` | 统计页：LazyVerticalGrid 面板仪表盘（StatsPanelType 可编辑拖拽） |
+| EventsPanelContent | `feature/stats/.../ui/component/` | 「复盘事件」面板（EVENTS）：混排⇄聚焦、卡片⇄表格、事件列表 |
+| EventFilterBar | `feature/stats/.../ui/component/` | 事件动态筛选（选项多选/数值星级 RangeSlider/文本 LIKE） |
+| EventsPanelModel | `feature/stats/.../model/` | 事件面板 UiState + 客户端过滤纯函数 |
+| StatsViewModel | `feature/stats/.../viewmodel/` | 仪表盘 + 事件面板流（含持久化） |
 
 ## feature:sub
 

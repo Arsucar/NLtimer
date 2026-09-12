@@ -49,8 +49,7 @@ fun TimeAdjustmentComponent(
                 contentDescription = prevEndCd,
                 onClick = {
                     onUserAdjusted()
-                    val target = (prevEndTime ?: LocalDateTime.now()).withSecond(0).withNano(0)
-                    onTimeChanged(target)
+                    onTimeChanged(prevEndAdjustmentTarget(prevEndTime, LocalDateTime.now()))
                 },
             ),
             TimeAdjButton("-1") { onUserAdjusted(); onTimeChanged(currentTime.plusMinutes(-1)) },

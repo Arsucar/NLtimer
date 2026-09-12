@@ -44,6 +44,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.ActivityStat
+import com.nltimer.core.data.model.EventsViewMode
 import com.nltimer.core.data.model.StatsMetricKind
 import com.nltimer.core.data.model.StatsPanelConfig
 import com.nltimer.core.data.model.StatsPanelType
@@ -54,8 +55,11 @@ import com.nltimer.core.designsystem.component.LocalNavBarWidth
 import com.nltimer.core.designsystem.theme.BottomBarMode
 import com.nltimer.core.designsystem.theme.LocalImmersiveTopPadding
 import com.nltimer.core.designsystem.theme.LocalTheme
+import com.nltimer.feature.stats.model.EventPanelFilters
+import com.nltimer.feature.stats.model.EventsPanelUiState
 import com.nltimer.feature.stats.model.StatsUiState
 import com.nltimer.feature.stats.ui.component.ActivityRankSection
+import com.nltimer.feature.stats.ui.component.EventsPanelContent
 import com.nltimer.feature.stats.ui.component.BarChartCard
 import com.nltimer.feature.stats.ui.component.CategoryShareCard
 import com.nltimer.feature.stats.ui.component.ComparisonCard
@@ -81,6 +85,7 @@ private val ImplementedPanelTypes = setOf(
     StatsPanelType.RANKING_LIST,
     StatsPanelType.BAR_CHART,
     StatsPanelType.COMPARISON,
+    StatsPanelType.EVENTS,
 )
 
 private val PanelTypeLabels = mapOf(
@@ -93,6 +98,7 @@ private val PanelTypeLabels = mapOf(
     StatsPanelType.TIMELINE_HEATMAP to "时间热力图",
     StatsPanelType.COMPARISON to "对比",
     StatsPanelType.AI_INSIGHT to "AI 洞察",
+    StatsPanelType.EVENTS to "复盘事件",
 )
 
 @Composable
@@ -105,6 +111,10 @@ fun StatsScreen(
     onRemovePanel: (panelId: String) -> Unit,
     onAddPanel: (StatsPanelType) -> Unit,
     onResetToDefault: () -> Unit,
+    eventsPanel: EventsPanelUiState = EventsPanelUiState(),
+    onEventsViewModeChange: (EventsViewMode) -> Unit = {},
+    onEventsFocusTemplateChange: (Long?) -> Unit = {},
+    onEventsFilterChange: (EventPanelFilters) -> Unit = {},
     onBarClick: ((ActivityStat) -> Unit)? = null,
     onDismissActivity: () -> Unit = {},
     modifier: Modifier = Modifier,
@@ -148,6 +158,10 @@ fun StatsScreen(
                     PanelContent(
                         panel = panel,
                         result = uiState.statsResult,
+                        eventsPanel = eventsPanel,
+                        onEventsViewModeChange = onEventsViewModeChange,
+                        onEventsFocusTemplateChange = onEventsFocusTemplateChange,
+                        onEventsFilterChange = onEventsFilterChange,
                         onBarClick = onBarClick,
                     )
                 },
@@ -264,6 +278,10 @@ fun StatsScreen(
 private fun PanelContent(
     panel: StatsPanelConfig,
     result: StatsResult?,
+    eventsPanel: EventsPanelUiState = EventsPanelUiState(),
+    onEventsViewModeChange: (EventsViewMode) -> Unit = {},
+    onEventsFocusTemplateChange: (Long?) -> Unit = {},
+    onEventsFilterChange: (EventPanelFilters) -> Unit = {},
     onBarClick: ((ActivityStat) -> Unit)? = null,
 ) {
     when (panel.type) {
@@ -301,6 +319,12 @@ private fun PanelContent(
             }
         }
         StatsPanelType.COMPARISON -> ComparisonCard(result ?: return)
+        StatsPanelType.EVENTS -> EventsPanelContent(
+            state = eventsPanel,
+            onViewModeChange = onEventsViewModeChange,
+            onFocusTemplateChange = onEventsFocusTemplateChange,
+            onFilterChange = onEventsFilterChange,
+        )
         else -> EmptyPanel("${panel.title}（即将支持）")
     }
 }

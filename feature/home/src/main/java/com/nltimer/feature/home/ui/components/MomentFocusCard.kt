@@ -19,6 +19,8 @@ fun MomentFocusCard(
     onEmptyCellClick: () -> Unit,
     momentStyle: MomentLayoutStyle = MomentLayoutStyle(),
     focusCardConfig: FocusCardConfig = FocusCardConfig(),
+    onAddEvent: () -> Unit = {},
+    onEventSummaryClick: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     when {
@@ -27,6 +29,8 @@ fun MomentFocusCard(
             onComplete = { activeCell.behaviorId?.let(onCompleteBehavior) },
             _momentStyle = momentStyle,
             focusCardConfig = focusCardConfig,
+            onAddEvent = onAddEvent,
+            onEventSummaryClick = onEventSummaryClick,
             modifier = modifier,
         )
         nextPendingCell != null -> PendingCard(
@@ -34,12 +38,14 @@ fun MomentFocusCard(
             onStart = { nextPendingCell.behaviorId?.let(onStartBehavior) },
             _momentStyle = momentStyle,
             focusCardConfig = focusCardConfig,
+            onAddEvent = onAddEvent,
             modifier = modifier,
         )
         else -> EmptyCard(
             onClick = onEmptyCellClick,
             _momentStyle = momentStyle,
             focusCardConfig = focusCardConfig,
+            onAddEvent = onAddEvent,
             modifier = modifier,
         )
     }

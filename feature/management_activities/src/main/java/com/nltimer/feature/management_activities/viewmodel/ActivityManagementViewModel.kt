@@ -5,7 +5,12 @@ import androidx.lifecycle.viewModelScope
 import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
 import com.nltimer.core.data.model.ActivityStats
+import com.nltimer.core.data.model.BehaviorEventWithValues
+import com.nltimer.core.data.model.EventQueryScope
+import com.nltimer.core.data.model.EventTemplate
 import com.nltimer.core.data.repository.ActivityManagementRepository
+import com.nltimer.core.data.repository.BehaviorEventRepository
+import com.nltimer.core.data.repository.EventTemplateRepository
 import com.nltimer.core.data.repository.TagRepository
 import com.nltimer.core.data.usecase.AddActivityUseCase
 import com.nltimer.core.designsystem.theme.DisplayColorMode
@@ -40,6 +45,8 @@ class ActivityManagementViewModel @Inject constructor(
     private val addActivityUseCase: AddActivityUseCase,
     private val tagRepository: TagRepository,
     private val settingsPrefs: SettingsPrefs,
+    private val behaviorEventRepository: BehaviorEventRepository,
+    private val eventTemplateRepository: EventTemplateRepository,
 ) : ViewModel() {
 
     private var groupActivityJobs = mutableListOf<Job>()
@@ -53,6 +60,22 @@ class ActivityManagementViewModel @Inject constructor(
             if (id != null) repository.getActivityStats(id) else flowOf(ActivityStats())
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ActivityStats())
+
+    /** 活动详情弹层内的「复盘事件（N）」区块数据源（selectedActivityId 解绑时自动清空） */
+    val currentActivityEvents: StateFlow<List<BehaviorEventWithValues>> = _selectedActivityId
+        .flatMapLatest { id ->
+            if (id != null) {
+                behaviorEventRepository.observeEventsWithValues(EventQueryScope.ByActivity(id))
+            } else {
+                flowOf(emptyList())
+            }
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    /** 模板徽标用：全部打点模板（id→name 映射展示） */
+    val eventTemplates: StateFlow<List<EventTemplate>> =
+        eventTemplateRepository.observeAll()
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     init {
         loadData()

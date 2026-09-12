@@ -64,4 +64,9 @@ interface SettingsPrefs {
 
     fun getStatsDashboardConfigFlow(): Flow<StatsDashboardConfig>
     suspend fun updateStatsDashboardConfig(config: StatsDashboardConfig)
+
+    /** 以 Flow 形式监听上次使用的打点模板 id（null 表示从未使用） */
+    fun getLastEventTemplateIdFlow(): Flow<Long?>
+    /** 更新上次使用的打点模板 id（null 表示清除） */
+    suspend fun updateLastEventTemplateId(id: Long?)
 }

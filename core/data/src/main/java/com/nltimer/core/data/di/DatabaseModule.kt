@@ -6,6 +6,11 @@ import com.nltimer.core.data.database.NLtimerDatabase
 import com.nltimer.core.data.database.dao.ActivityDao
 import com.nltimer.core.data.database.dao.ActivityGroupDao
 import com.nltimer.core.data.database.dao.BehaviorDao
+import com.nltimer.core.data.database.dao.BehaviorEventDao
+import com.nltimer.core.data.database.dao.BehaviorEventValueDao
+import com.nltimer.core.data.database.dao.EventTemplateDao
+import com.nltimer.core.data.database.dao.EventTemplateFieldDao
+import com.nltimer.core.data.database.dao.EventTemplateTagBindingDao
 import com.nltimer.core.data.database.dao.IconSearchMissDao
 import com.nltimer.core.data.database.dao.TagDao
 import com.nltimer.core.data.database.dao.TagGroupDao
@@ -67,4 +72,24 @@ object DatabaseModule {
     @Provides
     fun provideIconSearchMissDao(database: NLtimerDatabase): IconSearchMissDao =
         database.iconSearchMissDao()
+
+    @Provides
+    fun provideEventTemplateDao(database: NLtimerDatabase): EventTemplateDao =
+        database.eventTemplateDao()
+
+    @Provides
+    fun provideEventTemplateFieldDao(database: NLtimerDatabase): EventTemplateFieldDao =
+        database.eventTemplateFieldDao()
+
+    @Provides
+    fun provideBehaviorEventDao(database: NLtimerDatabase): BehaviorEventDao =
+        database.behaviorEventDao()
+
+    @Provides
+    fun provideBehaviorEventValueDao(database: NLtimerDatabase): BehaviorEventValueDao =
+        database.behaviorEventValueDao()
+
+    @Provides
+    fun provideEventTemplateTagBindingDao(database: NLtimerDatabase): EventTemplateTagBindingDao =
+        database.eventTemplateTagBindingDao()
 }

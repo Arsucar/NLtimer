@@ -21,6 +21,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -35,8 +36,13 @@ import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
 import com.nltimer.core.data.model.ActivityStats
+import com.nltimer.core.data.model.BehaviorEventWithValues
+import com.nltimer.core.data.model.EventTemplate
 import com.nltimer.core.data.util.formatDurationMinutes
 import com.nltimer.core.data.util.formatTimestamp
+import com.nltimer.core.data.util.summarizeEventValues
+import com.nltimer.core.designsystem.component.AppTagChip
+import com.nltimer.core.designsystem.component.AppTagChipStyle
 import com.nltimer.core.designsystem.icon.IconRenderer
 import com.nltimer.core.debugui.FieldDetailDialog
 import com.nltimer.core.debugui.toFieldInfoList
@@ -52,6 +58,8 @@ fun ActivityDetailSheet(
     onDismiss: () -> Unit,
     onEdit: (Activity) -> Unit,
     onDelete: () -> Unit,
+    events: List<BehaviorEventWithValues> = emptyList(),
+    eventTemplates: List<EventTemplate> = emptyList(),
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var showFieldDetail by remember { mutableStateOf(false) }
@@ -140,6 +148,8 @@ fun ActivityDetailSheet(
                 }
             }
 
+            EventSection(events = events, templates = eventTemplates)
+
             Spacer(modifier = Modifier.height(16.dp))
         }
     }
@@ -154,6 +164,94 @@ fun ActivityDetailSheet(
             rawJson = rawJson,
             onDismiss = { showFieldDetail = false },
         )
+    }
+}
+
+/**
+ * 「复盘事件 (N)」区块：简单统计之后展示（PRD R4 活动详情入口）
+ * 空事件整分区不渲染（TagNoteRow「空则隐藏」先例）；默认最近 [EVENT_PREVIEW_COUNT] 条 + 查看全部展开
+ */
+private const val EVENT_PREVIEW_COUNT = 3
+
+@Composable
+private fun EventSection(
+    events: List<BehaviorEventWithValues>,
+    templates: List<EventTemplate>,
+) {
+    if (events.isEmpty()) return
+    var expanded by remember(events) { mutableStateOf(false) }
+    val sorted = events.sortedByDescending { it.event.timestamp }
+    val displayed = if (expanded) sorted else sorted.take(EVENT_PREVIEW_COUNT)
+
+    Column {
+        Spacer(modifier = Modifier.height(20.dp))
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(
+                text = "复盘事件（${events.size}）",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.weight(1f),
+            )
+            if (sorted.size > EVENT_PREVIEW_COUNT) {
+                TextButton(onClick = { expanded = !expanded }) {
+                    Text(if (expanded) "收起" else "查看全部")
+                }
+            }
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            displayed.forEach { item ->
+                ActivityEventRow(
+                    item = item,
+                    templateName = templates.firstOrNull { it.id == item.event.templateId }?.name,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ActivityEventRow(
+    item: BehaviorEventWithValues,
+    templateName: String?,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        shape = RoundedCornerShape(12.dp),
+        modifier = modifier.fillMaxWidth(),
+    ) {
+        Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp)) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                AppTagChip(
+                    label = templateName ?: "未知模板",
+                    color = null,
+                    style = AppTagChipStyle.Compact,
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = formatTimestamp(item.event.timestamp),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            val summary = item.values.summarizeEventValues()
+            if (summary.isNotBlank()) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = summary,
+                    style = MaterialTheme.typography.bodyMedium,
+                    maxLines = 2,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                )
+            }
+        }
     }
 }
 

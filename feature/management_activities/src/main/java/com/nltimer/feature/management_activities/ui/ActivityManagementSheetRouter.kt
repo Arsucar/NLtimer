@@ -107,9 +107,13 @@ fun ActivityManagementSheetRouter(
 
         is DialogState.ActivityDetail -> {
             val stats by viewModel.currentActivityStats.collectAsStateWithLifecycle()
+            val events by viewModel.currentActivityEvents.collectAsStateWithLifecycle()
+            val eventTemplates by viewModel.eventTemplates.collectAsStateWithLifecycle()
             ActivityDetailSheet(
                 activity = dialog.activity,
                 stats = stats,
+                events = events,
+                eventTemplates = eventTemplates,
                 _allGroups = uiState.allGroups,
                 onDismiss = { viewModel.dismissDialog() },
                 onEdit = { viewModel.showEditActivityDialog(it) },

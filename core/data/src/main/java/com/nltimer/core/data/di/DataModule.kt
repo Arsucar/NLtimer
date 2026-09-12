@@ -2,15 +2,19 @@ package com.nltimer.core.data.di
 
 import com.nltimer.core.data.repository.ActivityManagementRepository
 import com.nltimer.core.data.repository.ActivityRepository
+import com.nltimer.core.data.repository.BehaviorEventRepository
 import com.nltimer.core.data.repository.BehaviorRepository
 import com.nltimer.core.data.repository.CategoryRepository
 import com.nltimer.core.data.repository.DataExportImportRepository
+import com.nltimer.core.data.repository.EventTemplateRepository
 import com.nltimer.core.data.repository.TagRepository
 import com.nltimer.core.data.repository.impl.ActivityManagementRepositoryImpl
 import com.nltimer.core.data.repository.impl.ActivityRepositoryImpl
+import com.nltimer.core.data.repository.impl.BehaviorEventRepositoryImpl
 import com.nltimer.core.data.repository.impl.BehaviorRepositoryImpl
 import com.nltimer.core.data.repository.impl.CategoryRepositoryImpl
 import com.nltimer.core.data.repository.impl.DataExportImportRepositoryImpl
+import com.nltimer.core.data.repository.impl.EventTemplateRepositoryImpl
 import com.nltimer.core.data.repository.impl.TagRepositoryImpl
 import dagger.Binds
 import dagger.Module
@@ -42,4 +46,10 @@ abstract class DataModule {
     abstract fun bindDataExportImportRepository(
         impl: DataExportImportRepositoryImpl,
     ): DataExportImportRepository
+
+    @Binds
+    abstract fun bindEventTemplateRepository(impl: EventTemplateRepositoryImpl): EventTemplateRepository
+
+    @Binds
+    abstract fun bindBehaviorEventRepository(impl: BehaviorEventRepositoryImpl): BehaviorEventRepository
 }

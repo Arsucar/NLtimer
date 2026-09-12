@@ -2,6 +2,7 @@ package com.nltimer.core.data.repository.impl
 
 import com.nltimer.core.data.database.dao.ActivityDao
 import com.nltimer.core.data.database.dao.BehaviorDao
+import com.nltimer.core.data.database.dao.BehaviorEventDao
 import com.nltimer.core.data.database.dao.TagDao
 import com.nltimer.core.data.database.dao.toTag
 import com.nltimer.core.data.database.entity.BehaviorEntity
@@ -38,6 +39,7 @@ class BehaviorRepositoryImpl @Inject constructor(
     private val tagDao: TagDao,
     private val clockService: ClockService,
     private val database: NLtimerDatabase,
+    private val behaviorEventDao: BehaviorEventDao,
 ) : BehaviorRepository {
 
     private companion object {
@@ -169,7 +171,14 @@ class BehaviorRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun delete(id: Long) = behaviorDao.delete(id)
+    override suspend fun delete(id: Long, keepEvents: Boolean) {
+        database.withTransaction {
+            if (keepEvents) {
+                behaviorEventDao.detachFromBehavior(id, clockService.currentTimeMillis())
+            }
+            behaviorDao.delete(id)
+        }
+    }
 
     override suspend fun settleDay(dayStart: Long, dayEnd: Long) {
         // TODO: Implement day settlement

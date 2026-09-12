@@ -17,6 +17,10 @@ import java.util.UUID
 data class StatsDashboardConfig(
     val panels: @Serializable(with = StatsPanelListSerializer::class) ImmutableList<StatsPanelConfig> = persistentListOf(),
     val defaultTimeRange: StatsTimeRange = StatsTimeRange(StatsTimeRangeType.WEEK),
+    // 事件面板（EVENTS）视图偏好：卡片/表格 + 混排/聚焦（聚焦需配合 eventsFocusTemplateId）
+    val eventsViewMode: EventsViewMode = EventsViewMode.CARD,
+    val eventsContentMode: EventsContentMode = EventsContentMode.MIXED,
+    val eventsFocusTemplateId: Long? = null,
 )
 
 @Immutable
@@ -43,7 +47,16 @@ enum class StatsPanelType {
     RANKING_LIST,
     COMPARISON,
     AI_INSIGHT,
+    EVENTS,
 }
+
+/** 事件面板视图模式（卡片 / 表格），与 #15「结构化事件」R4 双视图对应 */
+@Serializable
+enum class EventsViewMode { CARD, TABLE }
+
+/** 事件面板内容模式（混排 / 单模板聚焦） */
+@Serializable
+enum class EventsContentMode { MIXED, FOCUS }
 
 @Serializable
 enum class StatsMetricKind {
@@ -104,6 +117,7 @@ fun defaultStatsDashboardConfig(): StatsDashboardConfig = StatsDashboardConfig(
         StatsPanelConfig(id = "metric_plan", type = StatsPanelType.METRIC_CARD, title = "计划达成", metricKind = StatsMetricKind.PLAN_ADHERENCE, colSpan = 2),
         StatsPanelConfig(id = "pie", type = StatsPanelType.PIE_CHART, title = "活动占比"),
         StatsPanelConfig(id = "ranking", type = StatsPanelType.RANKING_LIST, title = "活动排行"),
+        StatsPanelConfig(id = "events", type = StatsPanelType.EVENTS, title = "复盘事件", colSpan = 4),
     ),
 )
 

@@ -123,7 +123,7 @@ class TagRepositoryImplTest {
 
     private val fakeDatabase: NLtimerDatabase = mockk<NLtimerDatabase>(relaxed = true).also {
         mockkStatic("androidx.room.RoomDatabaseKt")
-        coEvery { it.withTransaction(any<suspend () -> Unit>()) } coAnswers { (args[0] as suspend () -> Unit).invoke() }
+        coEvery { it.withTransaction(any<suspend () -> Unit>()) } coAnswers { (args[1] as suspend () -> Unit).invoke() }
     }
 
     private val repository = TagRepositoryImpl(fakeTagDao, fakeDatabase)

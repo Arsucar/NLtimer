@@ -163,7 +163,8 @@ internal fun AddBehaviorSheetContent(
                 onStartTimeChanged = { state.startTime = it },
                 onEndTimeChanged = { state.endTime = it },
                 prevEndTime = prevEndTime,
-                onUserAdjusted = { state.markUserAdjustedTime() },
+                onUserAdjustedStart = { state.markUserAdjustedStart() },
+                onUserAdjustedEnd = { state.markUserAdjustedEnd() },
             )
         }
 
@@ -450,8 +451,14 @@ private fun TimePickerSection(
                 endTime = state.endTime,
                 animate = !state.showTimeAdjustments,
                 onTimesChanged = { start, end ->
-                    if (state.startTime != start) { state.startTime = start; state.markUserAdjustedTime() }
-                    if (state.endTime != end) { state.endTime = end; state.markUserAdjustedTime() }
+                    if (hasMinuteLevelChange(state.startTime, start)) {
+                        state.startTime = start
+                        state.markUserAdjustedStart()
+                    }
+                    if (hasMinuteLevelChange(state.endTime, end)) {
+                        state.endTime = end
+                        state.markUserAdjustedEnd()
+                    }
                 },
                 onLeftCenterClick = { state.showTimeAdjustments = !state.showTimeAdjustments },
                 onRightCenterClick = { state.showTimeAdjustments = !state.showTimeAdjustments },
@@ -461,7 +468,7 @@ private fun TimePickerSection(
             SingleTimePicker(
                 startTime = state.startTime,
                 animate = !state.showTimeAdjustments,
-                onTimeChanged = { state.startTime = it; state.markUserAdjustedTime() },
+                onTimeChanged = { state.startTime = it; state.markUserAdjustedStart() },
                 onCenterClick = { state.showTimeAdjustments = !state.showTimeAdjustments },
             )
         }

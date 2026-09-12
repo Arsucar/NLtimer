@@ -12,6 +12,7 @@ fun StatsRoute(
     viewModel: StatsViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val eventsPanel by viewModel.eventsPanel.collectAsStateWithLifecycle()
 
     StatsScreen(
         uiState = uiState,
@@ -22,6 +23,10 @@ fun StatsRoute(
         onRemovePanel = viewModel::removePanel,
         onAddPanel = viewModel::addPanel,
         onResetToDefault = viewModel::resetToDefault,
+        eventsPanel = eventsPanel,
+        onEventsViewModeChange = viewModel::setEventsViewMode,
+        onEventsFocusTemplateChange = viewModel::setEventsFocusTemplate,
+        onEventsFilterChange = viewModel::applyEventFiltersChange,
         onBarClick = viewModel::selectActivity,
         onDismissActivity = { viewModel.selectActivity(null) },
     )

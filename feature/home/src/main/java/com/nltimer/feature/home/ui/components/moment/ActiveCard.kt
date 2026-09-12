@@ -5,8 +5,11 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -29,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.FocusCardConfig
@@ -39,6 +43,7 @@ import com.nltimer.core.designsystem.theme.BorderTokens
 import com.nltimer.core.designsystem.theme.LocalTimerTypography
 import com.nltimer.core.designsystem.theme.styledAlpha
 import com.nltimer.core.designsystem.theme.styledBorder
+import com.nltimer.feature.home.R
 import com.nltimer.feature.home.model.GridCellUiState
 import com.nltimer.feature.home.ui.components.LiveElapsedDuration
 import com.nltimer.feature.home.ui.components.SlideActionPill
@@ -50,6 +55,8 @@ internal fun ActiveCard(
     _momentStyle: MomentLayoutStyle = MomentLayoutStyle(),
     focusCardConfig: FocusCardConfig = FocusCardConfig(),
     tagDisplayConfig: com.nltimer.core.data.model.TagDisplayConfig = com.nltimer.core.data.model.TagDisplayConfig(),
+    onAddEvent: () -> Unit = {},
+    onEventSummaryClick: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val startMs = cell.startEpochMs ?: System.currentTimeMillis()
@@ -77,6 +84,8 @@ internal fun ActiveCard(
     val containerColor = focusCardConfig.resolvedContainerColor()
     val contentColor = focusCardConfig.resolvedContentColor()
     val effectivePadding = focusCardConfig.cardPadding.dp
+    // 摘要行降级阈值：紧凑卡片（<170dp）放不下完整 28dp 摘要行，降级为 📝N 徽标
+    val compactSummary = focusCardConfig.cardHeight < 170
 
     if (focusCardConfig.enableCardStyle) {
         Card(
@@ -99,7 +108,10 @@ internal fun ActiveCard(
                 contentColor = contentColor,
                 effectivePadding = effectivePadding,
                 cardHeight = cardHeight,
+                compactEventSummary = compactSummary,
                 onComplete = onComplete,
+                onAddEvent = onAddEvent,
+                onEventSummaryClick = onEventSummaryClick,
                 tagDisplayConfig = tagDisplayConfig,
             )
         }
@@ -117,7 +129,10 @@ internal fun ActiveCard(
                 contentColor = contentColor,
                 effectivePadding = effectivePadding,
                 cardHeight = cardHeight,
+                compactEventSummary = compactSummary,
                 onComplete = onComplete,
+                onAddEvent = onAddEvent,
+                onEventSummaryClick = onEventSummaryClick,
                 tagDisplayConfig = tagDisplayConfig,
             )
         }
@@ -131,63 +146,108 @@ private fun ActiveCardContent(
     contentColor: Color,
     effectivePadding: androidx.compose.ui.unit.Dp,
     cardHeight: androidx.compose.ui.unit.Dp,
+    compactEventSummary: Boolean,
     onComplete: () -> Unit,
+    onAddEvent: () -> Unit,
+    onEventSummaryClick: () -> Unit,
     tagDisplayConfig: com.nltimer.core.data.model.TagDisplayConfig,
 ) {
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .height(cardHeight)
             .padding(effectivePadding),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
         ) {
-            IconRenderer(
-                iconKey = cell.activityIconKey,
-                defaultEmoji = "📌",
-                iconSize = 32.dp,
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                IconRenderer(
+                    iconKey = cell.activityIconKey,
+                    defaultEmoji = "📌",
+                    iconSize = 32.dp,
+                )
+                Text(
+                    text = cell.activityName ?: "",
+                    style = LocalTimerTypography.current.timeStyle.copy(
+                        fontWeight = FontWeight.Bold
+                    ),
+                    color = contentColor,
+                )
+            }
+
+            Spacer(Modifier.height(12.dp))
+
+            SlideActionPill(
+                onActivate = onComplete,
+                activeLabel = "滑动完成",
+                activatedLabel = "释放完成",
+                leadingIcon = Icons.Filled.Check,
+                activatedIcon = Icons.Filled.Check,
             )
-            Text(
-                text = cell.activityName ?: "",
-                style = LocalTimerTypography.current.timeStyle.copy(
-                    fontWeight = FontWeight.Bold
-                ),
-                color = contentColor,
-            )
-        }
 
-        Spacer(Modifier.height(12.dp))
+            TagNoteRow(tags = cell.tags, note = cell.note, tagDisplayConfig = tagDisplayConfig)
 
-        SlideActionPill(
-            onActivate = onComplete,
-            activeLabel = "滑动完成",
-            activatedLabel = "释放完成",
-            leadingIcon = Icons.Filled.Check,
-            activatedIcon = Icons.Filled.Check,
-        )
+            Spacer(Modifier.height(8.dp))
 
-        TagNoteRow(tags = cell.tags, note = cell.note, tagDisplayConfig = tagDisplayConfig)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Text(
+                    text = durationText,
+                    style = LocalTimerTypography.current.timeStyle,
+                    color = contentColor.copy(alpha = styledAlpha(0.8f)),
+                )
+                Text(
+                    text = "正在专注...",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = contentColor.copy(alpha = styledAlpha(0.5f)),
+                )
+            }
 
-        Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(8.dp))
 
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            Text(
-                text = durationText,
-                style = LocalTimerTypography.current.timeStyle,
-                color = contentColor.copy(alpha = styledAlpha(0.8f)),
-            )
-            Text(
-                text = "正在专注...",
-                style = MaterialTheme.typography.bodyLarge,
-                color = contentColor.copy(alpha = styledAlpha(0.5f)),
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                EventSummaryRow(
+                    eventCount = cell.eventCount,
+                    latestSummary = cell.latestEventSummary,
+                    compact = compactEventSummary,
+                    onClick = onEventSummaryClick,
+                )
+                AddEventEntryButton(
+                    onClick = onAddEvent,
+                    contentColor = contentColor,
+                )
+            }
         }
     }
+}
+
+@Composable
+internal fun AddEventEntryButton(
+    onClick: () -> Unit,
+    contentColor: Color,
+    modifier: Modifier = Modifier,
+) {
+    Text(
+        text = stringResource(id = R.string.home_add_event),
+        style = MaterialTheme.typography.labelSmall,
+        color = contentColor.copy(alpha = styledAlpha(0.85f)),
+        modifier = modifier
+            .background(
+                color = contentColor.copy(alpha = styledAlpha(0.12f)),
+                shape = RoundedCornerShape(12.dp),
+            )
+            .clickable(onClick = onClick)
+            .padding(horizontal = 10.dp, vertical = 5.dp),
+    )
 }

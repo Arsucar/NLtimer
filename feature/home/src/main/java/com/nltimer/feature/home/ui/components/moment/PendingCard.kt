@@ -39,6 +39,7 @@ internal fun PendingCard(
     _momentStyle: MomentLayoutStyle = MomentLayoutStyle(),
     focusCardConfig: FocusCardConfig = FocusCardConfig(),
     tagDisplayConfig: com.nltimer.core.data.model.TagDisplayConfig = com.nltimer.core.data.model.TagDisplayConfig(),
+    onAddEvent: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val estimatedText = cell.estimatedDuration?.let { "预计 ${formatDuration(it)}" } ?: ""
@@ -67,6 +68,7 @@ internal fun PendingCard(
                 cardHeight = cardHeight,
                 onStart = onStart,
                 tagDisplayConfig = tagDisplayConfig,
+                onAddEvent = onAddEvent,
             )
         }
     } else {
@@ -85,6 +87,7 @@ internal fun PendingCard(
                 cardHeight = cardHeight,
                 onStart = onStart,
                 tagDisplayConfig = tagDisplayConfig,
+                onAddEvent = onAddEvent,
             )
         }
     }
@@ -99,6 +102,7 @@ private fun PendingCardContent(
     cardHeight: androidx.compose.ui.unit.Dp,
     onStart: () -> Unit,
     tagDisplayConfig: com.nltimer.core.data.model.TagDisplayConfig,
+    onAddEvent: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -153,6 +157,13 @@ private fun PendingCardContent(
             style = MaterialTheme.typography.bodyLarge,
             color = contentColor.copy(alpha = styledAlpha(0.5f)),
             textAlign = TextAlign.Center,
+        )
+
+        Spacer(Modifier.height(12.dp))
+
+        AddEventEntryButton(
+            onClick = onAddEvent,
+            contentColor = contentColor,
         )
     }
 }

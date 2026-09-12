@@ -103,3 +103,60 @@ catch (e: Exception) {
 - DAO：`archivedAt = CASE WHEN :archived THEN :now ELSE NULL END`
 - 归档确认弹窗：`archiveActivity` / `archiveTag` 同时写 `isArchived=true`、`archivedAt=now`、`archiveNote`
 - 编辑表单「保存」不得改 `isArchived` / `archivedAt` / `archiveNote`
+
+## 9. 根据文档同步器解析 Entity 标题为精确匹配
+
+**出现时机**：更新 `docs/agent/05-data-model.md` 新增 Entity 小节后运行 `python scripts/check-docs-sync.py`。
+
+**现象**：字段表格明明写全，校验仍报「文档中无字段记录」。
+
+**避免方式**：
+- Entity 小节标题必须是 `### EntityName` 精确格式，禁止 `### EntityName（v17，说明…）` 之类后缀——附加说明写在标题下的 `>` 引用行
+- 每个字段独占一行表格行；不要写 `createdAt / updatedAt` 合并行
+- 更新后必须重新运行 `python scripts/check-docs-sync.py` 直至全绿
+
+## 10. MockK 无法 mock Room inline `withTransaction` 非 Unit 返回
+
+**出现时机**：RepositoryImpl 在 `database.withTransaction { return Long/Map/... }` 内做写库，然后 JVM 单测直接调用。
+
+**现象**：`@Ignore`（14 处先例）或 `ClassCastException`；`coEvery { db.withTransaction(...) }` 只对 `suspend () -> Unit` 形态可通过 `(args[1] as suspend () -> Unit).invoke()` 放行。
+
+**避免方式**：
+- 新增 Repository 事务方法尽量声明返回 `Unit`
+- 非 Unit 事务路径：拆出独立可测的普通 suspend 方法，或接受仅仪器测试覆盖
+- 已有范式见 `BehaviorRepositoryImplTest`（`mockkStatic("androidx.room.RoomDatabaseKt")` + `coAnswers`）
+
+## 11. DataStore 不可在 `data.collect` 内部 `edit`
+
+**出现时机**：从 Preferences Flow 读到旧值后，想在同一 collect 回调里 `dataStore.edit { }` 写回（例如默认值迁移）。
+
+**现象**：DataStore 单写者互斥锁未释放，`edit` 永久挂起；订阅方拿不到后续 emit，看起来像无限循环或卡死。
+
+**避免方式**：
+- 先在 `onStart { }` 里 `data.first()` 读一次，再 `edit` 写回；随后的 `data.map` 只负责映射
+- 或用 `PreferenceDataStoreFactory` 的 `DataMigration`
+- 禁止 `data.collect { dataStore.edit { ... } }` / `flow { data.collect { edit(); return@collect } }`
+
+**已有案例**：`SettingsPrefsImpl.getFocusCardConfigFlow` 把旧默认 260 迁到 280 时，写回必须放在 `onStart`，不能放在 `data.collect` 内部。
+
+## 12. Room `IN (:emptyList)` / `NOT IN (:emptyList)` 空列表不删
+
+**出现时机**：差量删除用 `id NOT IN (:keepIds)`，调用方传入空列表（全部换成新字段，或清空字段）。
+
+**现象**：Room 把空列表展开成 `NOT IN (NULL)`，条件恒假，旧行一行不删。Kotlin `id !in emptyList()` 会删全部，内存 Fake DAO 测不出这条 SQL 语义。
+
+**避免方式**：
+- `keepIds.isEmpty()` 时走 `DELETE … WHERE templateId = :id`（已有 `deleteByTemplate`）
+- Fake DAO 的 `deleteExceptIds` 应对空列表 `return`，才能复现 Room 行为
+
+## 13. 完成补记同分钟截断会误判时间冲突
+
+**出现时机**：完成 FAB 打开补记弹窗，开始时间预填上一条 `endTime`（含秒），用户只改结束轮或 DualTimePicker 把开始回写成整分。
+
+**现象**：上一条结束 `10:04:37`，新记录 UI 开始显示 `10:04`，确认后报「该时间段与已有行为记录冲突」。半开区间 `[start, end)` 本身允许边界相接；误拦来自开始被截成 `10:04:00` 后 `10:04:00 < 10:04:37`。
+
+**避免方式**：
+- `userAdjustedStart` / `userAdjustedEnd` 拆开；只改结束轮不得把开始截成整分
+- DualTimePicker `onTimesChanged` 仅在该侧分钟变化时回写
+- 「上尾」写入真实 `prevEndTime`，不要先 `withSecond(0)`
+- `TimeSnapService` 对 COMPLETED：同时钟分钟且 `newStart < prevEnd` 时吸附 `adjustedStart = prevEnd`，再跑 `hasTimeConflict`

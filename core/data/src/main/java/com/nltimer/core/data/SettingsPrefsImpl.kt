@@ -54,7 +54,9 @@ import com.nltimer.core.designsystem.theme.TopBarMode
 import com.nltimer.core.designsystem.theme.BottomBarMode
 import com.nltimer.core.designsystem.theme.DisplayColorMode
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import kotlinx.serialization.json.Json
 
 /**
@@ -362,17 +364,29 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
         }
     }
 
-    override fun getFocusCardConfigFlow(): Flow<FocusCardConfig> = dataStore.data.map { prefs ->
-        val themeColor = prefs[focusCardThemeColorKey]
-        FocusCardConfig(
-            cardHeight = prefs[focusCardHeightKey] ?: 260,
-            cardPadding = prefs[focusCardPaddingKey] ?: 16,
-            enableCardStyle = prefs[focusCardEnableCardStyleKey] != false,
-            themeColor = themeColor,
-            cornerStyle = safeValueOf(prefs[focusCardCornerStyleKey] ?: FocusCardCornerStyle.LARGE.name, FocusCardCornerStyle.LARGE),
-            customCornerSize = prefs[focusCardCustomCornerKey] ?: 32,
-            shadowStyle = safeValueOf(prefs[focusCardShadowStyleKey] ?: FocusCardShadowStyle.STANDARD.name, FocusCardShadowStyle.STANDARD),
-        )
+    override fun getFocusCardConfigFlow(): Flow<FocusCardConfig> = dataStore.data
+        .onStart { migrateLegacyFocusCardHeight() }
+        .map { prefs ->
+            FocusCardConfig(
+                cardHeight = FocusCardConfig.resolveCardHeight(prefs[focusCardHeightKey]),
+                cardPadding = prefs[focusCardPaddingKey] ?: 16,
+                enableCardStyle = prefs[focusCardEnableCardStyleKey] != false,
+                themeColor = prefs[focusCardThemeColorKey],
+                cornerStyle = safeValueOf(prefs[focusCardCornerStyleKey] ?: FocusCardCornerStyle.LARGE.name, FocusCardCornerStyle.LARGE),
+                customCornerSize = prefs[focusCardCustomCornerKey] ?: 32,
+                shadowStyle = safeValueOf(prefs[focusCardShadowStyleKey] ?: FocusCardShadowStyle.STANDARD.name, FocusCardShadowStyle.STANDARD),
+            )
+        }
+
+    /**
+     * 旧默认 260 一次性写回 280。必须在订阅 [data] 之前完成：
+     * 在 `data.collect` 内部调用 `edit` 会与 DataStore 互斥锁死锁。
+     */
+    private suspend fun migrateLegacyFocusCardHeight() {
+        val stored = dataStore.data.first()[focusCardHeightKey]
+        if (stored == FocusCardConfig.LEGACY_DEFAULT_CARD_HEIGHT) {
+            dataStore.edit { it[focusCardHeightKey] = FocusCardConfig.DEFAULT_CARD_HEIGHT }
+        }
     }
 
     override suspend fun updateFocusCardConfig(config: FocusCardConfig) {
@@ -403,6 +417,16 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
     override suspend fun updateStatsDashboardConfig(config: StatsDashboardConfig) {
         dataStore.edit { prefs ->
             prefs[statsDashboardConfigKey] = json.encodeToString(StatsDashboardConfig.serializer(), config)
+        }
+    }
+
+    override fun getLastEventTemplateIdFlow(): Flow<Long?> = dataStore.data.map { prefs ->
+        prefs[lastEventTemplateIdKey]
+    }
+
+    override suspend fun updateLastEventTemplateId(id: Long?) {
+        dataStore.edit { prefs ->
+            if (id != null) prefs[lastEventTemplateIdKey] = id else prefs.remove(lastEventTemplateIdKey)
         }
     }
 
@@ -540,6 +564,8 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
         private val focusCardShadowStyleKey = stringPreferencesKey("focus_card_shadow_style")
 
         private val statsDashboardConfigKey = stringPreferencesKey("stats_dashboard_config")
+
+        private val lastEventTemplateIdKey = longPreferencesKey("last_event_template_id")
 
         private val json = Json { ignoreUnknownKeys = true }
     }

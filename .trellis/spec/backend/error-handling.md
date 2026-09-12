@@ -100,3 +100,4 @@ N/A for classic HTTP API. AI tools surface errors via `ToolResult.Error` JSON co
 3. **`enum.name` written to Room status column** — case mismatch with SQL filters
 4. **Import ActivityTagBinding without `source="activity"`** — tags invisible on activity side
 5. **SSE line-by-line JSON only** — multi-line pretty JSON silently dropped; prefer whole-chunk parse then line fallback
+6. **Home `errorMessage` not cleared after Snackbar** — `LaunchedEffect` will not re-show the same string; call `clearErrorMessage()` after `showSnackbar` (mirror `eventFeedback`)

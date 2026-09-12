@@ -138,6 +138,33 @@ Both must pass before committing.
 
 ---
 
+### Pattern: Home Snackbar vs overlay bottom bar
+
+**Problem**: Default `CENTER_FAB` draws the bottom bar as a later sibling of the outer Scaffold (`NLtimerScaffold` Box). Home's inner `SnackbarHost` sits at the bottom of a full-bleed NavHost (`bottom = 0.dp`) and is covered.
+
+**Solution**:
+1. Home `SnackbarHost` only: when `BottomBarMode` is `CENTER_FAB` or `FLOATING`, apply `navigationBarsPadding() + padding(bottom = 72.dp)` (`OverlayNavBarHeight`, same number as Stats).
+2. `STANDARD` already shortens the outer Scaffold by `80.dp` — do **not** add overlay height.
+3. After `showSnackbar(errorMessage)`, call `clearErrorMessage()` so the same text can show again (`eventFeedback` already clears).
+
+**Don't**: Extract a global `snackbarBottomPadding` unless a second overlay-nav screen needs it. Don't pad STANDARD twice. Don't add inner Scaffold top padding (see nested-Scaffold bug).
+
+---
+
+### Pattern: COMPLETED same-minute tail snap
+
+**Problem**: DualTimePicker is minute-resolution. Completing from FAB prefills `lastBehaviorEndTime` with leftover seconds. Changing only the end wheel used to floor start to `:00`, so `10:04:00 < 10:04:37` falsely conflicted under half-open `[start, end)`.
+
+**Solution**:
+1. Split `userAdjustedStart` / `userAdjustedEnd`. Truncate a side only if that side's minute was edited.
+2. DualTimePicker `onTimesChanged`: write a side only on minute-level change (`hasMinuteLevelChange`).
+3. `TimeSnapService` COMPLETED: if existing `endTime` shares `MILLIS_PER_MINUTE` with `newStart` and `newStart < prevEnd`, set `adjustedStart = prevEnd`, then `hasTimeConflict`. If snap makes `end <= start`, still Conflict.
+4. Cross-minute overlap stays Conflict. Exact `newStart == prevEnd` stays allowed (no snap needed).
+
+**Don't**: Change `hasTimeConflict` to closed intervals. Don't floor 「上尾」 with `withSecond(0)`.
+
+---
+
 ## Testing Requirements
 
 (To be filled by the team)

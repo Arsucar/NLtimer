@@ -3,11 +3,13 @@ package com.nltimer.core.data.repository
 import com.nltimer.core.data.database.dao.ActivityDao
 import com.nltimer.core.data.database.dao.ActivityStatsRow
 import com.nltimer.core.data.database.dao.BehaviorDao
+import com.nltimer.core.data.database.dao.BehaviorEventDao
 import com.nltimer.core.data.database.dao.BehaviorTagRow
 import com.nltimer.core.data.database.dao.TagDao
 import com.nltimer.core.data.database.entity.ActivityEntity
 import com.nltimer.core.data.database.entity.ActivityTagBindingEntity
 import com.nltimer.core.data.database.entity.BehaviorEntity
+import com.nltimer.core.data.database.entity.BehaviorEventEntity
 import com.nltimer.core.data.database.entity.BehaviorTagCrossRefEntity
 import com.nltimer.core.data.database.entity.TagEntity
 import com.nltimer.core.data.database.NLtimerDatabase
@@ -41,6 +43,9 @@ class BehaviorRepositoryImplTest {
     private lateinit var fakeBehaviorDao: FakeBehaviorDao
     private lateinit var fakeActivityDao: FakeActivityDao
     private lateinit var fakeTagDao: FakeTagDao
+    private lateinit var fakeEventDao: BehaviorEventDao
+    private val eventRows = mutableListOf<BehaviorEventEntity>()
+    private var detachCalls = 0
     private lateinit var fakeDatabase: NLtimerDatabase
     private lateinit var clockService: ClockService
     private lateinit var repository: BehaviorRepositoryImpl
@@ -50,13 +55,32 @@ class BehaviorRepositoryImplTest {
         fakeBehaviorDao = FakeBehaviorDao()
         fakeActivityDao = FakeActivityDao()
         fakeTagDao = FakeTagDao()
+        eventRows.clear()
+        detachCalls = 0
+        fakeEventDao = mockk(relaxed = true)
+        coEvery { fakeEventDao.detachFromBehavior(any(), any()) } coAnswers {
+            val behaviorId = args[0] as Long
+            val updatedAt = args[1] as Long
+            detachCalls += 1
+            eventRows.replaceAll {
+                if (it.behaviorId == behaviorId) it.copy(behaviorId = null, updatedAt = updatedAt) else it
+            }
+        }
         fakeDatabase = mockk<NLtimerDatabase>(relaxed = true)
         mockkStatic("androidx.room.RoomDatabaseKt")
         coEvery { fakeDatabase.withTransaction(any<suspend () -> Unit>()) } coAnswers {
-            (args[0] as suspend () -> Unit).invoke()
+            // 静态 mock 展开函数签名：args[0] = Receiver（mock 数据库本体），args[1] = 事务 block
+            (args[1] as suspend () -> Unit).invoke()
         }
         clockService = SystemClockService()
-        repository = BehaviorRepositoryImpl(fakeBehaviorDao, fakeActivityDao, fakeTagDao, clockService, fakeDatabase)
+        repository = BehaviorRepositoryImpl(
+            fakeBehaviorDao,
+            fakeActivityDao,
+            fakeTagDao,
+            clockService,
+            fakeDatabase,
+            fakeEventDao,
+        )
     }
 
     // --- getByDayRange ---
@@ -370,7 +394,7 @@ class BehaviorRepositoryImplTest {
             BehaviorEntity(id = 1, activityId = 1, startTime = 1000, status = "completed")
         )
 
-        repository.delete(1L)
+        repository.delete(1L, keepEvents = false)
 
         assertTrue(fakeBehaviorDao.deletedIds.contains(1L))
     }
@@ -378,7 +402,7 @@ class BehaviorRepositoryImplTest {
     @Ignore("MockK cannot mock Room's inline withTransaction; use instrumented test")
     @Test
     fun `delete does nothing when behavior not found`() = runTest {
-        repository.delete(999L)
+        repository.delete(999L, keepEvents = false)
         assertTrue(fakeBehaviorDao.deletedIds.isEmpty())
     }
 
@@ -480,6 +504,66 @@ class BehaviorRepositoryImplTest {
     fun `getEarliestBehaviorDate returns null when no valid behavior exists`() = runTest {
         val result = repository.getEarliestBehaviorDate()
         assertNull(result)
+    }
+
+    @Test
+    fun `delete keepEvents detaches events then deletes behavior`() = runTest {
+        fakeBehaviorDao.behaviors.add(
+            BehaviorEntity(id = 9, activityId = 1, startTime = 1, status = "completed"),
+        )
+        eventRows.add(
+            BehaviorEventEntity(
+                id = 1,
+                behaviorId = 9,
+                activityId = 1,
+                templateId = 1,
+                timestamp = 10,
+                createdAt = 10,
+                updatedAt = 10,
+            ),
+        )
+        eventRows.add(
+            BehaviorEventEntity(
+                id = 2,
+                behaviorId = 9,
+                activityId = 1,
+                templateId = 1,
+                timestamp = 20,
+                createdAt = 20,
+                updatedAt = 20,
+            ),
+        )
+
+        repository.delete(9L, keepEvents = true)
+
+        assertTrue(fakeBehaviorDao.deletedIds.contains(9L))
+        assertTrue(eventRows.all { it.behaviorId == null })
+        assertEquals(2, eventRows.size)
+        assertEquals(1, detachCalls)
+    }
+
+    @Test
+    fun `delete without keepEvents does not detach events`() = runTest {
+        fakeBehaviorDao.behaviors.add(
+            BehaviorEntity(id = 9, activityId = 1, startTime = 1, status = "completed"),
+        )
+        eventRows.add(
+            BehaviorEventEntity(
+                id = 1,
+                behaviorId = 9,
+                activityId = 1,
+                templateId = 1,
+                timestamp = 10,
+                createdAt = 10,
+                updatedAt = 10,
+            ),
+        )
+
+        repository.delete(9L, keepEvents = false)
+
+        assertTrue(fakeBehaviorDao.deletedIds.contains(9L))
+        assertEquals(9L, eventRows.single().behaviorId)
+        assertEquals(0, detachCalls)
     }
 
     // --- Helper ---

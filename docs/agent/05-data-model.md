@@ -12,6 +12,11 @@
 | activity_tag_binding | ActivityTagBindingEntity | — | 中等 |
 | behavior_tag_cross_ref | BehaviorTagCrossRefEntity | — | 大量 |
 | icon_search_miss | IconSearchMissEntity | IconSearchMissDao | 少量 |
+| event_template | EventTemplateEntity | EventTemplateDao | 少量（v17） |
+| event_template_field | EventTemplateFieldEntity | EventTemplateFieldDao | 模板×字段数（v17） |
+| event_template_tag_binding | EventTemplateTagBindingEntity | EventTemplateTagBindingDao | 少量（v17） |
+| behavior_event | BehaviorEventEntity | BehaviorEventDao | 中等（v17） |
+| behavior_event_value | BehaviorEventValueEntity | BehaviorEventValueDao | 大量（v17，EAV） |
 
 ## 实体字段
 
@@ -116,6 +121,66 @@
 | library | String | 图标库过滤 |
 | timestamp | Long | 记录时间 |
 
+### EventTemplateEntity
+
+> v17 新增。
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | Long (PK, auto) | 主键 |
+| name | String | 模板名称 |
+| description | String? | 描述 |
+| createdAt | Long | 创建时间 |
+| sortOrder | Int | 排序 |
+
+### EventTemplateFieldEntity
+
+> v17；FK→event_template CASCADE。
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | Long (PK, auto) | 主键 |
+| templateId | Long (FK) | → event_template.id |
+| name | String | 字段名 |
+| type | String | EventFieldType key：`select`/`text`/`number`/`rating` |
+| optionsJson | String? | 单选选项 JSON 数组（kotlinx 序列化 String? 列） |
+| sortOrder | Int | 排序 |
+
+### EventTemplateTagBindingEntity
+
+> v17；联合主键 templateId+tagId，双 FK CASCADE。
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| templateId | Long (PK, FK) | → event_template.id |
+| tagId | Long (PK, FK) | → tags.id |
+
+### BehaviorEventEntity
+
+> v17；FK→event_template CASCADE；behaviorId 可空=独立事件，非空时 FK→behaviors CASCADE。
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | Long (PK, auto) | 主键 |
+| behaviorId | Long? (FK) | → behaviors.id；null=独立事件 |
+| activityId | Long? | 冗余（冗余索引直查，无 FK） |
+| templateId | Long (FK) | → event_template.id |
+| timestamp | Long | 事件时间 (epoch ms) |
+| createdAt | Long | 创建时间 |
+| updatedAt | Long | 更新时间 |
+
+### BehaviorEventValueEntity
+
+> v17 EAV 行；FK→behavior_event / event_template_field 均 CASCADE。
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | Long (PK, auto) | 主键 |
+| eventId | Long (FK) | → behavior_event.id |
+| fieldId | Long (FK) | → event_template_field.id |
+| valueText | String? | 文本/单选值 |
+| valueNumber | Double? | 数值/星级值 |
+
 ### 关系表
 
 | 表 | 字段 | 关系 |
@@ -131,14 +196,40 @@
 | ACTIVE | ▶ | 进行中 |
 | COMPLETED | ✓ | 已完成 |
 
+## EventFieldType 枚举
+
+| key | 说明 | 值列 |
+|-----|------|------|
+| select | 单选（选项在 optionsJson） | valueText |
+| text | 长文本 | valueText |
+| number | 数值 | valueNumber |
+| rating | 星级 1~5 | valueNumber |
+
+## EventQueryScope（事件查询范围）
+
+| 分支 | 说明 |
+|------|------|
+| All | 全局混排（timestamp DESC） |
+| ByActivity(activityId) | 按活动 |
+| ByTag(tagId) | 经 behavior→tag 或绑定表 JOIN |
+| ByBehavior(behaviorId) | 单行为事件 |
+| ByTemplate(templateId) | 单模板聚焦 |
+
 ## 关系图
 
 ```
 TagGroup 1:N Tag
 ActivityGroup 1:N Activity M:N Tag
-                       |
-                       1:N
+                        |
+                        1:N
                     Behavior M:N Tag
+                         |
+                         1:N (behaviorId 可空)
+                     BehaviorEvent 1:N BehaviorEventValue
+                         |                       |
+                         N:1                  N:1
+                  EventTemplate 1:N EventTemplateField
+                         N:M Tag (event_template_tag_binding)
 
 ## DB 版本历史
 
@@ -148,6 +239,7 @@ ActivityGroup 1:N Activity M:N Tag
 | 14 | 新增 tag_groups 表；TagEntity 新增 groupId；ActivityGroupEntity 新增 iconKey |
 | 15 | activity_tag_binding 新增 source |
 | 16 | activities/tags 新增 archiveNote |
+| 17 | 事件记录器：新增 event_template / event_template_field / event_template_tag_binding / behavior_event / behavior_event_value 五表 |
 
 ## DisplayColorConfig
 

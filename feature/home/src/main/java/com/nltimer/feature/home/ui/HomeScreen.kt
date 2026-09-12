@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -46,8 +47,12 @@ import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
 import com.nltimer.core.data.model.AddActivityCallback
 import com.nltimer.core.data.model.AddTagCallback
+import com.nltimer.core.data.model.BehaviorEventValue
+import com.nltimer.core.data.model.BehaviorEventWithValues
 import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.model.DialogGridConfig
+import com.nltimer.core.data.model.EventTemplate
+import com.nltimer.core.data.model.EventTemplateField
 import com.nltimer.core.data.model.FocusCardConfig
 import com.nltimer.core.data.model.HomeLayoutConfig
 import com.nltimer.core.data.model.GridLayoutStyle
@@ -60,6 +65,7 @@ import com.nltimer.core.designsystem.component.BottomBarDragFab
 import com.nltimer.core.designsystem.component.ConfirmDialog
 import com.nltimer.core.designsystem.component.LoadingScreen
 import com.nltimer.core.designsystem.component.rememberDragFabState
+import com.nltimer.core.designsystem.theme.BottomBarMode
 import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.core.designsystem.theme.LocalTheme
 import com.nltimer.core.designsystem.theme.NLtimerTheme
@@ -67,6 +73,7 @@ import com.nltimer.core.designsystem.theme.TimeLabelConfig
 import com.nltimer.core.tools.match.NoteProcessOutcome
 import com.nltimer.core.tools.match.NoteScanResult
 import com.nltimer.feature.home.model.AddSheetMode
+import com.nltimer.feature.home.model.EventSheetTarget
 import com.nltimer.feature.home.model.GridCellUiState
 import com.nltimer.feature.home.model.GridDaySection
 import com.nltimer.feature.home.model.GridRowUiState
@@ -84,12 +91,14 @@ import com.nltimer.feature.home.ui.components.TimeAxisGrid
 import com.nltimer.feature.home.ui.components.TimeLabelSettingsDialog
 import com.nltimer.feature.home.ui.components.TimeSideBar
 import com.nltimer.feature.home.ui.components.TimelineReverseView
+import com.nltimer.feature.home.ui.components.event.EventSheet
 import java.time.LocalDateTime
 import java.time.LocalTime
 import kotlinx.collections.immutable.persistentListOf
 
 private val DragOptionsWithActive = listOf("完成", "放弃", "特记", "AI", "+自定义")
 private val DragOptionsWithoutActive = listOf("完成", "目标", "当前", "AI", "+自定义")
+private val OverlayNavBarHeight = 72.dp
 
 @Composable
 fun HomeScreen(
@@ -108,6 +117,9 @@ fun HomeScreen(
     onShowAddSheet: (AddSheetMode) -> Unit,
     onCellLongClick: (GridCellUiState) -> Unit,
     onDeleteBehavior: (Long) -> Unit = {},
+    onDeleteBehaviorKeepEvents: (Long) -> Unit = {},
+    onQueryEventCount: suspend (Long) -> Int = { 0 },
+    onQueryBehaviorEvents: suspend (Long) -> List<BehaviorEventWithValues> = { emptyList() },
     onAddBehavior: (activityId: Long, tagIds: List<Long>, startTime: LocalDateTime, endTime: LocalDateTime?, nature: BehaviorNature, note: String?, estimatedDurationMs: Long?) -> Unit,
     onDismissSheet: () -> Unit,
     onCompleteBehavior: (Long) -> Unit,
@@ -131,6 +143,19 @@ fun HomeScreen(
     onQueryActivitiesForTag: suspend (Long) -> List<Long> = { emptyList() },
     onShowAiQuickInput: () -> Unit = {},
     onHideAiQuickInput: () -> Unit = {},
+    eventTemplates: List<EventTemplate> = emptyList(),
+    sheetEvents: List<BehaviorEventWithValues> = emptyList(),
+    onOpenEventAddSheet: (GridCellUiState?) -> Unit = {},
+    onOpenEventListSheet: (GridCellUiState) -> Unit = {},
+    onHideEventSheet: () -> Unit = {},
+    onSaveEvent: (target: EventSheetTarget, templateId: Long, attachToBehavior: Boolean, values: List<BehaviorEventValue>) -> Unit = { _, _, _, _ -> },
+    onDeleteEvent: (Long) -> Unit = {},
+    onOpenEventEdit: (Long) -> Unit = {},
+    onOpenEventNew: () -> Unit = {},
+    onQueryEvent: suspend (Long) -> BehaviorEventWithValues? = { null },
+    onQueryTemplateFields: suspend (Long) -> List<EventTemplateField> = { emptyList() },
+    onClearEventFeedback: () -> Unit = {},
+    onClearErrorMessage: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val theme = LocalTheme.current
@@ -139,6 +164,20 @@ fun HomeScreen(
     var actionTargetCell by remember { mutableStateOf<GridCellUiState?>(null) }
     var detailCell by remember { mutableStateOf<GridCellUiState?>(null) }
     var deleteTargetCell by remember { mutableStateOf<GridCellUiState?>(null) }
+    var detailEvents by remember { mutableStateOf<List<BehaviorEventWithValues>>(emptyList()) }
+    var deleteEventCount by remember { mutableStateOf(0) }
+
+    // 行为详情弹窗「复盘事件」分区快照（离开弹窗即清空，无需常驻订阅）
+    LaunchedEffect(detailCell?.behaviorId) {
+        val behaviorId = detailCell?.behaviorId
+        detailEvents = if (behaviorId == null) emptyList() else onQueryBehaviorEvents(behaviorId)
+    }
+
+    // 删除弹窗事件数快照：>0 时改为三选弹窗（直接删除 / 保留事件转独立 / 取消）
+    LaunchedEffect(deleteTargetCell?.behaviorId) {
+        val behaviorId = deleteTargetCell?.behaviorId
+        deleteEventCount = if (behaviorId == null) 0 else onQueryEventCount(behaviorId)
+    }
 
     LaunchedEffect(timeLabelSettingsRequestKey) {
         if (timeLabelSettingsRequestKey > 0) {
@@ -174,6 +213,18 @@ fun HomeScreen(
                 message = message,
                 duration = SnackbarDuration.Short,
             )
+            onClearErrorMessage()
+        }
+    }
+
+    // 事件保存/删除等成功反馈（与 errorMessage 分流，避免覆盖错误样式语义）
+    LaunchedEffect(uiState.eventFeedback) {
+        uiState.eventFeedback?.let { message ->
+            snackbarHostState.showSnackbar(
+                message = message,
+                duration = SnackbarDuration.Short,
+            )
+            onClearEventFeedback()
         }
     }
 
@@ -183,9 +234,23 @@ fun HomeScreen(
     Box(
         modifier = modifier.onGloballyPositioned { dragFabState.boxPositionInWindow = it.positionInWindow() }
     ) {
+        val liftSnackbarOverOverlay =
+            theme.bottomBarMode == BottomBarMode.CENTER_FAB ||
+                theme.bottomBarMode == BottomBarMode.FLOATING
         Scaffold(
             modifier = Modifier.fillMaxSize(),
-            snackbarHost = { SnackbarHost(snackbarHostState) },
+            snackbarHost = {
+                SnackbarHost(
+                    hostState = snackbarHostState,
+                    modifier = if (liftSnackbarOverOverlay) {
+                        Modifier
+                            .navigationBarsPadding()
+                            .padding(bottom = OverlayNavBarHeight)
+                    } else {
+                        Modifier
+                    },
+                )
+            },
         ) { padding ->
             if (uiState.isLoading) {
                 LoadingScreen()
@@ -209,6 +274,8 @@ fun HomeScreen(
                         tagDisplayConfig = tagDisplayConfig,
                         focusCardConfig = focusCardConfig,
                         onHomeLayoutChange = onHomeLayoutChange,
+                        onOpenEventAddSheet = onOpenEventAddSheet,
+                        onOpenEventListSheet = onOpenEventListSheet,
                         modifier = Modifier.weight(1f),
                     )
                 }
@@ -280,6 +347,21 @@ fun HomeScreen(
             )
         }
 
+        if (uiState.eventSheet != null) {
+            EventSheet(
+                target = requireNotNull(uiState.eventSheet),
+                templates = eventTemplates,
+                events = sheetEvents,
+                onDismiss = onHideEventSheet,
+                onSave = onSaveEvent,
+                onDelete = onDeleteEvent,
+                onOpenEdit = onOpenEventEdit,
+                onOpenNew = onOpenEventNew,
+                onQueryFields = onQueryTemplateFields,
+                onQueryEvent = onQueryEvent,
+            )
+        }
+
         actionTargetCell?.let { cell ->
             BehaviorItemActionSheet(
                 cell = cell,
@@ -297,23 +379,45 @@ fun HomeScreen(
         detailCell?.let { cell ->
             BehaviorDetailDialog(
                 cell = cell,
+                events = detailEvents,
+                templates = eventTemplates,
                 onDismiss = { detailCell = null },
             )
         }
 
         deleteTargetCell?.let { cell ->
             val name = cell.activityName?.takeIf { it.isNotBlank() } ?: "该行为"
-            ConfirmDialog(
-                title = "删除行为",
-                message = "确定要删除「$name」？此操作不可撤销。",
-                confirmText = "删除",
-                confirmTextColor = MaterialTheme.colorScheme.error,
-                onDismiss = { deleteTargetCell = null },
-                onConfirm = {
-                    cell.behaviorId?.let(onDeleteBehavior)
-                    deleteTargetCell = null
-                },
-            )
+            if (deleteEventCount > 0) {
+                ConfirmDialog(
+                    title = "删除行为",
+                    message = "「$name」有 $deleteEventCount 条复盘事件。\n" +
+                        "「保留事件」将把事件转为独立事件（保留字段值），行为本体仍会删除。",
+                    confirmText = "直接删除",
+                    confirmTextColor = MaterialTheme.colorScheme.error,
+                    neutralText = "保留事件并删除",
+                    onNeutral = {
+                        cell.behaviorId?.let(onDeleteBehaviorKeepEvents)
+                        deleteTargetCell = null
+                    },
+                    onDismiss = { deleteTargetCell = null },
+                    onConfirm = {
+                        cell.behaviorId?.let(onDeleteBehavior)
+                        deleteTargetCell = null
+                    },
+                )
+            } else {
+                ConfirmDialog(
+                    title = "删除行为",
+                    message = "确定要删除「$name」？此操作不可撤销。",
+                    confirmText = "删除",
+                    confirmTextColor = MaterialTheme.colorScheme.error,
+                    onDismiss = { deleteTargetCell = null },
+                    onConfirm = {
+                        cell.behaviorId?.let(onDeleteBehavior)
+                        deleteTargetCell = null
+                    },
+                )
+            }
         }
     }
 }
@@ -337,6 +441,8 @@ private fun HomeLayoutContent(
     tagDisplayConfig: com.nltimer.core.data.model.TagDisplayConfig = com.nltimer.core.data.model.TagDisplayConfig(),
     focusCardConfig: FocusCardConfig = FocusCardConfig(),
     onHomeLayoutChange: (HomeLayout) -> Unit = {},
+    onOpenEventAddSheet: (GridCellUiState?) -> Unit = {},
+    onOpenEventListSheet: (GridCellUiState) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val scope = rememberCoroutineScope()
@@ -420,6 +526,8 @@ private fun HomeLayoutContent(
                 onEmptyCellClick = { onEmptyCellClick(null, null) },
                 momentStyle = homeLayoutConfig.moment,
                 focusCardConfig = focusCardConfig,
+                onAddEvent = { onOpenEventAddSheet(activeCell) },
+                onEventSummaryClick = { activeCell?.let(onOpenEventListSheet) },
             )
         }
     }
